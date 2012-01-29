@@ -24,5 +24,5 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
-    #url='http://walkdir.readthedocs.org',
+    url='http://readthedocs.org/docs/pathlib/',
 )
