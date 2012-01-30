@@ -102,22 +102,22 @@ Path constructors accept an arbitrary number of positional arguments.
 When called without any argument, a path object points to the current
 directory::
 
-   >>> Path()
-   PosixPath('.')
+   >>> PurePath()
+   PurePosixPath('.')
 
 Any argument can be a string or bytes object representing an arbitrary number
 of path segments, but it can also be another path object::
 
-   >>> Path('foo', 'some/path', 'bar')
-   PosixPath('foo/some/path/bar')
-   >>> Path(Path('foo'), Path('bar'))
-   PosixPath('foo/bar')
+   >>> PurePath('foo', 'some/path', 'bar')
+   PurePosixPath('foo/some/path/bar')
+   >>> PurePath(Path('foo'), Path('bar'))
+   PurePosixPath('foo/bar')
 
 When several absolute paths are given, the last is taken as an anchor
 (mimicking ``os.path.join``'s behaviour)::
 
-   >>> Path('/etc', '/usr', 'lib64')
-   PosixPath('/usr/lib64')
+   >>> PurePath('/etc', '/usr', 'lib64')
+   PurePosixPath('/usr/lib64')
    >>> PureNTPath('c:/Windows', 'd:bar')
    PureNTPath('d:bar')
 
