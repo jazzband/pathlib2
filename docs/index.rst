@@ -581,6 +581,17 @@ call fails (for example because the path doesn't exist):
    the symbolic link's information rather than its target's.
 
 
+.. method:: Path.mkdir(mode=0o777, parents=False)
+
+   Create a new directory at this given path.  If *mode* is given, it is
+   combined with the process' ``umask`` value to determine the file mode
+   and access flags.  If the path already exists, :exc:`OSError` is raised.
+
+   If *parents* is True, any missing parents of this path are created
+   as needed.  If *parents* is False (the default), a missing parent raises
+   :exc:`OSError`.
+
+
 .. method:: Path.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None)
 
    Open the file pointed to by the path, like the built-in :func:`open`
@@ -661,7 +672,7 @@ call fails (for example because the path doesn't exist):
 
    Create a file at this given path.  If *mode* is given, it is combined
    with the process' ``umask`` value to determine the file mode and access
-   flags.  If the file already exists, the function is a no-op if *exist_ok*
+   flags.  If the file already exists, the function succeeds if *exist_ok*
    is true, otherwise :exc:`OSError` is raised.
 
 

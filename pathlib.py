@@ -253,8 +253,8 @@ class _Accessor:
 
 # We need all of these
 _at_functions = [
-    'fchmodat', 'fdlistdir', 'fstatat', 'openat', 'readlinkat', 'renameat',
-    'symlinkat', 'unlinkat',
+    'fchmodat', 'fdlistdir', 'fstatat', 'mkdirat', 'openat', 'readlinkat',
+    'renameat', 'symlinkat', 'unlinkat',
     ]
 supports_openat = all(hasattr(os, fn) for fn in _at_functions)
 
@@ -306,6 +306,8 @@ if supports_openat:
 
         def lchmod(self, pathobj, mode):
             return self.chmod(pathobj, mode, _AT_SYMLINK_NOFOLLOW)
+
+        mkdir = _wrap_atfunc(os.mkdirat)
 
         unlink = _wrap_atfunc(os.unlinkat)
 
@@ -430,6 +432,8 @@ class _NormalAccessor(_Accessor):
     else:
         def lchmod(self, pathobj, mode):
             raise NotImplementedError("lchmod() not available on this system")
+
+    mkdir = _wrap_strfunc(os.mkdir)
 
     unlink = _wrap_strfunc(os.unlink)
 
@@ -1008,11 +1012,27 @@ class Path(PurePath):
         """
         Create this file with the given access mode, if it doesn't exist.
         """
+        if self._closed:
+            self._raise_closed()
         flags = os.O_CREAT
         if not exist_ok:
             flags |= os.O_EXCL
         fd = self.raw_open(flags, mode)
         os.close(fd)
+
+    def mkdir(self, mode=0o777, parents=False):
+        if self._closed:
+            self._raise_closed()
+        if not parents:
+            self._accessor.mkdir(self, mode)
+        else:
+            try:
+                self._accessor.mkdir(self, mode)
+            except OSError as e:
+                if e.errno != ENOENT:
+                    raise
+                self.parent().mkdir(mode, True)
+                self._accessor.mkdir(self, mode)
 
     def chmod(self, mode):
         """

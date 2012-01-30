@@ -742,6 +742,8 @@ class NTPathAsPureTest(PureNTPathTest):
 class _BasePathTest(unittest.TestCase):
     """Tests for the FS-accessing functionalities of the Path classes."""
 
+    using_openat = False
+
     def setUp(self):
         os.mkdir(BASE)
         self.addCleanup(support.rmtree, BASE)
@@ -985,6 +987,34 @@ class _BasePathTest(unittest.TestCase):
         p.touch(mode=0o700, exist_ok=False)
         self.assertTrue(p.exists())
         self.assertRaises(OSError, p.touch, exist_ok=False)
+        # XXX better test `mode` arg
+
+    def test_mkdir(self):
+        P = self.cls(BASE)
+        p = P['newdirA']
+        self.assertFalse(p.exists())
+        p.mkdir()
+        self.assertTrue(p.exists())
+        self.assertTrue(p.is_dir())
+        with self.assertRaises(OSError) as cm:
+            p.mkdir()
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        # XXX test `mode` arg
+
+    def test_mkdir_parents(self):
+        # Creating a chain of directories
+        p = self.cls(BASE, 'newdirB', 'newdirC')
+        self.assertFalse(p.exists())
+        with self.assertRaises(OSError) as cm:
+            p.mkdir()
+        self.assertEqual(cm.exception.errno, errno.ENOENT)
+        p.mkdir(parents=True)
+        self.assertTrue(p.exists())
+        self.assertTrue(p.is_dir())
+        with self.assertRaises(OSError) as cm:
+            p.mkdir(parents=True)
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        # XXX test `mode` arg
 
     @with_symlinks
     def test_symlink_to(self):
@@ -1101,6 +1131,8 @@ class PosixOpenatPathTest(PosixPathTest):
         lambda *args, **kwargs:
         pathlib.PosixPath(*args, use_openat=True, **kwargs)
     )
+
+    using_openat = True
 
     def _check_symlink_loop(self, *args):
         # with openat(), ELOOP is returned as soon as you try to construct
