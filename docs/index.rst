@@ -17,6 +17,15 @@ This module requires Python 3.2 or later.  If using it with Python 3.3,
 you also have access to optional ``openat``-based filesystem operations.
 
 
+Download
+--------
+
+Releases are available on PyPI: http://pypi.python.org/pypi/pathlib/
+
+The development repository and issue tracker can be found at BitBucket:
+https://bitbucket.org/pitrou/pathlib/
+
+
 Basic use
 ---------
 
