@@ -10,8 +10,8 @@ pathlib
 
 Manipulating filesystem paths as string objects can quickly become cumbersome:
 multiple calls to ``os.path.join`` or ``os.path.dirname``, etc.  This module
-offers a set of path objects featuring all the common operations on path in
-an easy, object-oriented way.
+offers a set of classes featuring all the common operations on paths in an
+easy, object-oriented way.
 
 This module requires Python 3.2 or later.  If using it with Python 3.3,
 you also have access to optional ``openat``-based filesystem operations.
@@ -172,7 +172,7 @@ Paths of a different flavour compare unequal and cannot be ordered::
 Operators
 ^^^^^^^^^
 
-Indexing a path helps create children paths, similarly to ``os.path.join``::
+Indexing a path helps create child paths, similarly to ``os.path.join``::
 
    >>> p = PurePath('/etc')
    >>> p
@@ -183,7 +183,7 @@ Indexing a path helps create children paths, similarly to ``os.path.join``::
    PurePosixPath('/etc/init.d/apache2')
 
 The string representation of a path is the raw filesystem path itself, which
-you can path to any function taking a file path as a string::
+you can pass to any function taking a file path as a string::
 
    >>> p = PurePath('/etc')
    >>> str(p)
