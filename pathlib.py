@@ -10,7 +10,7 @@ except ImportError:
     import dummy_threading as threading
 
 from collections import Sequence, defaultdict
-from errno import EINVAL
+from errno import EINVAL, ENOENT
 from functools import wraps
 from itertools import chain, count
 from operator import attrgetter
@@ -1061,6 +1061,18 @@ class Path(PurePath):
         self._accessor.symlink(target, self)
 
     # Convenience functions for querying the stat results
+
+    def exists(self):
+        """
+        Whether this path exists.
+        """
+        try:
+            self.restat()
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            return False
+        return True
 
     def is_dir(self):
         """

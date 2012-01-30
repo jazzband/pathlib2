@@ -793,6 +793,17 @@ class _BasePathTest(unittest.TestCase):
         p = self.cls('')
         self.assertEqual(p.stat(), os.stat('.'))
 
+    def test_exists(self):
+        P = self.cls
+        p = P(BASE)
+        self.assertIs(True, p.exists())
+        self.assertIs(True, p['dirA'].exists())
+        self.assertIs(True, p['fileA'].exists())
+        self.assertIs(True, p['linkA'].exists())
+        self.assertIs(True, p['linkB'].exists())
+        self.assertIs(False, p['foo'].exists())
+        self.assertIs(False, P('/xyzzy').exists())
+
     def test_open(self):
         p = self.cls(BASE)
         with p['fileA'].open('r') as f:
