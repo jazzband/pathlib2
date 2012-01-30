@@ -17,6 +17,38 @@ This module requires Python 3.2 or later.  If using it with Python 3.3,
 you also have access to optional ``openat``-based filesystem operations.
 
 
+Basic use
+---------
+
+   >>> from pathlib import *
+   >>> p = Path('setup.py')
+   >>> p
+   PosixPath('setup.py')
+   >>> p.is_absolute()
+   False
+   >>> p = p.resolve()
+   >>> p
+   PosixPath('/home/antoine/pathlib/setup.py')
+   >>> p.parent()
+   PosixPath('/home/antoine/pathlib')
+   >>> p.open().readline()
+   '#!/usr/bin/env python3\n'
+
+   >>> import pprint
+   >>> p = Path('.')
+   >>> [x for x in p if x.ext == '.py']
+   [PosixPath('test_pathlib.py'), PosixPath('setup.py'), PosixPath('pathlib.py')]
+   >>> child = p['docs']
+   >>> pprint.pprint(list(child))
+   [PosixPath('docs/conf.py'),
+    PosixPath('docs/_templates'),
+    PosixPath('docs/make.bat'),
+    PosixPath('docs/index.rst'),
+    PosixPath('docs/_build'),
+    PosixPath('docs/_static'),
+    PosixPath('docs/Makefile')]
+
+
 Pure paths
 ----------
 
@@ -363,6 +395,58 @@ Pure paths provide the following methods an properties:
       PureNTPath('c:\\foo')
       PureNTPath('c:\\')
 
+
+Concrete paths
+--------------
+
+Concrete paths are subclasses of the pure path classes.  In addition to
+operations provided by the latter, they also provide methods to do system
+calls on path objects.  There are three ways to instantiate concrete paths:
+
+
+.. class:: PosixPath
+
+   A subclass of :class:`Path` and :class:`PurePosixPath`, this class
+   represents concrete non-Windows filesystem paths::
+
+      >>> PosixPath('/etc')
+      PosixPath('/etc')
+
+.. class:: NTPath
+
+   A subclass of :class:`Path` and :class:`PureNTPath`, this class represents
+   concrete Windows filesystem paths::
+
+      >>> NTPath('c:/Program Files/')
+      NTPath('c:\\Program Files')
+
+.. class:: Path
+
+   A subclass of :class:`PurePath`, this class represents concrete paths of
+   the system's path flavour (instantiating it creates either a
+   :class:`PosixPath` or a :class:`NTPath`)::
+
+      >>> Path('setup.py')
+      PosixPath('setup.py')
+
+
+You can only instantiate the class flavour that corresponds to your system
+(allowing system calls on non-compatible path flavours could lead to
+bugs or failures in your application)::
+
+   >>> import os
+   >>> os.name
+   'posix'
+   >>> Path('setup.py')
+   PosixPath('setup.py')
+   >>> PosixPath('setup.py')
+   PosixPath('setup.py')
+   >>> NTPath('setup.py')
+   Traceback (most recent call last):
+     File "<stdin>", line 1, in <module>
+     File "pathlib.py", line 798, in __new__
+       % (cls.__name__,))
+   NotImplementedError: cannot instantiate 'NTPath' on your system
 
 
 Indices and tables
