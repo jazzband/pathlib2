@@ -630,7 +630,8 @@ call fails (for example because the path doesn't exist):
       >>> p.resolve()
       PosixPath('/home/antoine/pathlib')
 
-   If the path doesn't exist, an :exc:`OSError` is raised.
+   If the path doesn't exist, an :exc:`OSError` is raised.  If an infinite
+   loop is encountered along the resolution path, :exc:`ValueError` is raised.
 
 
 .. method:: Path.rmdir()
