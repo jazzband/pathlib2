@@ -30,6 +30,11 @@ else:
         _getfinalpathname = None
 
 
+__all__ = [
+    "PurePath", "PurePosixPath", "PureNTPath",
+    "Path", "PosixPath", "NTPath",
+    ]
+
 #
 # Internals
 #
