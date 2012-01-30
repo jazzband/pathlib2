@@ -7,11 +7,14 @@ pathlib
 
 .. moduleauthor:: Antoine Pitrou <solipsis@pitrou.net>
 
+.. toctree::
+   :maxdepth: 2
+
 
 Manipulating filesystem paths as string objects can quickly become cumbersome:
-multiple calls to ``os.path.join`` or ``os.path.dirname``, etc.  This module
-offers a set of classes featuring all the common operations on paths in an
-easy, object-oriented way.
+multiple calls to :func:`os.path.join` or :func:`os.path.dirname`, etc.
+This module offers a set of classes featuring all the common operations on
+paths in an easy, object-oriented way.
 
 This module requires Python 3.2 or later.  If using it with Python 3.3,
 you also have access to optional ``openat``-based filesystem operations.
@@ -227,9 +230,6 @@ property:
       PureNTPath('Program Files\\PSF')
 
    (note how the drive and local root are regrouped in a single part)
-
-.. toctree::
-   :maxdepth: 2
 
 
 Methods and properties
@@ -477,10 +477,186 @@ bugs or failures in your application)::
    NotImplementedError: cannot instantiate 'NTPath' on your system
 
 
-Indices and tables
-==================
+Operations
+^^^^^^^^^^
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+When a concrete path points to a directory, iterating over it yields path
+objects of the directory contents::
+
+   >>> p = Path('docs')
+   >>> for child in p: child
+   ...
+   PosixPath('docs/conf.py')
+   PosixPath('docs/_templates')
+   PosixPath('docs/make.bat')
+   PosixPath('docs/index.rst')
+   PosixPath('docs/_build')
+   PosixPath('docs/_static')
+   PosixPath('docs/Makefile')
+
+
+Methods
+^^^^^^^
+
+Concrete paths provide the following methods in addition to pure paths
+methods.  Many of these methods can raise an :exc:`OSError` if a system
+call fails (for example because the path doesn't exist):
+
+.. classmethod:: Path.cwd()
+
+   Return a new path object representing the current directory (as returned
+   by :func:`os.getcwd`)::
+
+      >>> Path.cwd()
+      PosixPath('/home/antoine/pathlib')
+
+
+.. method:: Path.stat()
+
+   Return information about this path (similarly to :func:`os.stat`).
+   The result is cached accross calls.
+
+      >>> p = Path('setup.py')
+      >>> p.stat().st_size
+      956
+      >>> p.stat().st_mtime
+      1327883547.852554
+
+
+.. method:: Path.restat()
+
+   Like :meth:`Path.stat`, but ignores the cached value and always invokes
+   the underlying system call.
+
+
+.. method:: Path.chmod(mode)
+
+   Change the file mode and permissions, like :func:`os.chmod`::
+
+      >>> p = Path('setup.py')
+      >>> p.stat().st_mode
+      33277
+      >>> p.chmod(0o444)
+      >>> p.restat().st_mode
+      33060
+
+
+.. method:: Path.exists()
+
+   Whether the path points to an existing file or directory::
+
+      >>> from pathlib import *
+      >>> Path('.').exists()
+      True
+      >>> Path('setup.py').exists()
+      True
+      >>> Path('/etc').exists()
+      True
+      >>> Path('nonexistentfile').exists()
+      False
+
+
+.. method:: Path.is_dir()
+
+   Return True if the path points to a directory, False if it points to
+   another kind of file::
+
+      >>> Path('.').is_dir()
+      True
+      >>> Path('setup.py').is_dir()
+      False
+
+
+.. method:: Path.lchmod(mode)
+
+   Like :meth:`Path.chmod` but, if the path points to a symbolic link, the
+   symbolic link's mode is changed rather than its target's.
+
+
+.. method:: Path.lstat()
+
+   Like :meth:`Path.stat` but, if the path points to a symbolic link, return
+   the symbolic link's information rather than its target's.
+
+
+.. method:: Path.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None)
+
+   Open the file pointed to by the path, like the built-in :func:`open`
+   function does::
+
+      >>> p = Path('setup.py')
+      >>> with p.open() as f:
+      ...     f.readline()
+      ...
+      '#!/usr/bin/env python3\n'
+
+
+.. method:: Path.raw_open(flags, mode=0o777)
+
+   Open the file pointed to by the path and return a numeric file descriptor,
+   as :func:`os.open` does::
+
+      >>> p = Path('setup.py')
+      >>> fd = p.raw_open(os.O_RDONLY)
+      >>> os.read(fd, 10)
+      b'#!/usr/bin'
+      >>> os.close(fd)
+
+
+.. method:: Path.rename(target)
+
+   Rename this file or directory to the given *target*.  *target* can be
+   either a string or another path object::
+
+      >>> p = Path('foo')
+      >>> p.open('w').write('some text')
+      9
+      >>> target = Path('bar')
+      >>> p.rename(target)
+      >>> target.open().read()
+      'some text'
+
+
+.. method:: Path.resolve()
+
+   Make the path absolute, resolving any symlinks.  A new path object is
+   returned::
+
+      >>> p = Path()
+      >>> p
+      PosixPath('.')
+      >>> p.resolve()
+      PosixPath('/home/antoine/pathlib')
+
+   If the path doesn't exist, an :exc:`OSError` is raised.
+
+
+.. method:: Path.rmdir()
+
+   Remove this directory.  The directory must be empty.
+
+
+.. method:: Path.symlink_to(target)
+
+   Make this path a symbolic link to *target*.
+
+      >>> p = Path('mylink')
+      >>> p.symlink_to('setup.py')
+      >>> p.resolve()
+      PosixPath('/home/antoine/pathlib/setup.py')
+      >>> p.stat().st_size
+      956
+      >>> p.lstat().st_size
+      8
+
+   .. note::
+      The order of arguments (link, target) is the reverse
+      of :func:`os.symlink`'s.
+
+
+.. method:: Path.unlink()
+
+   Remove this file or symbolic link.  If the path points to a directory,
+   use :func:`Path.rmdir` instead.
+
 
