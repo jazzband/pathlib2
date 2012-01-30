@@ -289,6 +289,25 @@ Pure paths provide the following methods an properties:
       ''
 
 
+.. method:: PurePath.as_bytes()
+
+   Equivalent to calling ``bytes()`` on the path object::
+
+      >>> PurePosixPath('/etc').as_bytes()
+      b'/etc'
+
+
+.. method:: PurePath.as_posix()
+
+   Return a string representation of the path with forward slashes (``/``)::
+
+      >>> p = PureNTPath('c:\\windows')
+      >>> str(p)
+      'c:\\windows'
+      >>> p.as_posix()
+      'c:/windows'
+
+
 .. method:: PurePath.is_absolute()
 
    Return whether the path is absolute or not.  A path is considered absolute

@@ -24,5 +24,6 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
+    download_url='https://pypi.python.org/pypi/pathlib/',
     url='http://readthedocs.org/docs/pathlib/',
 )
