@@ -747,10 +747,10 @@ class _BasePathTest(unittest.TestCase):
         self.addCleanup(support.rmtree, BASE)
         os.mkdir(join('dirA'))
         os.mkdir(join('dirB'))
-        with open(join('fileA'), 'w') as f:
-            f.write("this is file A\n")
-        with open(join('dirB', 'fileB'), 'w') as f:
-            f.write("this is file B\n")
+        with open(join('fileA'), 'wb') as f:
+            f.write(b"this is file A\n")
+        with open(join('dirB', 'fileB'), 'wb') as f:
+            f.write(b"this is file B\n")
         if not symlink_skip_reason:
             if os.name == 'nt':
                 # Workaround for http://bugs.python.org/issue13772
@@ -933,6 +933,16 @@ class _BasePathTest(unittest.TestCase):
         p = self.cls(BASE)['fileA']
         st = p.stat()
         self.assertEqual(st, p.lstat())
+
+    def test_st_fields(self):
+        p = self.cls(BASE)['fileA']
+        self.assertEqual(p.st_size, 15)
+        p.st_mtime
+        p.st_mode
+        with self.assertRaises(AttributeError):
+            p.st_foo
+        with self.assertRaises(AttributeError):
+            p.foo
 
     def test_unlink(self):
         p = self.cls(BASE)['fileA']

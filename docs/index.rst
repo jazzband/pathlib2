@@ -522,6 +522,8 @@ call fails (for example because the path doesn't exist):
       >>> p.stat().st_mtime
       1327883547.852554
 
+   This information can also be accessed through :ref:`helper attributes <st_attrs>`.
+
 
 .. method:: Path.restat()
 
@@ -660,3 +662,31 @@ call fails (for example because the path doesn't exist):
    use :func:`Path.rmdir` instead.
 
 
+.. _st_attrs:
+
+Attributes
+^^^^^^^^^^
+
+Concrete paths provide the following attributes:
+
+.. data::
+      Path.st_mode
+      Path.st_ino
+      Path.st_dev
+      Path.st_nlink
+      Path.st_uid
+      Path.st_gid
+      Path.st_size
+      Path.st_atime
+      Path.st_mtime
+      Path.st_ctime
+      ...
+
+   Helper attributes returning the corresponding fields on :meth:`Path.stat`'s
+   result::
+
+      >>> p = Path('setup.py')
+      >>> p.st_size
+      956
+      >>> p.st_mtime
+      1327939910.2178059

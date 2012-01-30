@@ -921,6 +921,11 @@ class Path(PurePath):
             if self._closed:
                 self._raise_closed()
 
+    def __getattr__(self, name):
+        if name.startswith('st_'):
+            return getattr(self._stat, name)
+        return super().__getattribute__(name)
+
     def abspath(self):
         """Return an absolute version of this path.  This function works
         even if the path doesn't point to anything.
