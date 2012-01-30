@@ -724,6 +724,8 @@ class PurePath:
 
     def parent(self, level=1):
         """A parent or ancestor (if `level` is specified) of this path."""
+        if level < 1:
+            raise ValueError("`level` must be a non-zero positive integer")
         drv = self._drv
         root = self._root
         parts = self._parts[:-level]
