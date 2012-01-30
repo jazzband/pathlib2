@@ -27,7 +27,7 @@ we also call *flavours*:
 
 .. class:: PurePosixPath
 
-   A subclass of :class:`PurePath`, this path flavour represents POSIX
+   A subclass of :class:`PurePath`, this path flavour represents non-Windows
    filesystem paths::
 
       >>> PurePosixPath('/etc')
@@ -194,7 +194,174 @@ property:
 Methods and properties
 ^^^^^^^^^^^^^^^^^^^^^^
 
-:class:
+Pure paths provide the following methods an properties:
+
+.. data:: PurePath.drive
+
+   A string representing the drive letter or name, if any::
+
+      >>> PureNTPath('c:/Program Files/').drive
+      'c:'
+      >>> PureNTPath('/Program Files/').drive
+      ''
+      >>> PurePosixPath('/etc').drive
+      ''
+
+   UNC shares are also considered drives::
+
+      >>> PureNTPath('//some/share/foo.txt').drive
+      '\\\\some\\share'
+
+.. data:: PurePath.root
+
+   A string representing the (local or global) root, if any::
+
+      >>> PureNTPath('c:/Program Files/').root
+      '\\'
+      >>> PureNTPath('c:Program Files/').root
+      ''
+      >>> PurePosixPath('/etc').root
+      '/'
+
+   UNC shares always have a root::
+
+      >>> PureNTPath('//some/share').root
+      '\\'
+
+
+.. data:: PurePath.ext
+
+   A string representing the file extension of the final component, if any::
+
+      >>> PurePosixPath('my/library/setup.py').ext
+      '.py'
+      >>> PurePosixPath('my/library.tar.gz').ext
+      '.tar.gz'
+      >>> PurePosixPath('my/library').ext
+      ''
+
+   UNC drive names are not considered::
+
+      >>> PureNTPath('//some/share/setup.py').ext
+      '.py'
+      >>> PureNTPath('//some.txt/share.py').ext
+      ''
+
+
+.. method:: PurePath.is_absolute()
+
+   Return whether the path is absolute or not.  A path is considered absolute
+   if it has both a root and (if the flavour allows) a drive::
+
+      >>> PurePosixPath('/a/b').is_absolute()
+      True
+      >>> PurePosixPath('a/b').is_absolute()
+      False
+
+      >>> PureNTPath('c:/a/b').is_absolute()
+      True
+      >>> PureNTPath('/a/b').is_absolute()
+      False
+      >>> PureNTPath('c:').is_absolute()
+      False
+      >>> PureNTPath('//some/share').is_absolute()
+      True
+
+
+.. method:: PurePath.is_reserved()
+
+   With :class:`PureNTPath`, return True if the path is considered reserved
+   under Windows, False otherwise.  With :class:`PurePosixPath`, False is
+   always returned.
+
+      >>> PureNTPath('nul').is_reserved()
+      True
+      >>> PurePosixPath('nul').is_reserved()
+      False
+
+   File system calls on reserved paths can fail mysteriously or have
+   unintended effects.
+
+
+.. method:: PurePath.join(*other)
+
+   Calling this method is equivalent to indexing the path with each of
+   the *other* arguments in turn::
+
+      >>> PurePosixPath('/etc').join('passwd')
+      PurePosixPath('/etc/passwd')
+      >>> PurePosixPath('/etc').join(PurePosixPath('passwd'))
+      PurePosixPath('/etc/passwd')
+      >>> PurePosixPath('/etc').join('init.d', 'apache2')
+      PurePosixPath('/etc/init.d/apache2')
+      >>> PureNTPath('c:').join('/Program Files')
+      PureNTPath('c:\\Program Files')
+
+
+.. method:: PurePath.normcase()
+
+   Return a case-folded version of the path.  Calling this method is *not*
+   needed before comparing path objects.
+
+
+.. method:: PurePath.relative()
+
+   Return the path object stripped of its drive and root, if any::
+
+      >>> PurePosixPath('/etc/passwd').relative()
+      PurePosixPath('etc/passwd')
+      >>> PurePosixPath('lib/setup.py').relative()
+      PurePosixPath('lib/setup.py')
+
+      >>> PureNTPath('//some/share/setup.py').relative()
+      PureNTPath('setup.py')
+      >>> PureNTPath('//some/share/lib/setup.py').relative()
+      PureNTPath('lib\\setup.py')
+
+
+.. method:: PurePath.relative_to(*other)
+
+   Compute a version of this path relative to the path represented by
+   *other*.  If it's impossible, ValueError is raised::
+
+      >>> p = PurePosixPath('/etc/passwd')
+      >>> p.relative_to('/')
+      PurePosixPath('etc/passwd')
+      >>> p.relative_to('/etc')
+      PurePosixPath('passwd')
+      >>> p.relative_to('/usr')
+      Traceback (most recent call last):
+        File "<stdin>", line 1, in <module>
+        File "pathlib.py", line 694, in relative_to
+          .format(str(self), str(formatted)))
+      ValueError: '/etc/passwd' does not start with '/usr'
+
+
+.. method:: PurePath.parent(level=1)
+
+   Return the path's parent at the *level*'th level.  If *level* is not given,
+   return the path's immediate parent::
+
+      >>> p = PurePosixPath('/a/b/c/d')
+      >>> p.parent()
+      PurePosixPath('/a/b/c')
+      >>> p.parent(2)
+      PurePosixPath('/a/b')
+      >>> p.parent(3)
+      PurePosixPath('/a')
+      >>> p.parent(4)
+      PurePosixPath('/')
+
+
+.. method:: PurePath.parents()
+
+   Iterate over the path's parents from the most to the least specific::
+
+      >>> for p in PureNTPath('c:/foo/bar/setup.py').parents(): p
+      ...
+      PureNTPath('c:\\foo\\bar')
+      PureNTPath('c:\\foo')
+      PureNTPath('c:\\')
 
 
 
