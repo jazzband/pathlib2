@@ -656,6 +656,14 @@ call fails (for example because the path doesn't exist):
       of :func:`os.symlink`'s.
 
 
+.. method:: Path.touch(mode=0o777, exist_ok=True)
+
+   Create a file at this given path.  If *mode* is given, it is combined
+   with the process' ``umask`` value to determine the file mode and access
+   flags.  If the file already exists, the function is a no-op if *exist_ok*
+   is true, otherwise :exc:`OSError` is raised.
+
+
 .. method:: Path.unlink()
 
    Remove this file or symbolic link.  If the path points to a directory,

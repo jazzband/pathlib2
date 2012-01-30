@@ -10,7 +10,7 @@ except ImportError:
     import dummy_threading as threading
 
 from collections import Sequence, defaultdict
-from errno import EINVAL, ENOENT
+from errno import EINVAL, ENOENT, EEXIST
 from functools import wraps
 from itertools import chain, count
 from operator import attrgetter
@@ -1003,6 +1003,16 @@ class Path(PurePath):
                            opener=self._opener)
         else:
             return io.open(str(self), mode, buffering, encoding, errors, newline)
+
+    def touch(self, mode=0o777, exist_ok=True):
+        """
+        Create this file with the given access mode, if it doesn't exist.
+        """
+        flags = os.O_CREAT
+        if not exist_ok:
+            flags |= os.O_EXCL
+        fd = self.raw_open(flags, mode)
+        os.close(fd)
 
     def chmod(self, mode):
         """

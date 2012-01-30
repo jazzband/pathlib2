@@ -959,7 +959,6 @@ class _BasePathTest(unittest.TestCase):
         self.assertFileNotFound(p.unlink)
 
     def test_rename(self):
-        # XXX make sure it overwrites also on Windows?
         P = self.cls(BASE)
         p = P['fileA']
         size = p.stat().st_size
@@ -973,6 +972,19 @@ class _BasePathTest(unittest.TestCase):
         q.rename(r)
         self.assertEqual(os.stat(r).st_size, size)
         self.assertFileNotFound(q.restat)
+
+    def test_touch(self):
+        P = self.cls(BASE)
+        p = P['newfileA']
+        self.assertFalse(p.exists())
+        p.touch()
+        self.assertTrue(p.exists())
+        p.touch()
+        p = P['newfileB']
+        self.assertFalse(p.exists())
+        p.touch(mode=0o700, exist_ok=False)
+        self.assertTrue(p.exists())
+        self.assertRaises(OSError, p.touch, exist_ok=False)
 
     @with_symlinks
     def test_symlink_to(self):
