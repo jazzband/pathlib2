@@ -263,7 +263,7 @@ if supports_openat:
     _AT_SYMLINK_NOFOLLOW = os.AT_SYMLINK_NOFOLLOW
     _AT_REMOVE_DIR = os.AT_REMOVEDIR
 
-    def fdnamepair(pathobj):
+    def _fdnamepair(pathobj):
         """Get a (parent fd, name) pair from a path object, suitable for use
         with the various *at functions."""
         parent_fd = pathobj._parent_fd
@@ -278,17 +278,17 @@ if supports_openat:
         def _wrap_atfunc(atfunc):
             @wraps(atfunc)
             def wrapped(pathobj, *args):
-                parent_fd, name = fdnamepair(pathobj)
+                parent_fd, name = _fdnamepair(pathobj)
                 return atfunc(parent_fd, name, *args)
             return staticmethod(wrapped)
 
         def _wrap_binary_atfunc(atfunc):
             @wraps(atfunc)
             def wrapped(pathobjA, pathobjB, *args):
-                parent_fd_A, nameA = fdnamepair(pathobjA)
+                parent_fd_A, nameA = _fdnamepair(pathobjA)
                 # We allow pathobjB to be a plain str, for convenience
                 if isinstance(pathobjB, Path):
-                    parent_fd_B, nameB = fdnamepair(pathobjB)
+                    parent_fd_B, nameB = _fdnamepair(pathobjB)
                 else:
                     # If it's a str then at best it's cwd-relative
                     parent_fd_B, nameB = _NO_FD, str(pathobjB)
@@ -321,7 +321,7 @@ if supports_openat:
         rename = _wrap_binary_atfunc(os.renameat)
 
         def symlink(self, target, pathobj):
-            parent_fd, name = fdnamepair(pathobj)
+            parent_fd, name = _fdnamepair(pathobj)
             os.symlinkat(str(target), parent_fd, name)
 
         def _make_fd(self, pathobj, tolerant=True):
