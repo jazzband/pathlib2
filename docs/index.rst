@@ -32,33 +32,46 @@ https://bitbucket.org/pitrou/pathlib/
 Basic use
 ---------
 
-   >>> from pathlib import *
-   >>> p = Path('setup.py')
-   >>> p
-   PosixPath('setup.py')
-   >>> p.is_absolute()
-   False
-   >>> p = p.resolve()
-   >>> p
-   PosixPath('/home/antoine/pathlib/setup.py')
-   >>> p.parent()
-   PosixPath('/home/antoine/pathlib')
-   >>> p.open().readline()
-   '#!/usr/bin/env python3\n'
+Importing the module classes::
 
-   >>> import pprint
+   >>> from pathlib import *
+
+Listing Python source files in the current directory::
+
    >>> p = Path('.')
    >>> [x for x in p if x.ext == '.py']
-   [PosixPath('test_pathlib.py'), PosixPath('setup.py'), PosixPath('pathlib.py')]
-   >>> child = p['docs']
-   >>> pprint.pprint(list(child))
-   [PosixPath('docs/conf.py'),
-    PosixPath('docs/_templates'),
-    PosixPath('docs/make.bat'),
-    PosixPath('docs/index.rst'),
-    PosixPath('docs/_build'),
-    PosixPath('docs/_static'),
-    PosixPath('docs/Makefile')]
+   [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
+    PosixPath('pathlib.py')]
+
+Listing subdirectories::
+
+   >>> [x for x in p if x.is_dir()]
+   [PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),
+    PosixPath('__pycache__'), PosixPath('build')]
+
+Navigating inside a directory tree::
+
+   >>> p = Path('/etc')
+   >>> q = p['init.d/reboot']
+   >>> q
+   PosixPath('/etc/init.d/reboot')
+   >>> q.resolve()
+   PosixPath('/etc/rc.d/init.d/halt')
+
+Querying path properties::
+
+   >>> q.exists()
+   True
+   >>> q.is_dir()
+   False
+   >>> q.st_mode
+   33261
+
+Opening a file::
+
+   >>> with q.open() as f: f.readline()
+   ...
+   '#!/bin/bash\n'
 
 
 Pure paths
