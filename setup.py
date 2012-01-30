@@ -11,7 +11,7 @@ setup(
     py_modules=['pathlib'],
     license='MIT License',
     description='Object-oriented filesystem paths',
-    #long_description=open('README.txt').read(),
+    long_description=open('README.txt').read(),
     author='Antoine Pitrou',
     author_email='solipsis@pitrou.net',
     classifiers=[
