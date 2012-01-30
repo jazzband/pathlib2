@@ -477,8 +477,8 @@ bugs or failures in your application)::
    NotImplementedError: cannot instantiate 'NTPath' on your system
 
 
-Operations
-^^^^^^^^^^
+Iterating
+^^^^^^^^^
 
 When a concrete path points to a directory, iterating over it yields path
 objects of the directory contents::
