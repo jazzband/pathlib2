@@ -393,6 +393,17 @@ Pure paths provide the following methods an properties:
       >>> p.parent(4)
       PurePosixPath('/')
 
+   .. note::
+      This is a purely lexical operation, hence the following behaviour::
+
+         >>> p = PurePosixPath('foo/..')
+         >>> p.parent()
+         PurePosixPath('foo')
+
+      If you want to walk an arbitrary filesystem path upwards, it is
+      recommended to first call :meth:`Path.resolve` so as to resolve
+      symlinks and eliminate `".."` components.
+
 
 .. method:: PurePath.parents()
 
@@ -654,6 +665,12 @@ call fails (for example because the path doesn't exist):
       PosixPath('.')
       >>> p.resolve()
       PosixPath('/home/antoine/pathlib')
+
+   `".."` components are also eliminated (this is the only method to do so)::
+
+      >>> p = Path('docs/../setup.py')
+      >>> p.resolve()
+      PosixPath('/home/antoine/pathlib/setup.py')
 
    If the path doesn't exist, an :exc:`OSError` is raised.  If an infinite
    loop is encountered along the resolution path, :exc:`ValueError` is raised.
