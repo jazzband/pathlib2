@@ -811,8 +811,9 @@ class _BasePathTest(unittest.TestCase):
         self.assertIs(True, p.exists())
         self.assertIs(True, p['dirA'].exists())
         self.assertIs(True, p['fileA'].exists())
-        self.assertIs(True, p['linkA'].exists())
-        self.assertIs(True, p['linkB'].exists())
+        if not symlink_skip_reason:
+            self.assertIs(True, p['linkA'].exists())
+            self.assertIs(True, p['linkB'].exists())
         self.assertIs(False, p['foo'].exists())
         self.assertIs(False, P('/xyzzy').exists())
 
