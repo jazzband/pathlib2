@@ -378,6 +378,33 @@ Pure paths provide the following methods an properties:
    needed before comparing path objects.
 
 
+.. method:: PurePath.parent(level=1)
+
+   Return the path's parent at the *level*'th level.  If *level* is not given,
+   return the path's immediate parent::
+
+      >>> p = PurePosixPath('/a/b/c/d')
+      >>> p.parent()
+      PurePosixPath('/a/b/c')
+      >>> p.parent(2)
+      PurePosixPath('/a/b')
+      >>> p.parent(3)
+      PurePosixPath('/a')
+      >>> p.parent(4)
+      PurePosixPath('/')
+
+
+.. method:: PurePath.parents()
+
+   Iterate over the path's parents from the most to the least specific::
+
+      >>> for p in PureNTPath('c:/foo/bar/setup.py').parents(): p
+      ...
+      PureNTPath('c:\\foo\\bar')
+      PureNTPath('c:\\foo')
+      PureNTPath('c:\\')
+
+
 .. method:: PurePath.relative()
 
    Return the path object stripped of its drive and root, if any::
@@ -409,33 +436,6 @@ Pure paths provide the following methods an properties:
         File "pathlib.py", line 694, in relative_to
           .format(str(self), str(formatted)))
       ValueError: '/etc/passwd' does not start with '/usr'
-
-
-.. method:: PurePath.parent(level=1)
-
-   Return the path's parent at the *level*'th level.  If *level* is not given,
-   return the path's immediate parent::
-
-      >>> p = PurePosixPath('/a/b/c/d')
-      >>> p.parent()
-      PurePosixPath('/a/b/c')
-      >>> p.parent(2)
-      PurePosixPath('/a/b')
-      >>> p.parent(3)
-      PurePosixPath('/a')
-      >>> p.parent(4)
-      PurePosixPath('/')
-
-
-.. method:: PurePath.parents()
-
-   Iterate over the path's parents from the most to the least specific::
-
-      >>> for p in PureNTPath('c:/foo/bar/setup.py').parents(): p
-      ...
-      PureNTPath('c:\\foo\\bar')
-      PureNTPath('c:\\foo')
-      PureNTPath('c:\\')
 
 
 Concrete paths
