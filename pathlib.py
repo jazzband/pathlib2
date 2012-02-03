@@ -39,7 +39,7 @@ __all__ = [
 # Internals
 #
 
-class _Flavour:
+class _Flavour(object):
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
 
@@ -492,7 +492,7 @@ class _PathParts(Sequence):
         return "<{}.parts: {!r}>".format(self._pathcls.__name__, self._parts)
 
 
-class PurePath:
+class PurePath(object):
     """PurePath represents a filesystem path and offers operations which
     don't imply any actual filesystem I/O.  Depending on your system,
     instantiating a PurePath will return either a PurePosixPath or a
@@ -798,9 +798,10 @@ class Path(PurePath):
     )
 
     _wrs = {}
-    _wr_id = count().__next__
+    _wr_id = count()
 
-    def __new__(cls, *args, use_openat=False):
+    def __new__(cls, *args, **kwargs):
+        use_openat = kwargs.get('use_openat', False)
         if cls is Path:
             cls = NTPath if os.name == 'nt' else PosixPath
         self = cls._from_parts(args, init=False)
@@ -877,7 +878,7 @@ class Path(PurePath):
             cleanup = type(self)._cleanup
             # We can't hash the weakref directly since distinct Path objects
             # can compare equal.
-            wr_id = self._wr_id()
+            wr_id = next(self._wr_id)
             wr = weakref.ref(self, lambda wr: cleanup(fds, wr_id))
             self._wrs[wr_id] = wr
         _add_fd_ref(fd)
@@ -935,7 +936,7 @@ class Path(PurePath):
     def __getattr__(self, name):
         if name.startswith('st_'):
             return getattr(self._stat, name)
-        return super().__getattribute__(name)
+        return super(Path, self).__getattribute__(name)
 
     def abspath(self):
         """Return an absolute version of this path.  This function works

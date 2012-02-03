@@ -2,8 +2,6 @@
 import sys
 from distutils.core import setup
 
-if sys.version_info <= (3, 2):
-    sys.exit("Python 3.2 or later required")
 
 setup(
     name='pathlib',

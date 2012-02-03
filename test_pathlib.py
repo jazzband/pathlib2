@@ -1,7 +1,7 @@
 import collections
 import io
-import errno
 import os
+import errno
 import pathlib
 import sys
 import shutil
@@ -9,7 +9,10 @@ import tempfile
 import unittest
 from contextlib import contextmanager
 
-from test import support
+try:
+    from test import support
+except ImportError:
+    from test import test_support as support
 TESTFN = support.TESTFN
 
 
@@ -220,9 +223,16 @@ class _BasePurePathTest(unittest.TestCase):
             self.assertEqual(P(pathstr).as_posix(), pathstr)
         # Other tests for as_posix() are in test_equivalences()
 
+    @unittest.skipIf(sys.version_info[:2] < (3, 2),
+                     'os.fsencode has been introduced in version 3.2')
     def test_as_bytes_common(self):
+        try:
+            sep = os.fsencode(self.sep)
+        except AttributeError:
+            sys.stdout.write('Skipping test_as_bytes_common, as os.fsencode ' \
+                             'has been introduced in version 3.2\n')
+            return
         P = self.cls
-        sep = os.fsencode(self.sep)
         self.assertEqual(P('a/b').as_bytes(), b'a' + sep + b'b')
         self.assertEqual(bytes(P('a/b')), b'a' + sep + b'b')
 
@@ -688,6 +698,8 @@ class PurePathTest(_BasePurePathTest):
         q = pathlib.PureNTPath('a')
         self.assertNotEqual(p, q)
 
+    @unittest.skipIf(sys.version_info[:2] < (3, 0),
+                     'Most types are orderable in Python 2')
     def test_different_flavours_unordered(self):
         p = pathlib.PurePosixPath('a')
         q = pathlib.PureNTPath('a')
@@ -873,11 +885,12 @@ class _BasePathTest(unittest.TestCase):
         p = P(BASE, 'dirB', 'linkD', 'fileB')
         self._check_resolve_relative(p, P(BASE, 'dirB', 'fileB'))
         # Now create absolute symlinks
-        with tempfile.TemporaryDirectory(suffix='-dirD') as d:
-            os.symlink(os.path.join(d), join('dirA', 'linkX'))
-            os.symlink(join('dirB'), os.path.join(d, 'linkY'))
-            p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
-            self._check_resolve_absolute(p, P(BASE, 'dirB', 'fileB'))
+        d = tempfile.mkdtemp(suffix='-dirD')
+        os.symlink(os.path.join(d), join('dirA', 'linkX'))
+        os.symlink(join('dirB'), os.path.join(d, 'linkY'))
+        p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
+        self._check_resolve_absolute(p, P(BASE, 'dirB', 'fileB'))
+        self.addCleanup(support.rmtree, d)
 
     def test_with(self):
         p = self.cls(BASE)
