@@ -734,9 +734,9 @@ class PurePath(object):
         drv = self._drv
         root = self._root
         parts = self._parts[:-level]
-        if not parts and (drv or root):
-            # If the path is absolute, we keep it absolute
-            parts = [self._parts[0]]
+        if not parts:
+            if level > len(self._parts) - bool(drv or root):
+                raise ValueError("level greater than path length")
         return self._from_parsed_parts(drv, root, parts)
 
     def parents(self):

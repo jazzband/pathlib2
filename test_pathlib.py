@@ -326,13 +326,16 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(p.parent(), P('a/b'))
         self.assertEqual(p.parent(2), P('a'))
         self.assertEqual(p.parent(3), P())
-        self.assertEqual(p.parent(4), P())
+        self.assertRaises(ValueError, p.parent, 4)
         # Anchored
         p = P('/a/b/c')
         self.assertEqual(p.parent(), P('/a/b'))
         self.assertEqual(p.parent(2), P('/a'))
         self.assertEqual(p.parent(3), P('/'))
-        self.assertEqual(p.parent(4), P('/'))
+        self.assertRaises(ValueError, p.parent, 4)
+        # Invalid level values
+        self.assertRaises(ValueError, p.parent, 0)
+        self.assertRaises(ValueError, p.parent, -1)
 
     def test_parents_common(self):
         # Relative
@@ -529,16 +532,16 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(p.parent(), P('z:a/b'))
         self.assertEqual(p.parent(2), P('z:a'))
         self.assertEqual(p.parent(3), P('z:'))
-        self.assertEqual(p.parent(4), P('z:'))
+        self.assertRaises(ValueError, p.parent, 4)
         p = P('z:/a/b/c')
         self.assertEqual(p.parent(), P('z:/a/b'))
         self.assertEqual(p.parent(2), P('z:/a'))
         self.assertEqual(p.parent(3), P('z:/'))
-        self.assertEqual(p.parent(4), P('z:/'))
+        self.assertRaises(ValueError, p.parent, 4)
         p = P('//a/b/c/d')
         self.assertEqual(p.parent(), P('//a/b/c'))
         self.assertEqual(p.parent(2), P('//a/b'))
-        self.assertEqual(p.parent(3), P('//a/b'))
+        self.assertRaises(ValueError, p.parent, 3)
 
     def test_parents(self):
         # Anchored
