@@ -621,7 +621,7 @@ class PurePath(object):
 
     def __lt__(self, other):
         if self._flavour is not other._flavour:
-            raise NotImplemented
+            return NotImplemented
         return self._cparts < other._cparts
 
     def __le__(self, other):
