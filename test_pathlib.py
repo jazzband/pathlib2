@@ -223,15 +223,10 @@ class _BasePurePathTest(unittest.TestCase):
             self.assertEqual(P(pathstr).as_posix(), pathstr)
         # Other tests for as_posix() are in test_equivalences()
 
-    @unittest.skipIf(sys.version_info[:2] < (3, 2),
+    @unittest.skipIf(sys.version_info < (3, 2),
                      'os.fsencode has been introduced in version 3.2')
     def test_as_bytes_common(self):
-        try:
-            sep = os.fsencode(self.sep)
-        except AttributeError:
-            sys.stdout.write('Skipping test_as_bytes_common, as os.fsencode ' \
-                             'has been introduced in version 3.2\n')
-            return
+        sep = os.fsencode(self.sep)
         P = self.cls
         self.assertEqual(P('a/b').as_bytes(), b'a' + sep + b'b')
         self.assertEqual(bytes(P('a/b')), b'a' + sep + b'b')
@@ -698,7 +693,7 @@ class PurePathTest(_BasePurePathTest):
         q = pathlib.PureNTPath('a')
         self.assertNotEqual(p, q)
 
-    @unittest.skipIf(sys.version_info[:2] < (3, 0),
+    @unittest.skipIf(sys.version_info < (3, 0),
                      'Most types are orderable in Python 2')
     def test_different_flavours_unordered(self):
         p = pathlib.PurePosixPath('a')
@@ -886,11 +881,11 @@ class _BasePathTest(unittest.TestCase):
         self._check_resolve_relative(p, P(BASE, 'dirB', 'fileB'))
         # Now create absolute symlinks
         d = tempfile.mkdtemp(suffix='-dirD')
+        self.addCleanup(support.rmtree, d)
         os.symlink(os.path.join(d), join('dirA', 'linkX'))
         os.symlink(join('dirB'), os.path.join(d, 'linkY'))
         p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
         self._check_resolve_absolute(p, P(BASE, 'dirB', 'fileB'))
-        self.addCleanup(support.rmtree, d)
 
     def test_with(self):
         p = self.cls(BASE)
