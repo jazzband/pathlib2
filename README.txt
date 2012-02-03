@@ -85,4 +85,7 @@ History
 Version 0.5
 ^^^^^^^^^^^
 
-- Added Python 2.7 compatibility by Michele Lacchia
+- Add Path.mkdir().
+- Add Python 2.7 compatibility by Michele Lacchia.
+- Make parent() raise ValueError when the level is greater than the path
+  length.
