@@ -71,3 +71,9 @@ Documentation
 The full documentation can be read at `Read the Docs
 <http://readthedocs.org/docs/pathlib/en/latest/>`_.
 
+
+Contributing
+------------
+
+The issue tracker and repository are hosted by `BitBucket
+<https://bitbucket.org/pitrou/pathlib/>`_.
