@@ -16,8 +16,9 @@ multiple calls to :func:`os.path.join` or :func:`os.path.dirname`, etc.
 This module offers a set of classes featuring all the common operations on
 paths in an easy, object-oriented way.
 
-This module requires Python 3.2 or later.  If using it with Python 3.3,
-you also have access to optional ``openat``-based filesystem operations.
+This module is best used with Python 3.2 or later, but it is also compatible
+with Python 2.7.  If using it with Python 3.3, you also have access to
+optional ``openat``-based filesystem operations.
 
 
 Download

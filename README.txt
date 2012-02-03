@@ -13,7 +13,7 @@ following advantages over using string objects:
 Requirements
 ------------
 
-Python 3.2 or later is required.
+Python 3.2 or later is recommended, but pathlib is also usable with Python 2.7.
 
 Install
 -------
@@ -77,3 +77,12 @@ Contributing
 
 The issue tracker and repository are hosted by `BitBucket
 <https://bitbucket.org/pitrou/pathlib/>`_.
+
+
+History
+-------
+
+Version 0.5
+^^^^^^^^^^^
+
+- Added Python 2.7 compatibility by Michele Lacchia
