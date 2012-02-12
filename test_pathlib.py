@@ -904,7 +904,7 @@ class _BasePathTest(unittest.TestCase):
         self.assertRaises(ValueError, p.open)
         self.assertRaises(ValueError, p.raw_open, os.O_RDONLY)
         self.assertRaises(ValueError, p.resolve)
-        self.assertRaises(ValueError, p.abspath)
+        self.assertRaises(ValueError, p.absolute)
         self.assertRaises(ValueError, p.__enter__)
 
     def test_chmod(self):

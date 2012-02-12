@@ -134,7 +134,7 @@ class _NTFlavour(_Flavour):
             return os.getcwd()
         if _getfinalpathname is not None:
             return self._ext_to_normal(_getfinalpathname(s))
-        # Means fallback on abspath
+        # Means fallback on absolute
         return None
 
     def _ext_to_normal(self, s):
@@ -938,7 +938,7 @@ class Path(PurePath):
             return getattr(self._stat, name)
         return super(Path, self).__getattribute__(name)
 
-    def abspath(self):
+    def absolute(self):
         """Return an absolute version of this path.  This function works
         even if the path doesn't point to anything.
 
@@ -969,7 +969,7 @@ class Path(PurePath):
             # No symlink resolution => for consistency, raise an error if
             # the path doesn't exist or is forbidden
             self._stat
-            s = str(self.abspath())
+            s = str(self.absolute())
         # Now we have no symlinks in the path, it's safe to normalize it.
         normed = self._flavour.pathmod.normpath(s)
         obj = self._from_parts((normed,), init=False)
