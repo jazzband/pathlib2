@@ -15,7 +15,7 @@ from errno import EINVAL, ENOENT, EEXIST
 from functools import wraps
 from itertools import chain, count
 from operator import attrgetter
-from stat import S_ISDIR
+from stat import S_ISDIR, S_ISLNK, S_ISREG
 
 
 supports_symlinks = True
@@ -1215,6 +1215,20 @@ class Path(PurePath):
         Whether this path is a directory.
         """
         return S_ISDIR(self._stat.st_mode)
+
+    def is_file(self):
+        """
+        Whether this path is a regular file (also True for symlinks pointing
+        to regular files).
+        """
+        return S_ISREG(self._stat.st_mode)
+
+    def is_symlink(self):
+        """
+        Whether this path is a symbolic link.
+        """
+        st = self.lstat()
+        return S_ISLNK(st.st_mode)
 
 
 class PosixPath(Path, PurePosixPath):

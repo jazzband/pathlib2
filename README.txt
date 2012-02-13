@@ -85,6 +85,7 @@ History
 Version 0.6
 ^^^^^^^^^^^
 
+- Add Path.is_file() and Path.is_symlink()
 - Add Path.glob() and Path.rglob()
 - Add PurePath.match()
 

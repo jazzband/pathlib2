@@ -625,13 +625,19 @@ call fails (for example because the path doesn't exist):
 
 .. method:: Path.is_dir()
 
-   Return True if the path points to a directory, False if it points to
-   another kind of file::
+   Return True if the path points to a directory (or a symbolic link
+   pointing to a directory), False if it points to another kind of file.
 
-      >>> Path('.').is_dir()
-      True
-      >>> Path('setup.py').is_dir()
-      False
+
+.. method:: Path.is_file()
+
+   Return True if the path points to a regular file (or a symbolic link
+   pointing to a regular file), False if it points to another kind of file.
+
+
+.. method:: Path.is_symlink()
+
+   Return True if the path points to a symbolic link, False otherwise.
 
 
 .. method:: Path.lchmod(mode)
