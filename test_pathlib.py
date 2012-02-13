@@ -252,6 +252,41 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertNotEqual(P('/a/b'), P('/'))
         self.assertNotEqual(P(), P('/'))
 
+    def test_match_common(self):
+        P = self.cls
+        self.assertRaises(ValueError, P('a').match, '')
+        self.assertRaises(ValueError, P('a').match, '.')
+        # Simple relative pattern
+        self.assertTrue(P('b.py').match('b.py'))
+        self.assertTrue(P('a/b.py').match('b.py'))
+        self.assertTrue(P('/a/b.py').match('b.py'))
+        self.assertFalse(P('a.py').match('b.py'))
+        self.assertFalse(P('b/py').match('b.py'))
+        self.assertFalse(P('/a.py').match('b.py'))
+        self.assertFalse(P('b.py/c').match('b.py'))
+        # Wilcard relative pattern
+        self.assertTrue(P('b.py').match('*.py'))
+        self.assertTrue(P('a/b.py').match('*.py'))
+        self.assertTrue(P('/a/b.py').match('*.py'))
+        self.assertFalse(P('b.pyc').match('*.py'))
+        self.assertFalse(P('b./py').match('*.py'))
+        self.assertFalse(P('b.py/c').match('*.py'))
+        # Multi-part relative pattern
+        self.assertTrue(P('ab/c.py').match('a*/*.py'))
+        self.assertTrue(P('/d/ab/c.py').match('a*/*.py'))
+        self.assertFalse(P('a.py').match('a*/*.py'))
+        self.assertFalse(P('/dab/c.py').match('a*/*.py'))
+        self.assertFalse(P('ab/c.py/d').match('a*/*.py'))
+        # Absolute pattern
+        self.assertTrue(P('/b.py').match('/*.py'))
+        self.assertFalse(P('b.py').match('/*.py'))
+        self.assertFalse(P('a/b.py').match('/*.py'))
+        self.assertFalse(P('/a/b.py').match('/*.py'))
+        # Multi-part absolute pattern
+        self.assertTrue(P('/a/b.py').match('/a/*.py'))
+        self.assertFalse(P('/ab.py').match('/a/*.py'))
+        self.assertFalse(P('/a/b/c.py').match('/a/*.py'))
+
     def test_ordering_common(self):
         # Ordering is tuple-alike
         def assertLess(a, b):
@@ -424,6 +459,10 @@ class PurePosixPathTest(_BasePurePathTest):
         P = self.cls
         self.assertNotEqual(P('a/b'), P('A/b'))
 
+    def test_match(self):
+        P = self.cls
+        self.assertFalse(P('A.py').match('a.PY'))
+
     def test_is_absolute(self):
         P = self.cls
         self.assertFalse(P().is_absolute())
@@ -486,6 +525,30 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('a/B'), P('A/b'))
         self.assertEqual(P('C:a/B'), P('c:A/b'))
         self.assertEqual(P('//Some/SHARE/a/B'), P('//somE/share/A/b'))
+
+    def test_match_common(self):
+        P = self.cls
+        # Absolute patterns
+        self.assertTrue(P('c:/b.py').match('/*.py'))
+        self.assertTrue(P('c:/b.py').match('c:*.py'))
+        self.assertTrue(P('c:/b.py').match('c:/*.py'))
+        self.assertFalse(P('d:/b.py').match('c:/*.py'))  # wrong drive
+        self.assertFalse(P('b.py').match('/*.py'))
+        self.assertFalse(P('b.py').match('c:*.py'))
+        self.assertFalse(P('b.py').match('c:/*.py'))
+        self.assertFalse(P('c:b.py').match('/*.py'))
+        self.assertFalse(P('c:b.py').match('c:/*.py'))
+        self.assertFalse(P('/b.py').match('c:*.py'))
+        self.assertFalse(P('/b.py').match('c:/*.py'))
+        # UNC patterns
+        self.assertTrue(P('//some/share/a.py').match('/*.py'))
+        self.assertTrue(P('//some/share/a.py').match('//some/share/*.py'))
+        self.assertFalse(P('//other/share/a.py').match('//some/share/*.py'))
+        self.assertFalse(P('//some/share/a/b.py').match('//some/share/*.py'))
+        # Case-insensitivity
+        self.assertTrue(P('B.py').match('b.PY'))
+        self.assertTrue(P('c:/a/B.Py').match('C:/A/*.pY'))
+        self.assertTrue(P('//Some/Share/B.Py').match('//somE/sharE/*.pY'))
 
     def test_ordering_common(self):
         # Case-insensitivity

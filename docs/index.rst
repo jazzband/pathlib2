@@ -372,6 +372,35 @@ Pure paths provide the following methods an properties:
       PureNTPath('c:\\Program Files')
 
 
+.. method:: PurePath.match(pattern)
+
+   Match this path against the provided glob-style pattern.  Return True
+   if matching is successful, False otherwise.
+
+   If *pattern* is relative, the path can be either relative or absolute,
+   and matching is done from the right::
+
+      >>> PurePath('a/b.py').match('*.py')
+      True
+      >>> PurePath('/a/b/c.py').match('b/*.py')
+      True
+      >>> PurePath('/a/b/c.py').match('a/*.py')
+      False
+
+   If *pattern* is absolute, the path must be absolute, and the whole path
+   must match::
+
+      >>> PurePath('/a.py').match('/*.py')
+      True
+      >>> PurePath('a/b.py').match('/*.py')
+      False
+
+   As with other methods, case-sensitivity is observed::
+
+      >>> PureNTPath('b.py').match('*.PY')
+      True
+
+
 .. method:: PurePath.normcase()
 
    Return a case-folded version of the path.  Calling this method is *not*

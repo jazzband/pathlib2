@@ -82,6 +82,11 @@ The issue tracker and repository are hosted by `BitBucket
 History
 -------
 
+Version 0.6
+^^^^^^^^^^^
+
+- Add PurePath.match()
+
 Version 0.5
 ^^^^^^^^^^^
 
