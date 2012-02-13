@@ -82,6 +82,11 @@ The issue tracker and repository are hosted by `BitBucket
 History
 -------
 
+Version 0.7
+^^^^^^^^^^^
+
+- Add a *target_is_directory* argument to Path.symlink_to()
+
 Version 0.6
 ^^^^^^^^^^^
 

@@ -338,7 +338,7 @@ if supports_openat:
 
         rename = _wrap_binary_atfunc(os.renameat)
 
-        def symlink(self, target, pathobj):
+        def symlink(self, target, pathobj, target_is_directory):
             parent_fd, name = _fdnamepair(pathobj)
             os.symlinkat(str(target), parent_fd, name)
 
@@ -459,7 +459,13 @@ class _NormalAccessor(_Accessor):
 
     rename = _wrap_binary_strfunc(os.rename)
 
-    symlink = _wrap_binary_strfunc(os.symlink)
+    if nt:
+        symlink = _wrap_binary_strfunc(os.symlink)
+    else:
+        # Under POSIX, os.symlink() takes two args
+        @staticmethod
+        def symlink(a, b, target_is_directory):
+            return os.symlink(str(a), str(b))
 
     def init_path(self, pathobj):
         pass
@@ -1186,15 +1192,14 @@ class Path(PurePath):
             self._raise_closed()
         self._accessor.rename(self, target)
 
-    def symlink_to(self, target):
+    def symlink_to(self, target, target_is_directory=False):
         """
         Make this path a symlink pointing to the given path.
         Note the order of arguments (self, target) is the reverse of os.symlink's.
         """
         if self._closed:
             self._raise_closed()
-        # XXX how about target_is_directory?
-        self._accessor.symlink(target, self)
+        self._accessor.symlink(target, self, target_is_directory)
 
     # Convenience functions for querying the stat results
 

@@ -1176,6 +1176,15 @@ class _BasePathTest(unittest.TestCase):
         link.symlink_to(str(target))
         self.assertEqual(link.stat(), target.stat())
         self.assertNotEqual(link.lstat(), target.stat())
+        self.assertFalse(link.is_dir())
+        # Symlinking to a directory
+        target = P['dirB']
+        link = P['dirA', 'linkAAAA']
+        link.symlink_to(target, target_is_directory=True)
+        self.assertEqual(link.stat(), target.stat())
+        self.assertNotEqual(link.lstat(), target.stat())
+        self.assertTrue(link.is_dir())
+        self.assertTrue(list(link))
 
     def test_is_dir(self):
         P = self.cls(BASE)

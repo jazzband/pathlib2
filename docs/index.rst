@@ -739,9 +739,11 @@ call fails (for example because the path doesn't exist):
    Remove this directory.  The directory must be empty.
 
 
-.. method:: Path.symlink_to(target)
+.. method:: Path.symlink_to(target, target_is_directory=False)
 
-   Make this path a symbolic link to *target*.
+   Make this path a symbolic link to *target*.  Under Windows,
+   *target_is_directory* must be True (default False) if the link's target
+   is a directory.  Under POSIX, *target_is_directory*'s value is ignored.
 
       >>> p = Path('mylink')
       >>> p.symlink_to('setup.py')
