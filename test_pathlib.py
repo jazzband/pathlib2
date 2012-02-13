@@ -943,7 +943,7 @@ class _BasePathTest(unittest.TestCase):
         self.assertIn(cm.exception.errno, (errno.ENOTDIR,
                                            errno.ENOENT, errno.EINVAL))
 
-    def test_glob(self):
+    def test_glob_common(self):
         def _check(glob, expected):
             self.assertEqual(set(glob), { P(BASE, q) for q in expected })
         P = self.cls
@@ -967,7 +967,7 @@ class _BasePathTest(unittest.TestCase):
         else:
             _check(p.glob("*/fileB"), ['dirB/fileB', 'linkB/fileB'])
 
-    def test_rglob(self):
+    def test_rglob_common(self):
         def _check(glob, expected):
             self.assertEqual(set(glob), { P(BASE, q) for q in expected })
         P = self.cls
@@ -1226,6 +1226,16 @@ class PosixPathTest(_BasePathTest):
         os.symlink(join('linkW/../linkW'), join('linkW'))
         self._check_symlink_loop(BASE, 'linkW')
 
+    def test_glob(self):
+        P = self.cls
+        p = P(BASE)
+        self.assertEqual(set(p.glob("FILEa")), set())
+
+    def test_rglob(self):
+        P = self.cls
+        p = P(BASE, "dirC")
+        self.assertEqual(set(p.rglob("FILEd")), set())
+
 
 if pathlib.supports_openat:
     class _RecordingOpenatAccessor(pathlib._OpenatAccessor):
@@ -1344,6 +1354,16 @@ class PosixOpenatPathTest(PosixPathTest):
 @only_nt
 class NTPathTest(_BasePathTest):
     cls = pathlib.NTPath
+
+    def test_glob(self):
+        P = self.cls
+        p = P(BASE)
+        self.assertEqual(set(p.glob("FILEa")), { P(BASE, "fileA") })
+
+    def test_rglob(self):
+        P = self.cls
+        p = P(BASE, "dirC")
+        self.assertEqual(set(p.rglob("FILEd")), { P(BASE, "dirC/dirD/fileD") })
 
 
 def test_main():
