@@ -85,6 +85,7 @@ History
 Version 0.6
 ^^^^^^^^^^^
 
+- Add Path.glob()
 - Add PurePath.match()
 
 Version 0.5

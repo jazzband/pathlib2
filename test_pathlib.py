@@ -817,6 +817,18 @@ class _BasePathTest(unittest.TestCase):
 
     using_openat = False
 
+    # (BASE)
+    #  |
+    #  |-- dirA/
+    #       |-- linkC -> "../dirB"
+    #  |-- dirB/
+    #  |    |-- fileB
+    #       |-- linkD -> "../dirB"
+    #  |-- fileA
+    #  |-- linkA -> "fileA"
+    #  |-- linkB -> "dirB"
+    #
+
     def setUp(self):
         os.mkdir(BASE)
         self.addCleanup(support.rmtree, BASE)
@@ -921,6 +933,40 @@ class _BasePathTest(unittest.TestCase):
         # (see issue #12802)
         self.assertIn(cm.exception.errno, (errno.ENOTDIR,
                                            errno.ENOENT, errno.EINVAL))
+
+    def test_glob(self):
+        P = self.cls
+        p = P(BASE)
+        it = p.glob("fileA")
+        self.assertIsInstance(it, collections.Iterator)
+        self.assertEqual(set(it), { P(BASE, "fileA") })
+        it = p.glob("fileB")
+        self.assertEqual(set(it), set())
+        it = p.glob("dir*/file*")
+        self.assertEqual(set(it), { P(BASE, "dirB/fileB") })
+        it = p.glob("*A")
+        expected = ['dirA', 'fileA']
+        if not symlink_skip_reason:
+            expected += ['linkA']
+        self.assertEqual(set(it), { P(BASE, q) for q in expected })
+        it = p.glob("*B/*")
+        expected = ['dirB/fileB']
+        if not symlink_skip_reason:
+            expected += ['dirB/linkD', 'linkB/fileB', 'linkB/linkD']
+        self.assertEqual(set(it), { P(BASE, q) for q in expected })
+        it = p.glob("*/fileB")
+        expected = ['dirB/fileB']
+        if not symlink_skip_reason:
+            expected += ['linkB/fileB']
+        self.assertEqual(set(it), { P(BASE, q) for q in expected })
+
+    def test_glob_dotdot(self):
+        # ".." is not special in globs
+        P = self.cls
+        p = P(BASE)
+        self.assertEqual(set(p.glob("..")), { P(BASE, "..") })
+        self.assertEqual(set(p.glob("dirA/../file*")), { P(BASE, "dirA/../fileA") })
+        self.assertEqual(set(p.glob("../xyzzy")), set())
 
     def _check_resolve_relative(self, p, expected):
         q = p.resolve()

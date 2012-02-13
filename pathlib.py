@@ -40,6 +40,12 @@ __all__ = [
 # Internals
 #
 
+def _is_wildcard_pattern(pat):
+    # Whether this pattern needs actual matching using fnmatch, or can
+    # be looked up directly as a file.
+    return "*" in pat or "?" in pat or "[" in pat
+
+
 class _Flavour(object):
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
@@ -126,6 +132,9 @@ class _NTFlavour(_Flavour):
             part = part.lstrip(sep)
         return drv, root, part
 
+    def casefold(self, s):
+        return s.lower()
+
     def casefold_parts(self, parts):
         return [p.lower() for p in parts]
 
@@ -174,6 +183,9 @@ class _PosixFlavour(_Flavour):
             return '', sep, part.lstrip(sep)
         else:
             return '', '', part
+
+    def casefold(self, s):
+        return s
 
     def casefold_parts(self, parts):
         return parts
@@ -776,14 +788,14 @@ class PurePath(object):
         """
         Return True if this path matches the given pattern.
         """
-        cf = self._flavour.casefold_parts
-        path_pattern, = cf((path_pattern,))
+        cf = self._flavour.casefold
+        path_pattern = cf(path_pattern)
         drv, root, pat_parts = self._flavour.parse_parts((path_pattern,))
         if not pat_parts:
             raise ValueError("empty pattern")
-        if drv and drv != cf((self._drv,))[0]:
+        if drv and drv != cf(self._drv):
             return False
-        if root and root != cf((self._root,))[0]:
+        if root and root != cf(self._root):
             return False
         parts = self._cparts
         if drv or root:
@@ -936,6 +948,29 @@ class Path(PurePath):
         # A stub for the opener argument to built-in open()
         return self._accessor.open(self, flags, mode)
 
+    def _select_children(self, pattern_parts):
+        # Helper for globbing
+        if not pattern_parts:
+            yield self
+            return
+        if not self.is_dir():
+            return
+        pat = pattern_parts[0]
+        pattern_parts = pattern_parts[1:]
+        if _is_wildcard_pattern(pat):
+            cf = self._flavour.casefold
+            for name in self._accessor.listdir(self):
+                name = cf(name)
+                if fnmatch.fnmatchcase(name, pat):
+                    child_path = self._make_child_relpath(name)
+                    for p in child_path._select_children(pattern_parts):
+                        yield p
+        else:
+            child_path = self._make_child_relpath(pat)
+            if child_path.exists():
+                for p in child_path._select_children(pattern_parts):
+                    yield p
+
     # Public API
 
     @classmethod
@@ -963,6 +998,17 @@ class Path(PurePath):
         if name.startswith('st_'):
             return getattr(self._stat, name)
         return super(Path, self).__getattribute__(name)
+
+    def glob(self, pattern):
+        """Iterate over this subtree and yield all existing files (of any
+        kind, including directories) matching the given pattern.
+        """
+        pattern = self._flavour.casefold(pattern)
+        drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
+        if drv or root:
+            raise NotImplementedError("Non-relative patterns are unsupported")
+        for p in self._select_children(pattern_parts):
+            yield p
 
     def absolute(self):
         """Return an absolute version of this path.  This function works

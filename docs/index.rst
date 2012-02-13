@@ -612,6 +612,17 @@ call fails (for example because the path doesn't exist):
       False
 
 
+.. method:: Path.glob(pattern)
+
+   Glob the given *pattern* in the directory represented by this path,
+   yielding all matching files (of any kind)::
+
+      >>> sorted(Path('.').glob('*.py'))
+      [PosixPath('pathlib.py'), PosixPath('setup.py'), PosixPath('test_pathlib.py')]
+      >>> sorted(Path('.').glob('*/*.py'))
+      [PosixPath('docs/conf.py')]
+
+
 .. method:: Path.is_dir()
 
    Return True if the path points to a directory, False if it points to
