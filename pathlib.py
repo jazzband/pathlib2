@@ -948,28 +948,38 @@ class Path(PurePath):
         # A stub for the opener argument to built-in open()
         return self._accessor.open(self, flags, mode)
 
-    def _select_children(self, pattern_parts):
+    def _select_children(self, pattern_parts, recursive):
         # Helper for globbing
+        # XXX symlink loops
         if not pattern_parts:
             yield self
             return
         if not self.is_dir():
             return
         pat = pattern_parts[0]
-        pattern_parts = pattern_parts[1:]
+        child_parts = pattern_parts[1:]
         if _is_wildcard_pattern(pat):
             cf = self._flavour.casefold
             for name in self._accessor.listdir(self):
                 name = cf(name)
                 if fnmatch.fnmatchcase(name, pat):
                     child_path = self._make_child_relpath(name)
-                    for p in child_path._select_children(pattern_parts):
+                    for p in child_path._select_children(child_parts, False):
+                        yield p
+                elif recursive:
+                    child_path = self._make_child_relpath(name)
+                    for p in child_path._select_children(pattern_parts, recursive):
                         yield p
         else:
             child_path = self._make_child_relpath(pat)
             if child_path.exists():
-                for p in child_path._select_children(pattern_parts):
+                for p in child_path._select_children(child_parts, False):
                     yield p
+            if recursive:
+                for name in self._accessor.listdir(self):
+                    child_path = self._make_child_relpath(name)
+                    for p in child_path._select_children(pattern_parts, recursive):
+                        yield p
 
     # Public API
 
@@ -1007,7 +1017,18 @@ class Path(PurePath):
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
-        for p in self._select_children(pattern_parts):
+        for p in self._select_children(pattern_parts, recursive=False):
+            yield p
+
+    def rglob(self, pattern):
+        """Recursively yield all existing files (of any kind, including
+        directories) matching the given pattern, anywhere in this subtree.
+        """
+        pattern = self._flavour.casefold(pattern)
+        drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
+        if drv or root:
+            raise NotImplementedError("Non-relative patterns are unsupported")
+        for p in self._select_children(pattern_parts, recursive=True):
             yield p
 
     def absolute(self):

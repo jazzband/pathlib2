@@ -716,6 +716,18 @@ call fails (for example because the path doesn't exist):
    loop is encountered along the resolution path, :exc:`ValueError` is raised.
 
 
+.. method:: Path.rglob(pattern)
+
+   Like :meth:`glob`, but glob recursively from any subdirectories as well::
+
+      >>> sorted(Path().rglob("*.py"))
+      [PosixPath('build/lib/pathlib.py'),
+       PosixPath('docs/conf.py'),
+       PosixPath('pathlib.py'),
+       PosixPath('setup.py'),
+       PosixPath('test_pathlib.py')]
+
+
 .. method:: Path.rmdir()
 
    Remove this directory.  The directory must be empty.

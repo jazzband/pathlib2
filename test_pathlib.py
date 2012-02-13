@@ -824,6 +824,9 @@ class _BasePathTest(unittest.TestCase):
     #  |-- dirB/
     #  |    |-- fileB
     #       |-- linkD -> "../dirB"
+    #  |-- dirC/
+    #  |    |-- fileC
+    #  |    |-- fileD
     #  |-- fileA
     #  |-- linkA -> "fileA"
     #  |-- linkB -> "dirB"
@@ -834,10 +837,16 @@ class _BasePathTest(unittest.TestCase):
         self.addCleanup(support.rmtree, BASE)
         os.mkdir(join('dirA'))
         os.mkdir(join('dirB'))
+        os.mkdir(join('dirC'))
+        os.mkdir(join('dirC', 'dirD'))
         with open(join('fileA'), 'wb') as f:
             f.write(b"this is file A\n")
         with open(join('dirB', 'fileB'), 'wb') as f:
             f.write(b"this is file B\n")
+        with open(join('dirC', 'fileC'), 'wb') as f:
+            f.write(b"this is file C\n")
+        with open(join('dirC', 'dirD', 'fileD'), 'wb') as f:
+            f.write(b"this is file D\n")
         if not symlink_skip_reason:
             if os.name == 'nt':
                 # Workaround for http://bugs.python.org/issue13772
@@ -910,7 +919,7 @@ class _BasePathTest(unittest.TestCase):
         self.assertIsInstance(p, collections.Iterable)
         it = iter(p)
         paths = set(it)
-        expected = ['dirA', 'dirB', 'fileA']
+        expected = ['dirA', 'dirB', 'dirC', 'fileA']
         if not symlink_skip_reason:
             expected += ['linkA', 'linkB']
         self.assertEqual(paths, { P(BASE, q) for q in expected })
@@ -935,30 +944,46 @@ class _BasePathTest(unittest.TestCase):
                                            errno.ENOENT, errno.EINVAL))
 
     def test_glob(self):
+        def _check(glob, expected):
+            self.assertEqual(set(glob), { P(BASE, q) for q in expected })
         P = self.cls
         p = P(BASE)
         it = p.glob("fileA")
         self.assertIsInstance(it, collections.Iterator)
-        self.assertEqual(set(it), { P(BASE, "fileA") })
-        it = p.glob("fileB")
-        self.assertEqual(set(it), set())
-        it = p.glob("dir*/file*")
-        self.assertEqual(set(it), { P(BASE, "dirB/fileB") })
-        it = p.glob("*A")
-        expected = ['dirA', 'fileA']
-        if not symlink_skip_reason:
-            expected += ['linkA']
-        self.assertEqual(set(it), { P(BASE, q) for q in expected })
-        it = p.glob("*B/*")
-        expected = ['dirB/fileB']
-        if not symlink_skip_reason:
-            expected += ['dirB/linkD', 'linkB/fileB', 'linkB/linkD']
-        self.assertEqual(set(it), { P(BASE, q) for q in expected })
-        it = p.glob("*/fileB")
-        expected = ['dirB/fileB']
-        if not symlink_skip_reason:
-            expected += ['linkB/fileB']
-        self.assertEqual(set(it), { P(BASE, q) for q in expected })
+        _check(it, ["fileA"])
+        _check(p.glob("fileB"), [])
+        _check(p.glob("dir*/file*"), ["dirB/fileB", "dirC/fileC"])
+        if symlink_skip_reason:
+            _check(p.glob("*A"), ['dirA', 'fileA'])
+        else:
+            _check(p.glob("*A"), ['dirA', 'fileA', 'linkA'])
+        if symlink_skip_reason:
+            _check(p.glob("*B/*"), ['dirB/fileB'])
+        else:
+            _check(p.glob("*B/*"), ['dirB/fileB', 'dirB/linkD',
+                                    'linkB/fileB', 'linkB/linkD'])
+        if symlink_skip_reason:
+            _check(p.glob("*/fileB"), ['dirB/fileB'])
+        else:
+            _check(p.glob("*/fileB"), ['dirB/fileB', 'linkB/fileB'])
+
+    def test_rglob(self):
+        def _check(glob, expected):
+            self.assertEqual(set(glob), { P(BASE, q) for q in expected })
+        P = self.cls
+        p = P(BASE)
+        it = p.rglob("fileA")
+        self.assertIsInstance(it, collections.Iterator)
+        # XXX cannot test because of symlink loops in the test setup
+        #_check(it, ["fileA"])
+        #_check(p.rglob("fileB"), ["dirB/fileB"])
+        #_check(p.rglob("*/fileA"), [""])
+        #_check(p.rglob("*/fileB"), ["dirB/fileB"])
+        #_check(p.rglob("file*"), ["fileA", "dirB/fileB"])
+        # No symlink loops here
+        p = P(BASE, "dirC")
+        _check(p.rglob("file*"), ["dirC/fileC", "dirC/dirD/fileD"])
+        _check(p.rglob("*/*"), ["dirC/dirD/fileD"])
 
     def test_glob_dotdot(self):
         # ".." is not special in globs
