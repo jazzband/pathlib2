@@ -85,6 +85,7 @@ History
 Version 0.7
 ^^^^^^^^^^^
 
+- Fix openat() support after the API refactoring in Python 3.3 beta1.
 - Add a *target_is_directory* argument to Path.symlink_to()
 
 Version 0.6
