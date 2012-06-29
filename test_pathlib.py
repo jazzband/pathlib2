@@ -1275,11 +1275,11 @@ if pathlib.supports_openat:
             self._readlinkat_fds = []
             self._walk_fds = []
 
-        def readlink(self, path, name, *, dir_fd):
+        def readlink(self, path, name, dir_fd):
             self._readlinkat_fds.append((dir_fd, name))
             return super().readlink(path, name, dir_fd=dir_fd)
 
-        def walk_down(self, path, name, *, dir_fd):
+        def walk_down(self, path, name, dir_fd):
             self._walk_fds.append((dir_fd, name))
             return super().walk_down(path, name, dir_fd=dir_fd)
 

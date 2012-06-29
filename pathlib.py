@@ -401,7 +401,7 @@ if supports_openat:
             return newpath
 
         # Helpers for resolve()
-        def walk_down(self, path, name, *, dir_fd):
+        def walk_down(self, path, name, dir_fd):
             if dir_fd != _NO_FD:
                 try:
                     return os.open(name, os.O_RDONLY, dir_fd=dir_fd)
@@ -410,7 +410,7 @@ if supports_openat:
             else:
                 return os.open(path, os.O_RDONLY)
 
-        def readlink(self, path, name, *, dir_fd):
+        def readlink(self, path, name, dir_fd):
             if dir_fd != _NO_FD:
                 return os.readlink(name, dir_fd=dir_fd)
             else:
@@ -472,11 +472,11 @@ class _NormalAccessor(_Accessor):
         return None
 
     # Helpers for resolve()
-    def walk_down(self, path, name, *, dir_fd):
+    def walk_down(self, path, name, dir_fd):
         assert dir_fd == _NO_FD
         return _NO_FD
 
-    def readlink(self, path, name, *, dir_fd):
+    def readlink(self, path, name, dir_fd):
         assert dir_fd == _NO_FD
         return os.readlink(path)
 
