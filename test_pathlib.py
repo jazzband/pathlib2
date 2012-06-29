@@ -21,7 +21,7 @@ class _BaseFlavourTest(unittest.TestCase):
     def _check_parse_parts(self, arg, expected):
         f = self.flavour.parse_parts
         sep = self.flavour.sep
-        altsep = self.flavour.sep
+        altsep = self.flavour.altsep
         actual = f([x.replace('/', sep) for x in arg])
         self.assertEqual(actual, expected)
         if altsep:
