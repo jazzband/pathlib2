@@ -1275,13 +1275,13 @@ if pathlib.supports_openat:
             self._readlinkat_fds = []
             self._walk_fds = []
 
-        def readlinkat(self, dirfd, path, name):
-            self._readlinkat_fds.append((dirfd, name))
-            return super().readlinkat(dirfd, path, name)
+        def readlink(self, path, name, *, dir_fd):
+            self._readlinkat_fds.append((dir_fd, name))
+            return super().readlink(path, name, dir_fd=dir_fd)
 
-        def walk_down(self, dirfd, path, name):
-            self._walk_fds.append((dirfd, name))
-            return super().walk_down(dirfd, path, name)
+        def walk_down(self, path, name, *, dir_fd):
+            self._walk_fds.append((dir_fd, name))
+            return super().walk_down(path, name, dir_fd=dir_fd)
 
 
 class Mock:
@@ -1298,8 +1298,10 @@ class Mock:
     def __enter__(self):
         def wrapper(*args, **kwargs):
             self.calls += 1
+            self.call_params.append((args, kwargs))
             return self.orig_func(*args, **kwargs)
         self.calls = 0
+        self.call_params = []
         setattr(self.module, self.qualname, wrapper)
         return self
 
@@ -1366,11 +1368,14 @@ class PosixOpenatPathTest(PosixPathTest):
         self.assertEqual(len(pathlib.Path._wrs), n)
 
     def test_iter(self):
-        with Mock("os.fdlistdir") as mock_fdlistdir, \
-             Mock("os.listdir") as mock_listdir:
+        with Mock("os.listdir") as mock_listdir:
             super().test_iter()
-        self.assertEqual(mock_fdlistdir.calls, 1)
-        self.assertEqual(mock_listdir.calls, 0)
+        self.assertEqual(mock_listdir.calls, 1)
+        # A file descriptor was passed
+        args = mock_listdir.call_params[0][0]
+        fd = args[0]
+        self.assertIsInstance(fd, int)
+        self.assertGreaterEqual(fd, 0)
 
     def test_cwd(self):
         p = pathlib.PosixPath.cwd(use_openat=True)
