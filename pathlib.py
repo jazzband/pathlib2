@@ -104,9 +104,23 @@ class _NTFlavour(_Flavour):
         {'LPT%d' % i for i in range(1, 10)}
         )
 
+    # Interesting findings about extended paths:
+    # - '\\?\c:\a', '//?/c:\a' and '//?/c:/a' are all supported
+    #   but '\\?\c:/a' is not
+    # - extended paths are always absolute; "relative" extended paths will
+    #   fail.
+
     def splitroot(self, part, sep=sep):
         first = part[0:1]
         second = part[1:2]
+        if (second == sep and first == sep):
+            # XXX extended paths should also disable the collapsing of "."
+            # components (according to MSDN docs).
+            prefix, part = self._split_extended_path(part)
+            first = part[0:1]
+            second = part[1:2]
+        else:
+            prefix = ''
         third = part[2:3]
         if (second == sep and first == sep and third != sep):
             # is a UNC path:
@@ -121,7 +135,10 @@ class _NTFlavour(_Flavour):
                 if index2 != index + 1:
                     if index2 == -1:
                         index2 = len(part)
-                    return part[:index2], sep, part[index2+1:]
+                    if prefix:
+                        return prefix + part[1:index2], sep, part[index2+1:]
+                    else:
+                        return part[:index2], sep, part[index2+1:]
         drv = root = ''
         if second == ':' and first in self.drive_letters:
             drv = part[:2]
@@ -130,7 +147,7 @@ class _NTFlavour(_Flavour):
         if first == sep:
             root = first
             part = part.lstrip(sep)
-        return drv, root, part
+        return prefix + drv, root, part
 
     def casefold(self, s):
         return s.lower()
@@ -147,13 +164,19 @@ class _NTFlavour(_Flavour):
         # Means fallback on absolute
         return None
 
-    def _ext_to_normal(self, s):
-        # Turn back an extended path into a normal DOS-like path
-        if s.startswith(self.ext_namespace_prefix):
+    def _split_extended_path(self, s, ext_prefix=ext_namespace_prefix):
+        prefix = ''
+        if s.startswith(ext_prefix):
+            prefix = s[:4]
             s = s[4:]
             if s.startswith('UNC\\'):
+                prefix += s[:3]
                 s = '\\' + s[3:]
-        return s
+        return prefix, s
+
+    def _ext_to_normal(self, s):
+        # Turn back an extended path into a normal DOS-like path
+        return self._split_extended_path(s)[1]
 
     def is_reserved(self, parts):
         # NOTE: the rules for reserved names seem somewhat complicated
