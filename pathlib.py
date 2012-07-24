@@ -24,7 +24,7 @@ try:
 except ImportError:
     nt = None
 else:
-    if sys.getwindowsversion()[:2] >= (6, 0):
+    if sys.getwindowsversion()[:2] >= (6, 0) and sys.version_info >= (3, 2):
         from nt import _getfinalpathname
     else:
         supports_symlinks = False
@@ -481,7 +481,11 @@ class _NormalAccessor(_Accessor):
     rename = _wrap_binary_strfunc(os.rename)
 
     if nt:
-        symlink = _wrap_binary_strfunc(os.symlink)
+        if supports_symlinks:
+            symlink = _wrap_binary_strfunc(os.symlink)
+        else:
+            def symlink(a, b, target_is_directory):
+                raise NotImplementedError("symlink() not available on this system")
     else:
         # Under POSIX, os.symlink() takes two args
         @staticmethod
