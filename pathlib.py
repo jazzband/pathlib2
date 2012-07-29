@@ -13,6 +13,7 @@ except ImportError:
     import dummy_threading as threading
 
 from collections import Sequence, defaultdict
+from contextlib import contextmanager
 from errno import EINVAL, ENOENT, EEXIST
 from itertools import chain, count
 from operator import attrgetter
@@ -515,6 +516,24 @@ _normal_accessor = _NormalAccessor()
 # Globbing helpers
 #
 
+@contextmanager
+def _cached(func):
+    try:
+        func.__cached__
+        yield func
+    except AttributeError:
+        cache = {}
+        def wrapper(*args):
+            if args in cache:
+                return cache[args]
+            value = cache[args] = func(*args)
+            return value
+        wrapper.__cached__ = True
+        try:
+            yield wrapper
+        finally:
+            cache.clear()
+
 def _make_selector(pattern_parts):
     pat = pattern_parts[0]
     child_parts = pattern_parts[1:]
@@ -608,16 +627,17 @@ class _RecursiveWildcardSelector(_Selector):
     def _select_from(self, parent_path, is_dir, exists, listdir):
         if not is_dir(parent_path):
             return
-        yielded = set()
-        try:
-            successor_select = self.successor._select_from
-            for starting_point in self._iterate_directories(parent_path, is_dir, listdir):
-                for p in successor_select(starting_point, is_dir, exists, listdir):
-                    if p not in yielded:
-                        yield p
-                        yielded.add(p)
-        finally:
-            yielded.clear()
+        with _cached(listdir) as listdir:
+            yielded = set()
+            try:
+                successor_select = self.successor._select_from
+                for starting_point in self._iterate_directories(parent_path, is_dir, listdir):
+                    for p in successor_select(starting_point, is_dir, exists, listdir):
+                        if p not in yielded:
+                            yield p
+                            yielded.add(p)
+            finally:
+                yielded.clear()
 
 
 #
