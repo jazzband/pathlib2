@@ -1,8 +1,10 @@
 import fnmatch
+import functools
 import io
 import ntpath
 import os
 import posixpath
+import re
 import sys
 import weakref
 try:
@@ -12,7 +14,6 @@ except ImportError:
 
 from collections import Sequence, defaultdict
 from errno import EINVAL, ENOENT, EEXIST
-from functools import wraps
 from itertools import chain, count
 from operator import attrgetter
 from stat import S_ISDIR, S_ISLNK, S_ISREG
@@ -315,14 +316,14 @@ if supports_openat:
     class _OpenatAccessor(_Accessor):
 
         def _wrap_atfunc(atfunc):
-            @wraps(atfunc)
+            @functools.wraps(atfunc)
             def wrapped(pathobj, *args, **kwargs):
                 parent_fd, name = _fdnamepair(pathobj)
                 return atfunc(name, *args, dir_fd=parent_fd, **kwargs)
             return staticmethod(wrapped)
 
         def _wrap_binary_atfunc(atfunc):
-            @wraps(atfunc)
+            @functools.wraps(atfunc)
             def wrapped(pathobjA, pathobjB, *args, **kwargs):
                 parent_fd_A, nameA = _fdnamepair(pathobjA)
                 # We allow pathobjB to be a plain str, for convenience
@@ -445,13 +446,13 @@ if supports_openat:
 class _NormalAccessor(_Accessor):
 
     def _wrap_strfunc(strfunc):
-        @wraps(strfunc)
+        @functools.wraps(strfunc)
         def wrapped(pathobj, *args):
             return strfunc(str(pathobj), *args)
         return staticmethod(wrapped)
 
     def _wrap_binary_strfunc(strfunc):
-        @wraps(strfunc)
+        @functools.wraps(strfunc)
         def wrapped(pathobjA, pathobjB, *args):
             return strfunc(str(pathobjA), str(pathobjB), *args)
         return staticmethod(wrapped)
@@ -508,6 +509,115 @@ class _NormalAccessor(_Accessor):
         return os.readlink(path)
 
 _normal_accessor = _NormalAccessor()
+
+
+#
+# Globbing helpers
+#
+
+def _make_selector(pattern_parts):
+    pat = pattern_parts[0]
+    child_parts = pattern_parts[1:]
+    if pat == '**':
+        cls = _RecursiveWildcardSelector
+    elif '**' in pat:
+        raise ValueError("Invalid pattern: '**' can only be an entire path component")
+    elif _is_wildcard_pattern(pat):
+        cls = _WildcardSelector
+    else:
+        cls = _PreciseSelector
+    return cls(pat, child_parts)
+
+if hasattr(functools, "lru_cache"):
+    _make_selector = functools.lru_cache()(_make_selector)
+
+
+class _Selector:
+    """A selector matches a specific glob pattern part against the children
+    of a given path."""
+
+    def __init__(self, child_parts):
+        self.child_parts = child_parts
+        if child_parts:
+            self.successor = _make_selector(child_parts)
+        else:
+            self.successor = _TerminatingSelector()
+
+    def select_from(self, parent_path):
+        """Iterate over all child paths of `parent_path` matched by this
+        selector.  This can contain parent_path itself."""
+        path_cls = type(parent_path)
+        is_dir = path_cls.is_dir
+        exists = path_cls.exists
+        listdir = parent_path._accessor.listdir
+        return self._select_from(parent_path, is_dir, exists, listdir)
+
+
+class _TerminatingSelector:
+
+    def _select_from(self, parent_path, is_dir, exists, listdir):
+        yield parent_path
+
+
+class _PreciseSelector(_Selector):
+
+    def __init__(self, name, child_parts):
+        self.name = name
+        _Selector.__init__(self, child_parts)
+
+    def _select_from(self, parent_path, is_dir, exists, listdir):
+        if not is_dir(parent_path):
+            return
+        path = parent_path._make_child_relpath(self.name)
+        if exists(path):
+            for p in self.successor._select_from(path, is_dir, exists, listdir):
+                yield p
+
+
+class _WildcardSelector(_Selector):
+
+    def __init__(self, pat, child_parts):
+        self.pat = re.compile(fnmatch.translate(pat))
+        _Selector.__init__(self, child_parts)
+
+    def _select_from(self, parent_path, is_dir, exists, listdir):
+        if not is_dir(parent_path):
+            return
+        cf = parent_path._flavour.casefold
+        for name in listdir(parent_path):
+            casefolded = cf(name)
+            if self.pat.match(casefolded):
+                path = parent_path._make_child_relpath(name)
+                for p in self.successor._select_from(path, is_dir, exists, listdir):
+                    yield p
+
+
+class _RecursiveWildcardSelector(_Selector):
+
+    def __init__(self, pat, child_parts):
+        _Selector.__init__(self, child_parts)
+
+    def _iterate_directories(self, parent_path, is_dir, listdir):
+        yield parent_path
+        for name in listdir(parent_path):
+            path = parent_path._make_child_relpath(name)
+            if is_dir(path):
+                for p in self._iterate_directories(path, is_dir, listdir):
+                    yield p
+
+    def _select_from(self, parent_path, is_dir, exists, listdir):
+        if not is_dir(parent_path):
+            return
+        yielded = set()
+        try:
+            successor_select = self.successor._select_from
+            for starting_point in self._iterate_directories(parent_path, is_dir, listdir):
+                for p in successor_select(starting_point, is_dir, exists, listdir):
+                    if p not in yielded:
+                        yield p
+                        yielded.add(p)
+        finally:
+            yielded.clear()
 
 
 #
@@ -979,39 +1089,6 @@ class Path(PurePath):
         # A stub for the opener argument to built-in open()
         return self._accessor.open(self, flags, mode)
 
-    def _select_children(self, pattern_parts, recursive):
-        # Helper for globbing
-        # XXX symlink loops
-        if not pattern_parts:
-            yield self
-            return
-        if not self.is_dir():
-            return
-        pat = pattern_parts[0]
-        child_parts = pattern_parts[1:]
-        if _is_wildcard_pattern(pat):
-            cf = self._flavour.casefold
-            for name in self._accessor.listdir(self):
-                name = cf(name)
-                if fnmatch.fnmatchcase(name, pat):
-                    child_path = self._make_child_relpath(name)
-                    for p in child_path._select_children(child_parts, False):
-                        yield p
-                elif recursive:
-                    child_path = self._make_child_relpath(name)
-                    for p in child_path._select_children(pattern_parts, recursive):
-                        yield p
-        else:
-            child_path = self._make_child_relpath(pat)
-            if child_path.exists():
-                for p in child_path._select_children(child_parts, False):
-                    yield p
-            if recursive:
-                for name in self._accessor.listdir(self):
-                    child_path = self._make_child_relpath(name)
-                    for p in child_path._select_children(pattern_parts, recursive):
-                        yield p
-
     # Public API
 
     @classmethod
@@ -1048,7 +1125,8 @@ class Path(PurePath):
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
-        for p in self._select_children(pattern_parts, recursive=False):
+        selector = _make_selector(tuple(pattern_parts))
+        for p in selector.select_from(self):
             yield p
 
     def rglob(self, pattern):
@@ -1059,7 +1137,8 @@ class Path(PurePath):
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
-        for p in self._select_children(pattern_parts, recursive=True):
+        selector = _make_selector(("**",) + tuple(pattern_parts))
+        for p in selector.select_from(self):
             yield p
 
     def absolute(self):
