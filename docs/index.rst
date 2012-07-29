@@ -37,18 +37,19 @@ Importing the module classes::
 
    >>> from pathlib import *
 
-Listing Python source files in the current directory::
-
-   >>> p = Path('.')
-   >>> [x for x in p if x.ext == '.py']
-   [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
-    PosixPath('pathlib.py')]
-
 Listing subdirectories::
 
+   >>> p = Path('.')
    >>> [x for x in p if x.is_dir()]
    [PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),
     PosixPath('__pycache__'), PosixPath('build')]
+
+Listing Python source files in this directory tree::
+
+    >>> list(p.glob('**/*.py'))
+    [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
+     PosixPath('pathlib.py'), PosixPath('docs/conf.py'),
+     PosixPath('build/lib/pathlib.py')]
 
 Navigating inside a directory tree::
 
