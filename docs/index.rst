@@ -622,6 +622,20 @@ call fails (for example because the path doesn't exist):
       >>> sorted(Path('.').glob('*/*.py'))
       [PosixPath('docs/conf.py')]
 
+   The "``**``" pattern means "this directory and all subdirectories,
+   recursively".  In other words, it enables recursive globbing::
+
+      >>> sorted(Path('.').glob('**/*.py'))
+      [PosixPath('build/lib/pathlib.py'),
+       PosixPath('docs/conf.py'),
+       PosixPath('pathlib.py'),
+       PosixPath('setup.py'),
+       PosixPath('test_pathlib.py')]
+
+   .. note::
+      Using the "``**``" pattern in large directory trees may consume
+      an inordinate amount of time.
+
 
 .. method:: Path.is_dir()
 
@@ -724,7 +738,8 @@ call fails (for example because the path doesn't exist):
 
 .. method:: Path.rglob(pattern)
 
-   Like :meth:`glob`, but glob recursively from any subdirectories as well::
+   This is like calling :meth:`glob` with "``**``" added in front of the
+   given *pattern*:
 
       >>> sorted(Path().rglob("*.py"))
       [PosixPath('build/lib/pathlib.py'),

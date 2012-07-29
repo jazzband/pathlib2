@@ -30,9 +30,16 @@ Importing the module classes::
 Listing Python source files in a directory::
 
     >>> p = Path('.')
-    >>> [x for x in p if x.ext == '.py']
+    >>> list(p.glob('*.py'))
     [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
      PosixPath('pathlib.py')]
+
+Listing all Python source files in this directory tree::
+
+    >>> list(p.glob('**/*.py'))
+    [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
+     PosixPath('pathlib.py'), PosixPath('docs/conf.py'),
+     PosixPath('build/lib/pathlib.py')]
 
 Listing subdirectories::
 
@@ -85,6 +92,7 @@ History
 Version 0.7
 ^^^^^^^^^^^
 
+- Add '**' (recursive) patterns to Path.glob().
 - Fix openat() support after the API refactoring in Python 3.3 beta1.
 - Add a *target_is_directory* argument to Path.symlink_to()
 
