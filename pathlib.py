@@ -820,13 +820,18 @@ class PurePath(object):
                     doc="""The root of the path, if any""")
 
     @property
-    def ext(self):
-        """The final component's extension, if any."""
+    def name(self):
+        """The final path component, if any."""
         parts = self._parts
         if len(parts) == (1 if (self._drv or self._root) else 0):
             return ''
-        basename = parts[-1]
-        if basename == '.':
+        return parts[-1]
+
+    @property
+    def ext(self):
+        """The final component's extension, if any."""
+        basename = self.name
+        if basename == '' or basename == '.':
             return ''
         i = basename.find('.')
         if i == -1:

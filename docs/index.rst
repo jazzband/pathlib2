@@ -284,6 +284,20 @@ Pure paths provide the following methods an properties:
       >>> PureNTPath('//some/share').root
       '\\'
 
+.. data:: PurePath.name
+
+   A string representing the final path component, excluding the drive and
+   root, if any::
+
+      >>> PurePosixPath('my/library/setup.py').name
+      'setup.py'
+
+   UNC drive names are not considered::
+
+      >>> PureNTPath('//some/share/setup.py').name
+      'setup.py'
+      >>> PureNTPath('//some/share').name
+      ''
 
 .. data:: PurePath.ext
 
@@ -294,13 +308,6 @@ Pure paths provide the following methods an properties:
       >>> PurePosixPath('my/library.tar.gz').ext
       '.tar.gz'
       >>> PurePosixPath('my/library').ext
-      ''
-
-   UNC drive names are not considered::
-
-      >>> PureNTPath('//some/share/setup.py').ext
-      '.py'
-      >>> PureNTPath('//some.txt/share.py').ext
       ''
 
 

@@ -405,6 +405,17 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('/').root, sep)
         self.assertEqual(P('/a/b').root, sep)
 
+    def test_name_common(self):
+        P = self.cls
+        self.assertEqual(P('').name, '')
+        self.assertEqual(P('.').name, '')
+        self.assertEqual(P('/').name, '')
+        self.assertEqual(P('a/b').name, 'b')
+        self.assertEqual(P('/a/b').name, 'b')
+        self.assertEqual(P('/a/b/.').name, 'b')
+        self.assertEqual(P('a/b.py').name, 'b.py')
+        self.assertEqual(P('/a/b.py').name, 'b.py')
+
     def test_ext_common(self):
         P = self.cls
         self.assertEqual(P('').ext, '')
@@ -641,6 +652,17 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('//a/b').root, '\\')
         self.assertEqual(P('//a/b/').root, '\\')
         self.assertEqual(P('//a/b/c/d').root, '\\')
+
+    def test_name(self):
+        P = self.cls
+        self.assertEqual(P('c:').name, '')
+        self.assertEqual(P('c:/').name, '')
+        self.assertEqual(P('c:a/b').name, 'b')
+        self.assertEqual(P('c:/a/b').name, 'b')
+        self.assertEqual(P('c:a/b.py').name, 'b.py')
+        self.assertEqual(P('c:/a/b.py').name, 'b.py')
+        self.assertEqual(P('//My.py/Share.php').name, '')
+        self.assertEqual(P('//My.py/Share.php/a/b').name, 'b')
 
     def test_ext(self):
         P = self.cls
