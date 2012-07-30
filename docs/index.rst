@@ -284,6 +284,19 @@ Pure paths provide the following methods an properties:
       >>> PureNTPath('//some/share').root
       '\\'
 
+.. data:: PurePath.anchor
+
+   The concatenation of the drive and root::
+
+      >>> PureNTPath('c:/Program Files/').anchor
+      'c:\\'
+      >>> PureNTPath('c:Program Files/').anchor
+      'c:'
+      >>> PurePosixPath('/etc').anchor
+      '/'
+      >>> PureNTPath('//some/share').anchor
+      '\\\\some\\share\\'
+
 .. data:: PurePath.name
 
    A string representing the final path component, excluding the drive and

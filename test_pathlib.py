@@ -410,6 +410,14 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('/').root, sep)
         self.assertEqual(P('/a/b').root, sep)
 
+    def test_anchor_common(self):
+        P = self.cls
+        sep = self.sep
+        self.assertEqual(P('').anchor, '')
+        self.assertEqual(P('a/b').anchor, '')
+        self.assertEqual(P('/').anchor, sep)
+        self.assertEqual(P('/a/b').anchor, sep)
+
     def test_name_common(self):
         P = self.cls
         self.assertEqual(P('').name, '')
@@ -657,6 +665,16 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('//a/b').root, '\\')
         self.assertEqual(P('//a/b/').root, '\\')
         self.assertEqual(P('//a/b/c/d').root, '\\')
+
+    def test_anchor(self):
+        P = self.cls
+        self.assertEqual(P('c:').anchor, 'c:')
+        self.assertEqual(P('c:a/b').anchor, 'c:')
+        self.assertEqual(P('c:/').anchor, 'c:\\')
+        self.assertEqual(P('c:/a/b/').anchor, 'c:\\')
+        self.assertEqual(P('//a/b').anchor, '\\\\a\\b\\')
+        self.assertEqual(P('//a/b/').anchor, '\\\\a\\b\\')
+        self.assertEqual(P('//a/b/c/d').anchor, '\\\\a\\b\\')
 
     def test_name(self):
         P = self.cls

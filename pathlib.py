@@ -820,6 +820,12 @@ class PurePath(object):
                     doc="""The root of the path, if any""")
 
     @property
+    def anchor(self):
+        """The concatenation of the drive and root, or ''."""
+        anchor = self._drv + self._root
+        return anchor
+
+    @property
     def name(self):
         """The final path component, if any."""
         parts = self._parts
