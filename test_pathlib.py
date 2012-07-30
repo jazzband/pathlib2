@@ -15,6 +15,11 @@ except ImportError:
     from test import test_support as support
 TESTFN = support.TESTFN
 
+try:
+    import grp, pwd
+except ImportError:
+    grp = pwd = None
+
 
 class _BaseFlavourTest(unittest.TestCase):
 
@@ -1119,6 +1124,20 @@ class _BasePathTest(unittest.TestCase):
             p.st_foo
         with self.assertRaises(AttributeError):
             p.foo
+
+    @unittest.skipUnless(pwd, "the pwd module is needed for this test")
+    def test_owner(self):
+        p = self.cls(BASE)['fileA']
+        uid = p.stat().st_uid
+        name = pwd.getpwuid(uid).pw_name
+        self.assertEqual(name, p.owner)
+
+    @unittest.skipUnless(grp, "the grp module is needed for this test")
+    def test_group(self):
+        p = self.cls(BASE)['fileA']
+        gid = p.stat().st_gid
+        name = grp.getgrgid(gid).gr_name
+        self.assertEqual(name, p.group)
 
     def test_unlink(self):
         p = self.cls(BASE)['fileA']

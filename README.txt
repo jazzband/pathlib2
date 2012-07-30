@@ -92,7 +92,8 @@ History
 Version 0.8
 ^^^^^^^^^^^
 
-- Add PurePath.name property.
+- Add PurePath.name
+- Add Path.owner and Path.group
 
 Version 0.7
 ^^^^^^^^^^^

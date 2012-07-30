@@ -804,6 +804,14 @@ Attributes
 Concrete paths provide the following attributes:
 
 .. data::
+      Path.owner
+      Path.group
+
+   The owner name and group name of the file, respectively.  :exc:`KeyError`
+   is thrown if the file's uid or gid isn't found in the system database.
+
+
+.. data::
       Path.st_mode
       Path.st_ino
       Path.st_dev

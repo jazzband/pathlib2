@@ -1140,7 +1140,7 @@ class Path(PurePath):
     def __getattr__(self, name):
         if name.startswith('st_'):
             return getattr(self._stat, name)
-        return super(Path, self).__getattribute__(name)
+        return self.__getattribute__(name)
 
     def glob(self, pattern):
         """Iterate over this subtree and yield all existing files (of any
@@ -1220,6 +1220,22 @@ class Path(PurePath):
         except AttributeError:
             pass
         return self._stat
+
+    @property
+    def owner(self):
+        """
+        Return the login name of the file owner.
+        """
+        import pwd
+        return pwd.getpwuid(self._stat.st_uid).pw_name
+
+    @property
+    def group(self):
+        """
+        Return the group name of the file gid.
+        """
+        import grp
+        return grp.getgrgid(self._stat.st_gid).gr_name
 
     def raw_open(self, flags, mode=0o777):
         """
