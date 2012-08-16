@@ -94,6 +94,7 @@ Version 0.8
 
 - Add PurePath.name and PurePath.anchor
 - Add Path.owner and Path.group
+- Add Path.replace()
 
 Version 0.7
 ^^^^^^^^^^^

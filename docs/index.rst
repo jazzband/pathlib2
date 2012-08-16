@@ -736,6 +736,15 @@ call fails (for example because the path doesn't exist):
       'some text'
 
 
+.. method:: Path.replace(target)
+
+   Rename this file or directory to the given *target*.  If *target* points
+   to an existing file or directory, it will be unconditionally replaced.
+
+   This method is only available with Python 3.3; it will raise
+   :exc:`NotImplementedError` on previous Python versions.
+
+
 .. method:: Path.resolve()
 
    Make the path absolute, resolving any symlinks.  A new path object is

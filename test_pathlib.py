@@ -1186,6 +1186,24 @@ class _BasePathTest(unittest.TestCase):
         self.assertEqual(os.stat(r).st_size, size)
         self.assertFileNotFound(q.restat)
 
+    def test_replace(self):
+        P = self.cls(BASE)
+        p = P['fileA']
+        if sys.version_info < (3, 3):
+            self.assertRaises(NotImplementedError, p.replace, p)
+            return
+        size = p.stat().st_size
+        # Replacing a non-existing path
+        q = P['dirA', 'fileAA']
+        p.rename(q)
+        self.assertEqual(q.stat().st_size, size)
+        self.assertFileNotFound(p.restat)
+        # Replacing another (existing) path
+        r = rel_join('dirB', 'fileB')
+        q.rename(r)
+        self.assertEqual(os.stat(r).st_size, size)
+        self.assertFileNotFound(q.restat)
+
     def test_touch(self):
         P = self.cls(BASE)
         p = P['newfileA']

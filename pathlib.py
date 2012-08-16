@@ -361,6 +361,9 @@ if supports_openat:
 
         rename = _wrap_binary_atfunc(os.rename)
 
+        if sys.version_info >= (3, 3):
+            replace = _wrap_binary_atfunc(os.replace)
+
         def symlink(self, target, pathobj, target_is_directory):
             parent_fd, name = _fdnamepair(pathobj)
             os.symlink(str(target), name, dir_fd=parent_fd)
@@ -481,6 +484,9 @@ class _NormalAccessor(_Accessor):
     rmdir = _wrap_strfunc(os.rmdir)
 
     rename = _wrap_binary_strfunc(os.rename)
+
+    if sys.version_info >= (3, 3):
+        replace = _wrap_binary_strfunc(os.replace)
 
     if nt:
         if supports_symlinks:
@@ -1342,6 +1348,18 @@ class Path(PurePath):
         if self._closed:
             self._raise_closed()
         self._accessor.rename(self, target)
+
+    def replace(self, target):
+        """
+        Rename this path to the given path, clobbering the existing
+        destination if it exists.
+        """
+        if sys.version_info < (3, 3):
+            raise NotImplementedError("replace() is only available "
+                                      "with Python 3.3 and later")
+        if self._closed:
+            self._raise_closed()
+        self._accessor.replace(self, target)
 
     def symlink_to(self, target, target_is_directory=False):
         """
