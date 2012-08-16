@@ -1195,12 +1195,12 @@ class _BasePathTest(unittest.TestCase):
         size = p.stat().st_size
         # Replacing a non-existing path
         q = P['dirA', 'fileAA']
-        p.rename(q)
+        p.replace(q)
         self.assertEqual(q.stat().st_size, size)
         self.assertFileNotFound(p.restat)
         # Replacing another (existing) path
         r = rel_join('dirB', 'fileB')
-        q.rename(r)
+        q.replace(r)
         self.assertEqual(os.stat(r).st_size, size)
         self.assertFileNotFound(q.restat)
 
