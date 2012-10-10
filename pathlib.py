@@ -878,6 +878,7 @@ class PurePath(object):
 
     def with_suffix(self, suffix):
         """Return a new path with the file suffix changed (or added, if none)."""
+        # XXX if suffix is None, should the current suffix be removed?
         name = self.name
         if not name:
             raise ValueError("%r has an empty name" % (self,))
