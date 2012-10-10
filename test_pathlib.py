@@ -482,6 +482,18 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('a/Some name. Ending with a dot.').basename,
                          'Some name. Ending with a dot.')
 
+    def test_with_name_common(self):
+        P = self.cls
+        self.assertEqual(P('a/b').with_name('d.xml'), P('a/d.xml'))
+        self.assertEqual(P('/a/b').with_name('d.xml'), P('/a/d.xml'))
+        self.assertEqual(P('a/b.py').with_name('d.xml'), P('a/d.xml'))
+        self.assertEqual(P('/a/b.py').with_name('d.xml'), P('/a/d.xml'))
+        self.assertEqual(P('a/Dot ending.').with_name('d.xml'), P('a/d.xml'))
+        self.assertEqual(P('/a/Dot ending.').with_name('d.xml'), P('/a/d.xml'))
+        self.assertRaises(ValueError, P('').with_name, 'd.xml')
+        self.assertRaises(ValueError, P('.').with_name, 'd.xml')
+        self.assertRaises(ValueError, P('/').with_name, 'd.xml')
+
     def test_relative_common(self):
         P = self.cls
         p = P('a/b')
@@ -765,7 +777,7 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:a/Some name. Ending with a dot.').suffixes, [])
         self.assertEqual(P('c:/a/Some name. Ending with a dot.').suffixes, [])
 
-    def test_basename_common(self):
+    def test_basename(self):
         P = self.cls
         self.assertEqual(P('c:').basename, '')
         self.assertEqual(P('c:.').basename, '')
@@ -778,6 +790,15 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:a/b.tar.gz').basename, 'b.tar')
         self.assertEqual(P('c:a/Some name. Ending with a dot.').basename,
                          'Some name. Ending with a dot.')
+
+    def test_with_name(self):
+        P = self.cls
+        self.assertEqual(P('c:a/b').with_name('d.xml'), P('c:a/d.xml'))
+        self.assertEqual(P('c:/a/b').with_name('d.xml'), P('c:/a/d.xml'))
+        self.assertEqual(P('c:a/Dot ending.').with_name('d.xml'), P('c:a/d.xml'))
+        self.assertEqual(P('c:/a/Dot ending.').with_name('d.xml'), P('c:/a/d.xml'))
+        self.assertRaises(ValueError, P('c:').with_name, 'd.xml')
+        self.assertRaises(ValueError, P('c:/').with_name, 'd.xml')
 
     def test_relative(self):
         P = self.cls

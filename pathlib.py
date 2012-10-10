@@ -862,14 +862,19 @@ class PurePath(object):
 
     @property
     def basename(self):
-        """
-        The final path component, minus its last suffix.
-        """
+        """The final path component, minus its last suffix."""
         basename = self.name
         suffix = self.suffix
         if not suffix:
             return basename
         return basename[:-len(suffix)]
+
+    def with_name(self, name):
+        """Return a new path with the file name changed."""
+        if not self.name:
+            raise ValueError("%r has an empty name" % (self,))
+        return self._from_parsed_parts(self._drv, self._root,
+                                       self._parts[:-1] + [name])
 
     def relative(self):
         """Return a new path without any drive and root.
