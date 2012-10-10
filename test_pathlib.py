@@ -433,14 +433,21 @@ class _BasePurePathTest(unittest.TestCase):
         P = self.cls
         self.assertEqual(P('').suffix, '')
         self.assertEqual(P('.').suffix, '')
+        self.assertEqual(P('..').suffix, '')
         self.assertEqual(P('/').suffix, '')
         self.assertEqual(P('a/b').suffix, '')
         self.assertEqual(P('/a/b').suffix, '')
         self.assertEqual(P('/a/b/.').suffix, '')
         self.assertEqual(P('a/b.py').suffix, '.py')
         self.assertEqual(P('/a/b.py').suffix, '.py')
+        self.assertEqual(P('a/.hgrc').suffix, '')
+        self.assertEqual(P('/a/.hgrc').suffix, '')
+        self.assertEqual(P('a/.hg.rc').suffix, '.rc')
+        self.assertEqual(P('/a/.hg.rc').suffix, '.rc')
         self.assertEqual(P('a/b.tar.gz').suffix, '.gz')
         self.assertEqual(P('/a/b.tar.gz').suffix, '.gz')
+        self.assertEqual(P('a/Some name ending with a dot.').suffix, '')
+        self.assertEqual(P('/a/Some name ending with a dot.').suffix, '')
 
     def test_suffixes_common(self):
         P = self.cls
@@ -708,8 +715,14 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:/a/b').suffix, '')
         self.assertEqual(P('c:a/b.py').suffix, '.py')
         self.assertEqual(P('c:/a/b.py').suffix, '.py')
+        self.assertEqual(P('c:a/.hgrc').suffix, '')
+        self.assertEqual(P('c:/a/.hgrc').suffix, '')
+        self.assertEqual(P('c:a/.hg.rc').suffix, '.rc')
+        self.assertEqual(P('c:/a/.hg.rc').suffix, '.rc')
         self.assertEqual(P('c:a/b.tar.gz').suffix, '.gz')
         self.assertEqual(P('c:/a/b.tar.gz').suffix, '.gz')
+        self.assertEqual(P('c:a/Some name ending with a dot.').suffix, '')
+        self.assertEqual(P('c:/a/Some name ending with a dot.').suffix, '')
         self.assertEqual(P('//My.py/Share.php').suffix, '')
         self.assertEqual(P('//My.py/Share.php/a/b').suffix, '')
 
