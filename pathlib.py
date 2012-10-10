@@ -842,7 +842,10 @@ class PurePath(object):
     @property
     def suffix(self):
         """The final component's last suffix, if any."""
-        basename = self.name.strip('.')
+        basename = self.name
+        if basename.endswith('.'):
+            return ''
+        basename = basename.lstrip('.')
         i = basename.rfind('.')
         if i == -1:
             return ''
@@ -851,9 +854,10 @@ class PurePath(object):
     @property
     def suffixes(self):
         """A list of the final component's suffixes, if any."""
-        basename = self.name.strip('.')
-        if basename == '' or basename == '.':
+        basename = self.name
+        if basename.endswith('.'):
             return []
+        basename = basename.lstrip('.')
         return ['.' + suffix for suffix in basename.split('.')[1:]]
 
     def relative(self):

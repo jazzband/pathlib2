@@ -446,8 +446,8 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('/a/.hg.rc').suffix, '.rc')
         self.assertEqual(P('a/b.tar.gz').suffix, '.gz')
         self.assertEqual(P('/a/b.tar.gz').suffix, '.gz')
-        self.assertEqual(P('a/Some name ending with a dot.').suffix, '')
-        self.assertEqual(P('/a/Some name ending with a dot.').suffix, '')
+        self.assertEqual(P('a/Some name. Ending with a dot.').suffix, '')
+        self.assertEqual(P('/a/Some name. Ending with a dot.').suffix, '')
 
     def test_suffixes_common(self):
         P = self.cls
@@ -465,8 +465,8 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('/a/.hg.rc').suffixes, ['.rc'])
         self.assertEqual(P('a/b.tar.gz').suffixes, ['.tar', '.gz'])
         self.assertEqual(P('/a/b.tar.gz').suffixes, ['.tar', '.gz'])
-        self.assertEqual(P('a/Some name ending with a dot.').suffixes, [])
-        self.assertEqual(P('/a/Some name ending with a dot.').suffixes, [])
+        self.assertEqual(P('a/Some name. Ending with a dot.').suffixes, [])
+        self.assertEqual(P('/a/Some name. Ending with a dot.').suffixes, [])
 
     def test_relative_common(self):
         P = self.cls
@@ -727,8 +727,8 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:/a/.hg.rc').suffix, '.rc')
         self.assertEqual(P('c:a/b.tar.gz').suffix, '.gz')
         self.assertEqual(P('c:/a/b.tar.gz').suffix, '.gz')
-        self.assertEqual(P('c:a/Some name ending with a dot.').suffix, '')
-        self.assertEqual(P('c:/a/Some name ending with a dot.').suffix, '')
+        self.assertEqual(P('c:a/Some name. Ending with a dot.').suffix, '')
+        self.assertEqual(P('c:/a/Some name. Ending with a dot.').suffix, '')
         self.assertEqual(P('//My.py/Share.php').suffix, '')
         self.assertEqual(P('//My.py/Share.php/a/b').suffix, '')
 
@@ -748,8 +748,8 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:/a/b.tar.gz').suffixes, ['.tar', '.gz'])
         self.assertEqual(P('//My.py/Share.php').suffixes, [])
         self.assertEqual(P('//My.py/Share.php/a/b').suffixes, [])
-        self.assertEqual(P('c:a/Some name ending with a dot.').suffixes, [])
-        self.assertEqual(P('c:/a/Some name ending with a dot.').suffixes, [])
+        self.assertEqual(P('c:a/Some name. Ending with a dot.').suffixes, [])
+        self.assertEqual(P('c:/a/Some name. Ending with a dot.').suffixes, [])
 
     def test_relative(self):
         P = self.cls
