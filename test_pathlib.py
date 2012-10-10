@@ -442,6 +442,19 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('a/b.tar.gz').suffix, '.gz')
         self.assertEqual(P('/a/b.tar.gz').suffix, '.gz')
 
+    def test_suffixes_common(self):
+        P = self.cls
+        self.assertEqual(P('').suffixes, [])
+        self.assertEqual(P('.').suffixes, [])
+        self.assertEqual(P('/').suffixes, [])
+        self.assertEqual(P('a/b').suffixes, [])
+        self.assertEqual(P('/a/b').suffixes, [])
+        self.assertEqual(P('/a/b/.').suffixes, [])
+        self.assertEqual(P('a/b.py').suffixes, ['.py'])
+        self.assertEqual(P('/a/b.py').suffixes, ['.py'])
+        self.assertEqual(P('a/b.tar.gz').suffixes, ['.tar', '.gz'])
+        self.assertEqual(P('/a/b.tar.gz').suffixes, ['.tar', '.gz'])
+
     def test_relative_common(self):
         P = self.cls
         p = P('a/b')
@@ -699,6 +712,19 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:/a/b.tar.gz').suffix, '.gz')
         self.assertEqual(P('//My.py/Share.php').suffix, '')
         self.assertEqual(P('//My.py/Share.php/a/b').suffix, '')
+
+    def test_suffixes(self):
+        P = self.cls
+        self.assertEqual(P('c:').suffixes, [])
+        self.assertEqual(P('c:/').suffixes, [])
+        self.assertEqual(P('c:a/b').suffixes, [])
+        self.assertEqual(P('c:/a/b').suffixes, [])
+        self.assertEqual(P('c:a/b.py').suffixes, ['.py'])
+        self.assertEqual(P('c:/a/b.py').suffixes, ['.py'])
+        self.assertEqual(P('c:a/b.tar.gz').suffixes, ['.tar', '.gz'])
+        self.assertEqual(P('c:/a/b.tar.gz').suffixes, ['.tar', '.gz'])
+        self.assertEqual(P('//My.py/Share.php').suffixes, [])
+        self.assertEqual(P('//My.py/Share.php/a/b').suffixes, [])
 
     def test_relative(self):
         P = self.cls

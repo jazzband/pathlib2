@@ -841,7 +841,7 @@ class PurePath(object):
 
     @property
     def suffix(self):
-        """The final component's final suffix, if any."""
+        """The final component's last suffix, if any."""
         basename = self.name
         if basename == '' or basename == '.':
             return ''
@@ -849,6 +849,14 @@ class PurePath(object):
         if i == -1:
             return ''
         return basename[i:]
+
+    @property
+    def suffixes(self):
+        """A list of the final component's suffixes, if any."""
+        basename = self.name
+        if basename == '' or basename == '.':
+            return []
+        return ['.' + suffix for suffix in basename.split('.')[1:]]
 
     def relative(self):
         """Return a new path without any drive and root.
