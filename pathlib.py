@@ -876,6 +876,19 @@ class PurePath(object):
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + [name])
 
+    def with_suffix(self, suffix):
+        """Return a new path with the file suffix changed (or added, if none)."""
+        name = self.name
+        if not name:
+            raise ValueError("%r has an empty name" % (self,))
+        old_suffix = self.suffix
+        if not old_suffix:
+            name = name + suffix
+        else:
+            name = name[:-len(old_suffix)] + suffix
+        return self._from_parsed_parts(self._drv, self._root,
+                                       self._parts[:-1] + [name])
+
     def relative(self):
         """Return a new path without any drive and root.
         """

@@ -494,6 +494,16 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertRaises(ValueError, P('.').with_name, 'd.xml')
         self.assertRaises(ValueError, P('/').with_name, 'd.xml')
 
+    def test_with_suffix_common(self):
+        P = self.cls
+        self.assertEqual(P('a/b').with_suffix('.gz'), P('a/b.gz'))
+        self.assertEqual(P('/a/b').with_suffix('.gz'), P('/a/b.gz'))
+        self.assertEqual(P('a/b.py').with_suffix('.gz'), P('a/b.gz'))
+        self.assertEqual(P('/a/b.py').with_suffix('.gz'), P('/a/b.gz'))
+        self.assertRaises(ValueError, P('').with_suffix, '.gz')
+        self.assertRaises(ValueError, P('.').with_suffix, '.gz')
+        self.assertRaises(ValueError, P('/').with_suffix, '.gz')
+
     def test_relative_common(self):
         P = self.cls
         p = P('a/b')
@@ -799,6 +809,18 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('c:/a/Dot ending.').with_name('d.xml'), P('c:/a/d.xml'))
         self.assertRaises(ValueError, P('c:').with_name, 'd.xml')
         self.assertRaises(ValueError, P('c:/').with_name, 'd.xml')
+        self.assertRaises(ValueError, P('//My/Share').with_name, 'd.xml')
+
+    def test_with_suffix(self):
+        P = self.cls
+        self.assertEqual(P('c:a/b').with_suffix('.gz'), P('c:a/b.gz'))
+        self.assertEqual(P('c:/a/b').with_suffix('.gz'), P('c:/a/b.gz'))
+        self.assertEqual(P('c:a/b.py').with_suffix('.gz'), P('c:a/b.gz'))
+        self.assertEqual(P('c:/a/b.py').with_suffix('.gz'), P('c:/a/b.gz'))
+        self.assertRaises(ValueError, P('').with_suffix, '.gz')
+        self.assertRaises(ValueError, P('.').with_suffix, '.gz')
+        self.assertRaises(ValueError, P('/').with_suffix, '.gz')
+        self.assertRaises(ValueError, P('//My/Share').with_suffix, '.gz')
 
     def test_relative(self):
         P = self.cls
