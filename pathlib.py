@@ -840,12 +840,12 @@ class PurePath(object):
         return parts[-1]
 
     @property
-    def ext(self):
-        """The final component's extension, if any."""
+    def suffix(self):
+        """The final component's final suffix, if any."""
         basename = self.name
         if basename == '' or basename == '.':
             return ''
-        i = basename.find('.')
+        i = basename.rfind('.')
         if i == -1:
             return ''
         return basename[i:]

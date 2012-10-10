@@ -429,18 +429,18 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('a/b.py').name, 'b.py')
         self.assertEqual(P('/a/b.py').name, 'b.py')
 
-    def test_ext_common(self):
+    def test_suffix_common(self):
         P = self.cls
-        self.assertEqual(P('').ext, '')
-        self.assertEqual(P('.').ext, '')
-        self.assertEqual(P('/').ext, '')
-        self.assertEqual(P('a/b').ext, '')
-        self.assertEqual(P('/a/b').ext, '')
-        self.assertEqual(P('/a/b/.').ext, '')
-        self.assertEqual(P('a/b.py').ext, '.py')
-        self.assertEqual(P('/a/b.py').ext, '.py')
-        self.assertEqual(P('a/b.tar.gz').ext, '.tar.gz')
-        self.assertEqual(P('/a/b.tar.gz').ext, '.tar.gz')
+        self.assertEqual(P('').suffix, '')
+        self.assertEqual(P('.').suffix, '')
+        self.assertEqual(P('/').suffix, '')
+        self.assertEqual(P('a/b').suffix, '')
+        self.assertEqual(P('/a/b').suffix, '')
+        self.assertEqual(P('/a/b/.').suffix, '')
+        self.assertEqual(P('a/b.py').suffix, '.py')
+        self.assertEqual(P('/a/b.py').suffix, '.py')
+        self.assertEqual(P('a/b.tar.gz').suffix, '.gz')
+        self.assertEqual(P('/a/b.tar.gz').suffix, '.gz')
 
     def test_relative_common(self):
         P = self.cls
@@ -687,18 +687,18 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('//My.py/Share.php').name, '')
         self.assertEqual(P('//My.py/Share.php/a/b').name, 'b')
 
-    def test_ext(self):
+    def test_suffix(self):
         P = self.cls
-        self.assertEqual(P('c:').ext, '')
-        self.assertEqual(P('c:/').ext, '')
-        self.assertEqual(P('c:a/b').ext, '')
-        self.assertEqual(P('c:/a/b').ext, '')
-        self.assertEqual(P('c:a/b.py').ext, '.py')
-        self.assertEqual(P('c:/a/b.py').ext, '.py')
-        self.assertEqual(P('c:a/b.tar.gz').ext, '.tar.gz')
-        self.assertEqual(P('c:/a/b.tar.gz').ext, '.tar.gz')
-        self.assertEqual(P('//My.py/Share.php').ext, '')
-        self.assertEqual(P('//My.py/Share.php/a/b').ext, '')
+        self.assertEqual(P('c:').suffix, '')
+        self.assertEqual(P('c:/').suffix, '')
+        self.assertEqual(P('c:a/b').suffix, '')
+        self.assertEqual(P('c:/a/b').suffix, '')
+        self.assertEqual(P('c:a/b.py').suffix, '.py')
+        self.assertEqual(P('c:/a/b.py').suffix, '.py')
+        self.assertEqual(P('c:a/b.tar.gz').suffix, '.gz')
+        self.assertEqual(P('c:/a/b.tar.gz').suffix, '.gz')
+        self.assertEqual(P('//My.py/Share.php').suffix, '')
+        self.assertEqual(P('//My.py/Share.php/a/b').suffix, '')
 
     def test_relative(self):
         P = self.cls
