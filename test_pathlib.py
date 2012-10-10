@@ -468,6 +468,20 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertEqual(P('a/Some name. Ending with a dot.').suffixes, [])
         self.assertEqual(P('/a/Some name. Ending with a dot.').suffixes, [])
 
+    def test_basename_common(self):
+        P = self.cls
+        self.assertEqual(P('').basename, '')
+        self.assertEqual(P('.').basename, '')
+        self.assertEqual(P('..').basename, '..')
+        self.assertEqual(P('/').basename, '')
+        self.assertEqual(P('a/b').basename, 'b')
+        self.assertEqual(P('a/b.py').basename, 'b')
+        self.assertEqual(P('a/.hgrc').basename, '.hgrc')
+        self.assertEqual(P('a/.hg.rc').basename, '.hg')
+        self.assertEqual(P('a/b.tar.gz').basename, 'b.tar')
+        self.assertEqual(P('a/Some name. Ending with a dot.').basename,
+                         'Some name. Ending with a dot.')
+
     def test_relative_common(self):
         P = self.cls
         p = P('a/b')
@@ -750,6 +764,20 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('//My.py/Share.php/a/b').suffixes, [])
         self.assertEqual(P('c:a/Some name. Ending with a dot.').suffixes, [])
         self.assertEqual(P('c:/a/Some name. Ending with a dot.').suffixes, [])
+
+    def test_basename_common(self):
+        P = self.cls
+        self.assertEqual(P('c:').basename, '')
+        self.assertEqual(P('c:.').basename, '')
+        self.assertEqual(P('c:..').basename, '..')
+        self.assertEqual(P('c:/').basename, '')
+        self.assertEqual(P('c:a/b').basename, 'b')
+        self.assertEqual(P('c:a/b.py').basename, 'b')
+        self.assertEqual(P('c:a/.hgrc').basename, '.hgrc')
+        self.assertEqual(P('c:a/.hg.rc').basename, '.hg')
+        self.assertEqual(P('c:a/b.tar.gz').basename, 'b.tar')
+        self.assertEqual(P('c:a/Some name. Ending with a dot.').basename,
+                         'Some name. Ending with a dot.')
 
     def test_relative(self):
         P = self.cls

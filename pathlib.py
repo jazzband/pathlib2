@@ -860,6 +860,17 @@ class PurePath(object):
         basename = basename.lstrip('.')
         return ['.' + suffix for suffix in basename.split('.')[1:]]
 
+    @property
+    def basename(self):
+        """
+        The final path component, minus its last suffix.
+        """
+        basename = self.name
+        suffix = self.suffix
+        if not suffix:
+            return basename
+        return basename[:-len(suffix)]
+
     def relative(self):
         """Return a new path without any drive and root.
         """
