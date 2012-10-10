@@ -851,7 +851,7 @@ class PurePath(object):
     @property
     def suffixes(self):
         """A list of the final component's suffixes, if any."""
-        basename = self.name
+        basename = self.name.strip('.')
         if basename == '' or basename == '.':
             return []
         return ['.' + suffix for suffix in basename.split('.')[1:]]
