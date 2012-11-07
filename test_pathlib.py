@@ -202,18 +202,22 @@ class _BasePurePathTest(unittest.TestCase):
         pp = p.joinpath('/c')
         self.assertEqual(pp, P('/c'))
 
-    def test_getitem_common(self):
-        # Basically the same as join()
+    def test_div_common(self):
+        # Basically the same as joinpath()
         P = self.cls
         p = P('a/b')
-        pp = p['c']
+        pp = p / 'c'
         self.assertEqual(pp, P('a/b/c'))
         self.assertIs(type(pp), type(p))
-        pp = p['c', 'd']
+        pp = p / 'c/d'
         self.assertEqual(pp, P('a/b/c/d'))
-        pp = p[P('c')]
+        pp = p / 'c' / 'd'
+        self.assertEqual(pp, P('a/b/c/d'))
+        pp = 'c' / p / 'd'
+        self.assertEqual(pp, P('c/a/b/d'))
+        pp = p / P('c')
         self.assertEqual(pp, P('a/b/c'))
-        pp = p['/c']
+        pp = p/ '/c'
         self.assertEqual(pp, P('/c'))
 
     def _check_str(self, expected, args):
@@ -1046,23 +1050,23 @@ class _BasePathTest(unittest.TestCase):
         P = self.cls
         p = P(BASE)
         self.assertIs(True, p.exists())
-        self.assertIs(True, p['dirA'].exists())
-        self.assertIs(True, p['fileA'].exists())
+        self.assertIs(True, (p / 'dirA').exists())
+        self.assertIs(True, (p / 'fileA').exists())
         if not symlink_skip_reason:
-            self.assertIs(True, p['linkA'].exists())
-            self.assertIs(True, p['linkB'].exists())
-        self.assertIs(False, p['foo'].exists())
+            self.assertIs(True, (p / 'linkA').exists())
+            self.assertIs(True, (p / 'linkB').exists())
+        self.assertIs(False, (p / 'foo').exists())
         self.assertIs(False, P('/xyzzy').exists())
 
     def test_open(self):
         p = self.cls(BASE)
-        with p['fileA'].open('r') as f:
+        with (p / 'fileA').open('r') as f:
             self.assertIsInstance(f, io.TextIOBase)
             self.assertEqual(f.read(), "this is file A\n")
-        with p['fileA'].open('rb') as f:
+        with (p / 'fileA').open('rb') as f:
             self.assertIsInstance(f, io.BufferedIOBase)
             self.assertEqual(f.read().strip(), b"this is file A")
-        with p['fileA'].open('rb', buffering=0) as f:
+        with (p / 'fileA').open('rb', buffering=0) as f:
             self.assertIsInstance(f, io.RawIOBase)
             self.assertEqual(f.read().strip(), b"this is file A")
 
@@ -1195,7 +1199,7 @@ class _BasePathTest(unittest.TestCase):
         self.assertRaises(ValueError, p.__enter__)
 
     def test_chmod(self):
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         mode = p.stat().st_mode
         # Clear writable bit
         new_mode = mode & ~0o222
@@ -1211,7 +1215,7 @@ class _BasePathTest(unittest.TestCase):
     def test_stat(self):
         # NOTE: this notation helps trigger openat()-specific behaviour
         # (first opens the parent dir and then the file using the dir fd)
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         st = p.stat()
         self.assertEqual(p.stat(), st)
         self.assertEqual(p.restat(), st)
@@ -1226,17 +1230,17 @@ class _BasePathTest(unittest.TestCase):
 
     @with_symlinks
     def test_lstat(self):
-        p = self.cls(BASE)['linkA']
+        p = self.cls(BASE)/ 'linkA'
         st = p.stat()
         self.assertNotEqual(st, p.lstat())
 
     def test_lstat_nosymlink(self):
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         st = p.stat()
         self.assertEqual(st, p.lstat())
 
     def test_st_fields(self):
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         self.assertEqual(p.st_size, 15)
         p.st_mtime
         p.st_mode
@@ -1247,26 +1251,26 @@ class _BasePathTest(unittest.TestCase):
 
     @unittest.skipUnless(pwd, "the pwd module is needed for this test")
     def test_owner(self):
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         uid = p.stat().st_uid
         name = pwd.getpwuid(uid).pw_name
         self.assertEqual(name, p.owner)
 
     @unittest.skipUnless(grp, "the grp module is needed for this test")
     def test_group(self):
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         gid = p.stat().st_gid
         name = grp.getgrgid(gid).gr_name
         self.assertEqual(name, p.group)
 
     def test_unlink(self):
-        p = self.cls(BASE)['fileA']
+        p = self.cls(BASE) / 'fileA'
         p.unlink()
         self.assertFileNotFound(p.restat)
         self.assertFileNotFound(p.unlink)
 
     def test_rmdir(self):
-        p = self.cls(BASE)['dirA']
+        p = self.cls(BASE) / 'dirA'
         for q in p:
             q.unlink()
         p.rmdir()
@@ -1275,10 +1279,10 @@ class _BasePathTest(unittest.TestCase):
 
     def test_rename(self):
         P = self.cls(BASE)
-        p = P['fileA']
+        p = P / 'fileA'
         size = p.stat().st_size
         # Renaming to another path
-        q = P['dirA', 'fileAA']
+        q = P / 'dirA' / 'fileAA'
         p.rename(q)
         self.assertEqual(q.stat().st_size, size)
         self.assertFileNotFound(p.restat)
@@ -1290,13 +1294,13 @@ class _BasePathTest(unittest.TestCase):
 
     def test_replace(self):
         P = self.cls(BASE)
-        p = P['fileA']
+        p = P / 'fileA'
         if sys.version_info < (3, 3):
             self.assertRaises(NotImplementedError, p.replace, p)
             return
         size = p.stat().st_size
         # Replacing a non-existing path
-        q = P['dirA', 'fileAA']
+        q = P / 'dirA' / 'fileAA'
         p.replace(q)
         self.assertEqual(q.stat().st_size, size)
         self.assertFileNotFound(p.restat)
@@ -1308,12 +1312,12 @@ class _BasePathTest(unittest.TestCase):
 
     def test_touch(self):
         P = self.cls(BASE)
-        p = P['newfileA']
+        p = P / 'newfileA'
         self.assertFalse(p.exists())
         p.touch()
         self.assertTrue(p.exists())
         p.touch()
-        p = P['newfileB']
+        p = P / 'newfileB'
         self.assertFalse(p.exists())
         p.touch(mode=0o700, exist_ok=False)
         self.assertTrue(p.exists())
@@ -1322,7 +1326,7 @@ class _BasePathTest(unittest.TestCase):
 
     def test_mkdir(self):
         P = self.cls(BASE)
-        p = P['newdirA']
+        p = P / 'newdirA'
         self.assertFalse(p.exists())
         p.mkdir()
         self.assertTrue(p.exists())
@@ -1350,21 +1354,21 @@ class _BasePathTest(unittest.TestCase):
     @with_symlinks
     def test_symlink_to(self):
         P = self.cls(BASE)
-        target = P['fileA']
+        target = P / 'fileA'
         # Symlinking a path target
-        link = P['dirA', 'linkAA']
+        link = P / 'dirA' / 'linkAA'
         link.symlink_to(target)
         self.assertEqual(link.stat(), target.stat())
         self.assertNotEqual(link.lstat(), target.stat())
         # Symlinking a str target
-        link = P['dirA', 'linkAAA']
+        link = P / 'dirA' / 'linkAAA'
         link.symlink_to(str(target))
         self.assertEqual(link.stat(), target.stat())
         self.assertNotEqual(link.lstat(), target.stat())
         self.assertFalse(link.is_dir())
         # Symlinking to a directory
-        target = P['dirB']
-        link = P['dirA', 'linkAAAA']
+        target = P / 'dirB'
+        link = P / 'dirA' / 'linkAAAA'
         link.symlink_to(target, target_is_directory=True)
         self.assertEqual(link.stat(), target.stat())
         self.assertNotEqual(link.lstat(), target.stat())
@@ -1373,27 +1377,27 @@ class _BasePathTest(unittest.TestCase):
 
     def test_is_dir(self):
         P = self.cls(BASE)
-        self.assertTrue(P['dirA'].is_dir())
-        self.assertFalse(P['fileA'].is_dir())
+        self.assertTrue((P / 'dirA').is_dir())
+        self.assertFalse((P / 'fileA').is_dir())
         if not symlink_skip_reason:
-            self.assertFalse(P['linkA'].is_dir())
-            self.assertTrue(P['linkB'].is_dir())
+            self.assertFalse((P / 'linkA').is_dir())
+            self.assertTrue((P / 'linkB').is_dir())
 
     def test_is_file(self):
         P = self.cls(BASE)
-        self.assertTrue(P['fileA'].is_file())
-        self.assertFalse(P['dirA'].is_file())
+        self.assertTrue((P / 'fileA').is_file())
+        self.assertFalse((P / 'dirA').is_file())
         if not symlink_skip_reason:
-            self.assertTrue(P['linkA'].is_file())
-            self.assertFalse(P['linkB'].is_file())
+            self.assertTrue((P / 'linkA').is_file())
+            self.assertFalse((P / 'linkB').is_file())
 
     def test_is_symlink(self):
         P = self.cls(BASE)
-        self.assertFalse(P['fileA'].is_symlink())
-        self.assertFalse(P['dirA'].is_symlink())
+        self.assertFalse((P / 'fileA').is_symlink())
+        self.assertFalse((P / 'dirA').is_symlink())
         if not symlink_skip_reason:
-            self.assertTrue(P['linkA'].is_symlink())
-            self.assertTrue(P['linkB'].is_symlink())
+            self.assertTrue((P / 'linkA').is_symlink())
+            self.assertTrue((P / 'linkB').is_symlink())
 
 
 class PathTest(_BasePathTest):

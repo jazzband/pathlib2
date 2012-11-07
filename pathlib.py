@@ -944,11 +944,11 @@ class PurePath(object):
         """
         return self._make_child(args)
 
-    def __getitem__(self, key):
-        if isinstance(key, tuple):
-            return self._make_child(key)
-        else:
-            return self._make_child((key,))
+    def __truediv__(self, key):
+        return self._make_child((key,))
+
+    def __rtruediv__(self, key):
+        return self._from_parts([key] + self._parts)
 
     def parent(self, level=1):
         """A parent or ancestor (if `level` is specified) of this path."""
