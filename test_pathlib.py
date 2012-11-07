@@ -192,14 +192,14 @@ class _BasePurePathTest(unittest.TestCase):
     def test_join_common(self):
         P = self.cls
         p = P('a/b')
-        pp = p.join('c')
+        pp = p.joinpath('c')
         self.assertEqual(pp, P('a/b/c'))
         self.assertIs(type(pp), type(p))
-        pp = p.join('c', 'd')
+        pp = p.joinpath('c', 'd')
         self.assertEqual(pp, P('a/b/c/d'))
-        pp = p.join(P('c'))
+        pp = p.joinpath(P('c'))
         self.assertEqual(pp, P('a/b/c'))
-        pp = p.join('/c')
+        pp = p.joinpath('/c')
         self.assertEqual(pp, P('/c'))
 
     def test_getitem_common(self):

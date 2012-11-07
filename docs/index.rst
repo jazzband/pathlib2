@@ -378,18 +378,18 @@ Pure paths provide the following methods an properties:
    unintended effects.
 
 
-.. method:: PurePath.join(*other)
+.. method:: PurePath.joinpath(*other)
 
    Calling this method is equivalent to indexing the path with each of
    the *other* arguments in turn::
 
-      >>> PurePosixPath('/etc').join('passwd')
+      >>> PurePosixPath('/etc').joinpath('passwd')
       PurePosixPath('/etc/passwd')
-      >>> PurePosixPath('/etc').join(PurePosixPath('passwd'))
+      >>> PurePosixPath('/etc').joinpath(PurePosixPath('passwd'))
       PurePosixPath('/etc/passwd')
-      >>> PurePosixPath('/etc').join('init.d', 'apache2')
+      >>> PurePosixPath('/etc').joinpath('init.d', 'apache2')
       PurePosixPath('/etc/init.d/apache2')
-      >>> PureNTPath('c:').join('/Program Files')
+      >>> PureNTPath('c:').joinpath('/Program Files')
       PureNTPath('c:\\Program Files')
 
 

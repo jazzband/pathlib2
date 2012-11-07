@@ -936,7 +936,7 @@ class PurePath(object):
             self._pparts = _PathParts(self)
             return self._pparts
 
-    def join(self, *args):
+    def joinpath(self, *args):
         """Combine this path with one or several arguments, and return a
         new path representing either a subpath (if all arguments are relative
         paths) or a totally different path (if one of the arguments is
