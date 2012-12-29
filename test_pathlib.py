@@ -67,6 +67,11 @@ class PosixFlavourTest(_BaseFlavourTest):
 
     def test_parse_parts(self):
         check = self._check_parse_parts
+        # Collapsing of excess leading slashes, except for the double-slash
+        # special case.
+        check(['//a', 'b'],             ('', '//', ['//', 'a', 'b']))
+        check(['///a', 'b'],            ('', '/', ['/', 'a', 'b']))
+        check(['////a', 'b'],           ('', '/', ['/', 'a', 'b']))
         # Paths which look like NT paths aren't treated specially
         check(['c:a'],                  ('', '', ['c:a']))
         check(['c:\\a'],                ('', '', ['c:\\a']))
@@ -82,7 +87,10 @@ class PosixFlavourTest(_BaseFlavourTest):
         self.assertEqual(f('/a/b'), ('', '/', 'a/b'))
         self.assertEqual(f('/a/b/'), ('', '/', 'a/b/'))
         # The root is collapsed when there are redundant slashes
-        self.assertEqual(f('//a'), ('', '/', 'a'))
+        # except when there are exactly two leading slashes, which
+        # is a special case in POSIX.
+        self.assertEqual(f('//a'), ('', '//', 'a'))
+        self.assertEqual(f('///a'), ('', '/', 'a'))
         self.assertEqual(f('///a/b'), ('', '/', 'a/b'))
         # Paths which look like NT paths aren't treated specially
         self.assertEqual(f('c:/a/b'), ('', '', 'c:/a/b'))
@@ -164,7 +172,7 @@ class _BasePurePathTest(unittest.TestCase):
             ('', 'a', 'b'), ('a', '', 'b'), ('a', 'b', ''),
             ],
         '/b/c/d': [
-            ('a', '/b/c', 'd'), ('a', '//b//c', 'd/'),
+            ('a', '/b/c', 'd'), ('a', '///b//c', 'd/'),
             ('/a', '/b/c', 'd'),
             # empty components get removed
             ('/', 'b', '', 'c/d'), ('/', '', 'b/c/d'), ('', '/b/c/d'),
@@ -539,12 +547,16 @@ class PurePosixPathTest(_BasePurePathTest):
 
     def test_root(self):
         P = self.cls
-        # This is an UNC path under Windows
-        self.assertEqual(P('//a/b').root, '/')
+        self.assertEqual(P('/a/b').root, '/')
+        self.assertEqual(P('///a/b').root, '/')
+        # POSIX special case for two leading slashes
+        self.assertEqual(P('//a/b').root, '//')
 
     def test_eq(self):
         P = self.cls
         self.assertNotEqual(P('a/b'), P('A/b'))
+        self.assertEqual(P('/a'), P('///a'))
+        self.assertNotEqual(P('/a'), P('//a'))
 
     def test_match(self):
         P = self.cls
@@ -558,6 +570,8 @@ class PurePosixPathTest(_BasePurePathTest):
         self.assertTrue(P('/').is_absolute())
         self.assertTrue(P('/a').is_absolute())
         self.assertTrue(P('/a/b/').is_absolute())
+        self.assertTrue(P('//a').is_absolute())
+        self.assertTrue(P('//a/b').is_absolute())
 
     def test_normcase(self):
         P = self.cls
@@ -571,6 +585,27 @@ class PurePosixPathTest(_BasePurePathTest):
         self.assertIs(False, P('/').is_reserved())
         self.assertIs(False, P('/foo/bar').is_reserved())
         self.assertIs(False, P('/dev/con/PRN/NUL').is_reserved())
+
+    def test_join(self):
+        P = self.cls
+        p = P('//a')
+        pp = p.joinpath('b')
+        self.assertEqual(pp, P('//a/b'))
+        pp = P('/a').joinpath('//c')
+        self.assertEqual(pp, P('//c'))
+        pp = P('//a').joinpath('/c')
+        self.assertEqual(pp, P('/c'))
+
+    def test_div(self):
+        # Basically the same as joinpath()
+        P = self.cls
+        p = P('//a')
+        pp = p / 'b'
+        self.assertEqual(pp, P('//a/b'))
+        pp = P('/a') / '//c'
+        self.assertEqual(pp, P('//c'))
+        pp = P('//a') / '/c'
+        self.assertEqual(pp, P('/c'))
 
 
 class PureNTPathTest(_BasePurePathTest):
