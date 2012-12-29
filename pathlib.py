@@ -205,7 +205,16 @@ class _PosixFlavour(_Flavour):
 
     def splitroot(self, part, sep=sep):
         if part and part[0] == sep:
-            return '', sep, part.lstrip(sep)
+            stripped_part = part.lstrip(sep)
+            # According to POSIX path resolution:
+            # http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_11
+            # "A pathname that begins with two successive slashes may be
+            # interpreted in an implementation-defined manner, although more
+            # than two leading slashes shall be treated as a single slash".
+            if len(part) - len(stripped_part) == 2:
+                return '', sep * 2, stripped_part
+            else:
+                return '', sep, stripped_part
         else:
             return '', '', part
 
