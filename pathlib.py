@@ -1133,7 +1133,7 @@ class Path(PurePath):
     def _raise_closed(self):
         raise ValueError("I/O operation on closed path")
 
-    def _opener(self, name, flags, mode=0o777):
+    def _opener(self, name, flags, mode=0o666):
         # A stub for the opener argument to built-in open()
         return self._accessor.open(self, flags, mode)
 
@@ -1283,7 +1283,7 @@ class Path(PurePath):
         else:
             return io.open(str(self), mode, buffering, encoding, errors, newline)
 
-    def touch(self, mode=0o777, exist_ok=True):
+    def touch(self, mode=0o666, exist_ok=True):
         """
         Create this file with the given access mode, if it doesn't exist.
         """

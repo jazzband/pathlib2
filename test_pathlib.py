@@ -3,8 +3,9 @@ import io
 import os
 import errno
 import pathlib
-import sys
 import shutil
+import stat
+import sys
 import tempfile
 import unittest
 from contextlib import contextmanager
@@ -995,7 +996,7 @@ class _BasePathTest(unittest.TestCase):
         self.assertIs(False, p['foo'].exists())
         self.assertIs(False, P('/xyzzy').exists())
 
-    def test_open(self):
+    def test_open_common(self):
         p = self.cls(BASE)
         with p['fileA'].open('r') as f:
             self.assertIsInstance(f, io.TextIOBase)
@@ -1247,7 +1248,7 @@ class _BasePathTest(unittest.TestCase):
         self.assertEqual(os.stat(r).st_size, size)
         self.assertFileNotFound(q.restat)
 
-    def test_touch(self):
+    def test_touch_common(self):
         P = self.cls(BASE)
         p = P['newfileA']
         self.assertFalse(p.exists())
@@ -1259,7 +1260,6 @@ class _BasePathTest(unittest.TestCase):
         p.touch(mode=0o700, exist_ok=False)
         self.assertTrue(p.exists())
         self.assertRaises(OSError, p.touch, exist_ok=False)
-        # XXX better test `mode` arg
 
     def test_mkdir(self):
         P = self.cls(BASE)
@@ -1360,6 +1360,35 @@ class PosixPathTest(_BasePathTest):
         path = self.cls(*args)
         with self.assertRaises(ValueError):
             print(path.resolve())
+
+    def test_open_mode(self):
+        old_mask = os.umask(0)
+        self.addCleanup(os.umask, old_mask)
+        p = self.cls(BASE)
+        with p['new_file'].open('wb'):
+            pass
+        st = os.stat(join('new_file'))
+        self.assertEqual(stat.S_IMODE(st.st_mode), 0o666)
+        os.umask(0o022)
+        with p['other_new_file'].open('wb'):
+            pass
+        st = os.stat(join('other_new_file'))
+        self.assertEqual(stat.S_IMODE(st.st_mode), 0o644)
+
+    def test_touch_mode(self):
+        old_mask = os.umask(0)
+        self.addCleanup(os.umask, old_mask)
+        p = self.cls(BASE)
+        p['new_file'].touch()
+        st = os.stat(join('new_file'))
+        self.assertEqual(stat.S_IMODE(st.st_mode), 0o666)
+        os.umask(0o022)
+        p['other_new_file'].touch()
+        st = os.stat(join('other_new_file'))
+        self.assertEqual(stat.S_IMODE(st.st_mode), 0o644)
+        p['masked_new_file'].touch(mode=0o750)
+        st = os.stat(join('masked_new_file'))
+        self.assertEqual(stat.S_IMODE(st.st_mode), 0o750)
 
     @with_symlinks
     def test_resolve_loop(self):
