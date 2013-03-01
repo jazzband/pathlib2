@@ -343,6 +343,19 @@ Pure paths provide the following methods an properties:
       'c:/windows'
 
 
+.. method:: PurePath.as_uri()
+
+   Represent the path as a ``file`` URI.  :exc:`ValueError` is raised if
+   the path isn't absolute.
+
+      >>> p = PurePosixPath('/etc/passwd')
+      >>> p.as_uri()
+      'file:///etc/passwd'
+      >>> p = PureNTPath('c:/Windows')
+      >>> p.as_uri()
+      'file:///c:/Windows'
+
+
 .. method:: PurePath.is_absolute()
 
    Return whether the path is absolute or not.  A path is considered absolute

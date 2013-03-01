@@ -18,6 +18,10 @@ from errno import EINVAL, ENOENT, EEXIST
 from itertools import chain, count
 from operator import attrgetter
 from stat import S_ISDIR, S_ISLNK, S_ISREG
+try:
+    from urllib import quote as urlquote, quote as urlquote_from_bytes
+except ImportError:
+    from urllib.parse import quote as urlquote, quote_from_bytes as urlquote_from_bytes
 
 
 supports_symlinks = True
@@ -192,6 +196,18 @@ class _NTFlavour(_Flavour):
             return False
         return parts[-1].partition('.')[0].upper() in self.reserved_names
 
+    def make_uri(self, path):
+        # Under Windows, file URIs use the UTF-8 encoding.
+        drive = path.drive
+        if len(drive) == 2 and drive[1] == ':':
+            # It's a path on a local drive => 'file:///c:/a/b'
+            rest = path.as_posix()[2:].lstrip('/')
+            return 'file:///%s/%s' % (
+                drive, urlquote_from_bytes(rest.encode('utf-8')))
+        else:
+            # It's a path on a network drive => 'file://host/share/a/b'
+            return 'file:' + urlquote_from_bytes(path.as_posix().encode('utf-8'))
+
 
 _NO_FD = None
 
@@ -275,6 +291,12 @@ class _PosixFlavour(_Flavour):
 
     def is_reserved(self, parts):
         return False
+
+    def make_uri(self, path):
+        # We represent the path using the local filesystem encoding,
+        # for portability to other applications.
+        bpath = path.as_bytes()
+        return 'file://' + urlquote_from_bytes(bpath)
 
 
 _nt_flavour = _NTFlavour()
@@ -779,12 +801,20 @@ class PurePath(object):
     def as_bytes(self):
         """Return the bytes representation of the path.  This is only
         recommended to use under Unix."""
+        if sys.version_info < (3, 2):
+            raise NotImplementedError("needs Python 3.2 or later")
         return os.fsencode(str(self))
 
     __bytes__ = as_bytes
 
     def __repr__(self):
         return "{}({!r})".format(self.__class__.__name__, str(self))
+
+    def as_uri(self):
+        """Return the path as a 'file' URI."""
+        if not self.is_absolute():
+            raise ValueError("relative path can't be expressed as a file URI")
+        return self._flavour.make_uri(self)
 
     @property
     def _cparts(self):
