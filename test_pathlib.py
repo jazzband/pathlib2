@@ -270,6 +270,9 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertNotEqual(P('a/b'), P())
         self.assertNotEqual(P('/a/b'), P('/'))
         self.assertNotEqual(P(), P('/'))
+        self.assertNotEqual(P(), "")
+        self.assertNotEqual(P(), {})
+        self.assertNotEqual(P(), int)
 
     def test_match_common(self):
         P = self.cls
@@ -331,6 +334,11 @@ class _BasePurePathTest(unittest.TestCase):
         assertLess(a, d)
         assertLess(b, c)
         assertLess(c, d)
+        if sys.version_info > (3,):
+            with self.assertRaises(TypeError):
+                P() < {}
+        else:
+            P() < {}
 
     def test_parts_common(self):
         sep = self.sep

@@ -796,6 +796,8 @@ class PurePath(object):
             return self._cached_cparts
 
     def __eq__(self, other):
+        if not isinstance(other, PurePath):
+            return NotImplemented
         return self._cparts == other._cparts and self._flavour is other._flavour
 
     def __ne__(self, other):
@@ -809,22 +811,22 @@ class PurePath(object):
             return self._hash
 
     def __lt__(self, other):
-        if self._flavour is not other._flavour:
+        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
             return NotImplemented
         return self._cparts < other._cparts
 
     def __le__(self, other):
-        if self._flavour is not other._flavour:
+        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
             return NotImplemented
         return self._cparts <= other._cparts
 
     def __gt__(self, other):
-        if self._flavour is not other._flavour:
+        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
             return NotImplemented
         return self._cparts > other._cparts
 
     def __ge__(self, other):
-        if self._flavour is not other._flavour:
+        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
             return NotImplemented
         return self._cparts >= other._cparts
 
