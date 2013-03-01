@@ -92,9 +92,12 @@ History
 Version 0.8
 ^^^^^^^^^^^
 
-- Add PurePath.name and PurePath.anchor
-- Add Path.owner and Path.group
-- Add Path.replace()
+- Add PurePath.name and PurePath.anchor.
+- Add Path.owner and Path.group.
+- Add Path.replace().
+- Issue #10: when creating a file with Path.open(), don't set the executable
+  bit.
+- Issue #11: fix comparisons with non-Path objects.
 
 Version 0.7
 ^^^^^^^^^^^
