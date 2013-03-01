@@ -161,6 +161,9 @@ class NTFlavourTest(_BaseFlavourTest):
 # Tests for the pure classes
 #
 
+with_fsencode = unittest.skipIf(sys.version_info < (3, 2),
+    'os.fsencode has been introduced in version 3.2')
+
 class _BasePurePathTest(unittest.TestCase):
 
     # keys are canonical paths, values are list of tuples of arguments
@@ -247,13 +250,20 @@ class _BasePurePathTest(unittest.TestCase):
             self.assertEqual(P(pathstr).as_posix(), pathstr)
         # Other tests for as_posix() are in test_equivalences()
 
-    @unittest.skipIf(sys.version_info < (3, 2),
-                     'os.fsencode has been introduced in version 3.2')
+    @with_fsencode
     def test_as_bytes_common(self):
         sep = os.fsencode(self.sep)
         P = self.cls
         self.assertEqual(P('a/b').as_bytes(), b'a' + sep + b'b')
         self.assertEqual(bytes(P('a/b')), b'a' + sep + b'b')
+
+    @with_fsencode
+    def test_as_uri_common(self):
+        P = self.cls
+        with self.assertRaises(ValueError):
+            P('a').as_uri()
+        with self.assertRaises(ValueError):
+            P().as_uri()
 
     def test_repr_common(self):
         for pathstr in ('a', 'a/b', 'a/b/c', '/', '/a/b', '/a/b/c'):
@@ -567,6 +577,16 @@ class PurePosixPathTest(_BasePurePathTest):
         self.assertEqual(P('/a'), P('///a'))
         self.assertNotEqual(P('/a'), P('//a'))
 
+    @with_fsencode
+    def test_as_uri(self):
+        from urllib.parse import quote_from_bytes
+        P = self.cls
+        self.assertEqual(P('/').as_uri(), 'file:///')
+        self.assertEqual(P('/a/b.c').as_uri(), 'file:///a/b.c')
+        self.assertEqual(P('/a/b%#c').as_uri(), 'file:///a/b%25%23c')
+        self.assertEqual(P('/a/b\xe9').as_uri(),
+                         'file:///a/b' + quote_from_bytes(os.fsencode('\xe9')))
+
     def test_match(self):
         P = self.cls
         self.assertFalse(P('A.py').match('a.PY'))
@@ -656,6 +676,24 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertEqual(P('a/B'), P('A/b'))
         self.assertEqual(P('C:a/B'), P('c:A/b'))
         self.assertEqual(P('//Some/SHARE/a/B'), P('//somE/share/A/b'))
+
+    @with_fsencode
+    def test_as_uri(self):
+        from urllib.parse import quote_from_bytes
+        P = self.cls
+        with self.assertRaises(ValueError):
+            P('/a/b').as_uri()
+        with self.assertRaises(ValueError):
+            P('c:a/b').as_uri()
+        self.assertEqual(P('c:/').as_uri(), 'file:///c:/')
+        self.assertEqual(P('c:/a/b.c').as_uri(), 'file:///c:/a/b.c')
+        self.assertEqual(P('c:/a/b%#c').as_uri(), 'file:///c:/a/b%25%23c')
+        self.assertEqual(P('c:/a/b\xe9').as_uri(), 'file:///c:/a/b%C3%A9')
+        self.assertEqual(P('//some/share/').as_uri(), 'file://some/share/')
+        self.assertEqual(P('//some/share/a/b.c').as_uri(),
+                         'file://some/share/a/b.c')
+        self.assertEqual(P('//some/share/a/b%#c\xe9').as_uri(),
+                         'file://some/share/a/b%25%23c%C3%A9')
 
     def test_match_common(self):
         P = self.cls
