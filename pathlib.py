@@ -610,9 +610,6 @@ class PurePath(object):
         drv, root, parts = self._flavour.join_parsed_parts(
             self._drv, self._root, self._parts, drv, root, parts)
         return self._from_parsed_parts(drv, root, parts)
-        parts = self._parts[:]
-        parts.extend(args)
-        return self._from_parts(parts)
 
     def __str__(self):
         """Return the string representation of the path, suitable for
