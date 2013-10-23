@@ -69,8 +69,13 @@ class _Flavour(object):
             if altsep:
                 part = part.replace(altsep, sep)
             drv, root, rel = self.splitroot(part)
-            rel = rel.rstrip(sep)
-            parsed.extend(x for x in reversed(rel.split(sep)) if x and x != '.')
+            if sep in rel:
+                for x in reversed(rel.rstrip(sep).split(sep)):
+                    if x and x != '.':
+                        parsed.append(x)
+            else:
+                if rel and rel != '.':
+                    parsed.append(rel)
             if drv or root:
                 if not drv:
                     # If no drive is present, try to find one in the previous
@@ -85,6 +90,19 @@ class _Flavour(object):
             parsed.append(drv + root)
         parsed.reverse()
         return drv, root, parsed
+
+    def join_parsed_parts(self, drv, root, parts, drv2, root2, parts2):
+        """
+        Join the two paths represented by the respective
+        (drive, root, parts) tuples.  Return a new (drive, root, parts) tuple.
+        """
+        if root2:
+            parts = parts2
+            root = root2
+        else:
+            parts = parts + parts2
+        # XXX raise error if drv and drv2 are different?
+        return drv2 or drv, root, parts
 
 
 class _NTFlavour(_Flavour):
@@ -352,9 +370,6 @@ class _NormalAccessor(_Accessor):
     def init_path(self, pathobj):
         pass
 
-    def make_child(self, pathobj, args):
-        return None
-
     # Helper for resolve()
     def readlink(self, path):
         return os.readlink(path)
@@ -374,10 +389,11 @@ def _cached(func):
     except AttributeError:
         cache = {}
         def wrapper(*args):
-            if args in cache:
+            try:
                 return cache[args]
-            value = cache[args] = func(*args)
-            return value
+            except KeyError:
+                value = cache[args] = func(*args)
+                return value
         wrapper.__cached__ = True
         try:
             yield wrapper
@@ -590,7 +606,10 @@ class PurePath(object):
         pass
 
     def _make_child(self, args):
-        # Overriden in concrete Path
+        drv, root, parts = self._parse_args(args)
+        drv, root, parts = self._flavour.join_parsed_parts(
+            self._drv, self._root, self._parts, drv, root, parts)
+        return self._from_parsed_parts(drv, root, parts)
         parts = self._parts[:]
         parts.extend(args)
         return self._from_parts(parts)
@@ -920,20 +939,9 @@ class Path(PurePath):
             self._accessor = _normal_accessor
         self._accessor.init_path(self)
 
-    def _make_child(self, args):
-        child = self._accessor.make_child(self, args)
-        if child is not None:
-            return child
-        parts = self._parts[:]
-        parts.extend(args)
-        return self._from_parts(parts)
-
     def _make_child_relpath(self, part):
         # This is an optimization used for dir walking.  `part` must be
         # a single part relative to this path.
-        child = self._accessor.make_child(self, (part,))
-        if child is not None:
-            return child
         parts = self._parts + [part]
         return self._from_parsed_parts(self._drv, self._root, parts)
 
