@@ -899,9 +899,6 @@ class Path(PurePath):
         '_closed',
     )
 
-    _wrs = {}
-    _wr_id = count()
-
     def __new__(cls, *args, **kwargs):
         if cls is Path:
             cls = NTPath if os.name == 'nt' else PosixPath
