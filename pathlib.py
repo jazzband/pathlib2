@@ -369,9 +369,6 @@ class _NormalAccessor(_Accessor):
         def symlink(a, b, target_is_directory):
             return os.symlink(str(a), str(b))
 
-    def init_path(self, pathobj):
-        pass
-
     # Helper for resolve()
     def readlink(self, path):
         return os.readlink(path)
@@ -936,7 +933,6 @@ class Path(PurePath):
             self._accessor = template._accessor
         else:
             self._accessor = _normal_accessor
-        self._accessor.init_path(self)
 
     def _make_child_relpath(self, part):
         # This is an optimization used for dir walking.  `part` must be
