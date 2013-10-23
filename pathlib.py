@@ -66,11 +66,13 @@ class _Flavour(object):
         drv = root = ''
         it = reversed(parts)
         for part in it:
+            if not part:
+                continue
             if altsep:
                 part = part.replace(altsep, sep)
             drv, root, rel = self.splitroot(part)
             if sep in rel:
-                for x in reversed(rel.rstrip(sep).split(sep)):
+                for x in reversed(rel.split(sep)):
                     if x and x != '.':
                         parsed.append(x)
             else:
