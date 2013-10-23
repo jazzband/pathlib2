@@ -22,7 +22,7 @@ except ImportError:
     grp = pwd = None
 
 
-class _BaseFlavourTest(unittest.TestCase):
+class _BaseFlavourTest(object):
 
     def _check_parse_parts(self, arg, expected):
         f = self.flavour.parse_parts
@@ -63,7 +63,7 @@ class _BaseFlavourTest(unittest.TestCase):
         check(['a', '/b', '/c'],    ('', sep, [sep, 'c']))
 
 
-class PosixFlavourTest(_BaseFlavourTest):
+class PosixFlavourTest(_BaseFlavourTest, unittest.TestCase):
     flavour = pathlib._posix_flavour
 
     def test_parse_parts(self):
@@ -99,7 +99,7 @@ class PosixFlavourTest(_BaseFlavourTest):
         self.assertEqual(f('\\a\\b'), ('', '', '\\a\\b'))
 
 
-class NTFlavourTest(_BaseFlavourTest):
+class NTFlavourTest(_BaseFlavourTest, unittest.TestCase):
     flavour = pathlib._nt_flavour
 
     def test_parse_parts(self):
@@ -164,7 +164,7 @@ class NTFlavourTest(_BaseFlavourTest):
 with_fsencode = unittest.skipIf(sys.version_info < (3, 2),
     'os.fsencode has been introduced in version 3.2')
 
-class _BasePurePathTest(unittest.TestCase):
+class _BasePurePathTest(object):
 
     # keys are canonical paths, values are list of tuples of arguments
     # supposed to produce equal paths
@@ -561,7 +561,7 @@ class _BasePurePathTest(unittest.TestCase):
         self.assertRaises(ValueError, p.relative, P('a'))
 
 
-class PurePosixPathTest(_BasePurePathTest):
+class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
     cls = pathlib.PurePosixPath
 
     def test_root(self):
@@ -637,7 +637,7 @@ class PurePosixPathTest(_BasePurePathTest):
         self.assertEqual(pp, P('/c'))
 
 
-class PureNTPathTest(_BasePurePathTest):
+class PureNTPathTest(_BasePurePathTest, unittest.TestCase):
     cls = pathlib.PureNTPath
 
     equivalences = _BasePurePathTest.equivalences.copy()
@@ -985,7 +985,7 @@ class PureNTPathTest(_BasePurePathTest):
         self.assertIs(False, P('//my/share/nul/con/aux').is_reserved())
 
 
-class PurePathTest(_BasePurePathTest):
+class PurePathTest(_BasePurePathTest, unittest.TestCase):
     cls = pathlib.PurePath
 
     def test_concrete_class(self):
@@ -1051,7 +1051,7 @@ class NTPathAsPureTest(PureNTPathTest):
     cls = pathlib.NTPath
 
 
-class _BasePathTest(unittest.TestCase):
+class _BasePathTest(object):
     """Tests for the FS-accessing functionalities of the Path classes."""
 
     using_openat = False
@@ -1481,7 +1481,7 @@ class _BasePathTest(unittest.TestCase):
             self.assertTrue((P / 'linkB').is_symlink())
 
 
-class PathTest(_BasePathTest):
+class PathTest(_BasePathTest, unittest.TestCase):
     cls = pathlib.Path
 
     def test_concrete_class(self):
@@ -1497,7 +1497,7 @@ class PathTest(_BasePathTest):
 
 
 @only_posix
-class PosixPathTest(_BasePathTest):
+class PosixPathTest(_BasePathTest, unittest.TestCase):
     cls = pathlib.PosixPath
 
     def _check_symlink_loop(self, *args):
@@ -1611,7 +1611,7 @@ class Mock:
 @unittest.skipUnless(pathlib.supports_openat,
                      "test needs the openat() family of functions")
 @only_posix
-class PosixOpenatPathTest(PosixPathTest):
+class PosixOpenatPathTest(PosixPathTest, unittest.TestCase):
     cls = staticmethod(
         lambda *args, **kwargs:
         pathlib.PosixPath(*args, use_openat=True, **kwargs)
@@ -1684,7 +1684,7 @@ class PosixOpenatPathTest(PosixPathTest):
 
 
 @only_nt
-class NTPathTest(_BasePathTest):
+class NTPathTest(_BasePathTest, unittest.TestCase):
     cls = pathlib.NTPath
 
     def test_glob(self):
@@ -1698,13 +1698,5 @@ class NTPathTest(_BasePathTest):
         self.assertEqual(set(p.rglob("FILEd")), { P(BASE, "dirC/dirD/fileD") })
 
 
-def test_main():
-    support.run_unittest(
-        PosixFlavourTest, NTFlavourTest,
-        PurePosixPathTest, PureNTPathTest, PurePathTest,
-        PosixPathAsPureTest, NTPathAsPureTest,
-        PosixPathTest, PosixOpenatPathTest, NTPathTest, PathTest,
-    )
-
 if __name__ == "__main__":
-    test_main()
+    unittest.main()
