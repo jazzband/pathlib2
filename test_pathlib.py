@@ -1054,8 +1054,6 @@ class NTPathAsPureTest(PureNTPathTest):
 class _BasePathTest(object):
     """Tests for the FS-accessing functionalities of the Path classes."""
 
-    using_openat = False
-
     # (BASE)
     #  |
     #  |-- dirA/
@@ -1295,8 +1293,6 @@ class _BasePathTest(object):
     # XXX also need a test for lchmod
 
     def test_stat(self):
-        # NOTE: this notation helps trigger openat()-specific behaviour
-        # (first opens the parent dir and then the file using the dir fd)
         p = self.cls(BASE) / 'fileA'
         st = p.stat()
         self.assertEqual(p.stat(), st)
@@ -1564,25 +1560,6 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         self.assertEqual(set(p.rglob("FILEd")), set())
 
 
-if pathlib.supports_openat:
-    class _RecordingOpenatAccessor(pathlib._OpenatAccessor):
-        """A custom Accessor implementation to inspect the resolve() algorithm.
-        """
-
-        def __init__(self):
-            super().__init__()
-            self._readlinkat_fds = []
-            self._walk_fds = []
-
-        def readlink(self, path, name, dir_fd):
-            self._readlinkat_fds.append((dir_fd, name))
-            return super().readlink(path, name, dir_fd=dir_fd)
-
-        def walk_down(self, path, name, dir_fd):
-            self._walk_fds.append((dir_fd, name))
-            return super().walk_down(path, name, dir_fd=dir_fd)
-
-
 class Mock:
     def __init__(self, fullname):
         parts = fullname.split('.')
@@ -1606,81 +1583,6 @@ class Mock:
 
     def __exit__(self, *_):
         setattr(self.module, self.qualname, self.orig_func)
-
-
-@unittest.skipUnless(pathlib.supports_openat,
-                     "test needs the openat() family of functions")
-@only_posix
-class PosixOpenatPathTest(PosixPathTest, unittest.TestCase):
-    cls = staticmethod(
-        lambda *args, **kwargs:
-        pathlib.PosixPath(*args, use_openat=True, **kwargs)
-    )
-
-    using_openat = True
-
-    def _check_symlink_loop(self, *args):
-        # with openat(), ELOOP is returned as soon as you try to construct
-        # the path
-        with self.assertRaises(OSError) as cm:
-            path = self.cls(*args)
-            path.resolve()
-        self.assertEqual(cm.exception.errno, errno.ELOOP)
-
-    def _check_resolve_relative(self, p, expected):
-        self.assertIsInstance(p._accessor, pathlib._OpenatAccessor)
-        p._accessor = _RecordingOpenatAccessor()
-        q = p.resolve()
-        self.assertEqual(q, expected)
-        # Only the first lookup was absolute
-        def _check_fds(fds):
-            self.assertEqual(pathlib._NO_FD, fds[0][0])
-            for fd, name in fds[1:]:
-                self.assertGreaterEqual(fd, 0)
-                self.assertFalse(name.startswith("/"), name)
-        _check_fds(p._accessor._readlinkat_fds)
-        _check_fds(p._accessor._walk_fds)
-
-    def _check_resolve_absolute(self, p, expected):
-        self.assertIsInstance(p._accessor, pathlib._OpenatAccessor)
-        p._accessor = _RecordingOpenatAccessor()
-        q = p.resolve()
-        self.assertEqual(q, expected)
-        # At least one other lookup was absolute
-        def _check_fds(fds):
-            self.assertEqual(pathlib._NO_FD, fds[0][0])
-            self.assertTrue(any(fd == pathlib._NO_FD
-                                for fd, _ in fds[1:]), fds)
-        _check_fds(p._accessor._readlinkat_fds)
-        _check_fds(p._accessor._walk_fds)
-
-    def test_weakref_same_path(self):
-        # Implementation detail: separate weakrefs must be created even
-        # when two paths hash the same
-        n = len(pathlib.Path._wrs)
-        a = self.cls(BASE)
-        b = self.cls(BASE)
-        self.assertEqual(hash(a), hash(b))
-        self.assertEqual(len(pathlib.Path._wrs), n + 2)
-        del a, b
-        support.gc_collect()
-        self.assertEqual(len(pathlib.Path._wrs), n)
-
-    def test_iter(self):
-        with Mock("os.listdir") as mock_listdir:
-            super().test_iter()
-        self.assertEqual(mock_listdir.calls, 1)
-        # A file descriptor was passed
-        args = mock_listdir.call_params[0][0]
-        fd = args[0]
-        self.assertIsInstance(fd, int)
-        self.assertGreaterEqual(fd, 0)
-
-    def test_cwd(self):
-        p = pathlib.PosixPath.cwd(use_openat=True)
-        self._test_cwd(p)
-
-    # XXX can't mock os.openat since _OpenatAccessor caches the os.openat lookup.
 
 
 @only_nt

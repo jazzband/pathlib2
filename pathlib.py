@@ -209,8 +209,6 @@ class _NTFlavour(_Flavour):
             return 'file:' + urlquote_from_bytes(path.as_posix().encode('utf-8'))
 
 
-_NO_FD = None
-
 class _PosixFlavour(_Flavour):
     sep = '/'
     altsep = ''
@@ -252,41 +250,31 @@ class _PosixFlavour(_Flavour):
                 return split(os.getcwd()) + split(p)
             else:
                 return split(p)
-        def close(fd):
-            if fd != _NO_FD:
-                os.close(fd)
         parts = absparts(str(path))[::-1]
         accessor = path._accessor
         resolved = cur = ""
-        resolved_fd = _NO_FD
         symlinks = {}
-        try:
-            while parts:
-                part = parts.pop()
-                cur = resolved + sep + part
-                if cur in symlinks and symlinks[cur] <= len(parts):
-                    # We've already seen the symlink and there's not less
-                    # work to do than the last time.
-                    raise ValueError("Symlink loop from %r" % cur)
-                try:
-                    target = accessor.readlink(cur, part, dir_fd=resolved_fd)
-                except OSError as e:
-                    if e.errno != EINVAL:
-                        raise
-                    # Not a symlink
-                    resolved_fd = accessor.walk_down(cur, part, dir_fd=resolved_fd)
-                    resolved = cur
-                else:
-                    # Take note of remaining work from this symlink
-                    symlinks[cur] = len(parts)
-                    if target.startswith(sep):
-                        # Symlink points to absolute path
-                        resolved = ""
-                        close(resolved_fd)
-                        resolved_fd = _NO_FD
-                    parts.extend(split(target)[::-1])
-        finally:
-            close(resolved_fd)
+        while parts:
+            part = parts.pop()
+            cur = resolved + sep + part
+            if cur in symlinks and symlinks[cur] <= len(parts):
+                # We've already seen the symlink and there's not less
+                # work to do than the last time.
+                raise ValueError("Symlink loop from %r" % cur)
+            try:
+                target = accessor.readlink(cur)
+            except OSError as e:
+                if e.errno != EINVAL:
+                    raise
+                # Not a symlink
+                resolved = cur
+            else:
+                # Take note of remaining work from this symlink
+                symlinks[cur] = len(parts)
+                if target.startswith(sep):
+                    # Symlink points to absolute path
+                    resolved = ""
+                parts.extend(split(target)[::-1])
         return resolved or sep
 
     def is_reserved(self, parts):
@@ -303,179 +291,9 @@ _nt_flavour = _NTFlavour()
 _posix_flavour = _PosixFlavour()
 
 
-_fds_refs = defaultdict(int)
-_fds_refs_lock = threading.Lock()
-
-def _add_fd_ref(fd, lock=_fds_refs_lock):
-    with lock:
-        _fds_refs[fd] += 1
-
-def _sub_fd_ref(fd, lock=_fds_refs_lock):
-    with lock:
-        nrefs = _fds_refs[fd] - 1
-        if nrefs > 0:
-            _fds_refs[fd] = nrefs
-        else:
-            del _fds_refs[fd]
-            os.close(fd)
-
-
 class _Accessor:
     """An accessor implements a particular (system-specific or not) way of
     accessing paths on the filesystem."""
-
-
-if sys.version_info >= (3, 3):
-    supports_openat = (os.listdir in os.supports_fd and
-        os.supports_dir_fd >= { os.chmod, os.stat, os.mkdir, os.open,
-                                os.readlink, os.rename, os.symlink, os.unlink, }
-    )
-else:
-    supports_openat = False
-
-if supports_openat:
-
-    def _fdnamepair(pathobj):
-        """Get a (parent fd, name) pair from a path object, suitable for use
-        with the various *at functions."""
-        parent_fd = pathobj._parent_fd
-        if parent_fd is not None:
-            return parent_fd, pathobj._parts[-1]
-        else:
-            return _NO_FD, str(pathobj)
-
-
-    class _OpenatAccessor(_Accessor):
-
-        def _wrap_atfunc(atfunc):
-            @functools.wraps(atfunc)
-            def wrapped(pathobj, *args, **kwargs):
-                parent_fd, name = _fdnamepair(pathobj)
-                return atfunc(name, *args, dir_fd=parent_fd, **kwargs)
-            return staticmethod(wrapped)
-
-        def _wrap_binary_atfunc(atfunc):
-            @functools.wraps(atfunc)
-            def wrapped(pathobjA, pathobjB, *args, **kwargs):
-                parent_fd_A, nameA = _fdnamepair(pathobjA)
-                # We allow pathobjB to be a plain str, for convenience
-                if isinstance(pathobjB, Path):
-                    parent_fd_B, nameB = _fdnamepair(pathobjB)
-                else:
-                    # If it's a str then at best it's cwd-relative
-                    parent_fd_B, nameB = _NO_FD, str(pathobjB)
-                return atfunc(nameA, nameB, *args,
-                              src_dir_fd=parent_fd_A, dst_dir_fd=parent_fd_B,
-                              **kwargs)
-            return staticmethod(wrapped)
-
-        stat = _wrap_atfunc(os.stat)
-
-        lstat = _wrap_atfunc(os.lstat)
-
-        open = _wrap_atfunc(os.open)
-
-        chmod = _wrap_atfunc(os.chmod)
-
-        def lchmod(self, pathobj, mode):
-            return self.chmod(pathobj, mode, follow_symlinks=False)
-
-        mkdir = _wrap_atfunc(os.mkdir)
-
-        unlink = _wrap_atfunc(os.unlink)
-
-        rmdir = _wrap_atfunc(os.rmdir)
-
-        def listdir(self, pathobj):
-            fd = self._make_fd(pathobj, tolerant=False)
-            return os.listdir(fd)
-
-        rename = _wrap_binary_atfunc(os.rename)
-
-        if sys.version_info >= (3, 3):
-            replace = _wrap_binary_atfunc(os.replace)
-
-        def symlink(self, target, pathobj, target_is_directory):
-            parent_fd, name = _fdnamepair(pathobj)
-            os.symlink(str(target), name, dir_fd=parent_fd)
-
-        def _make_fd(self, pathobj, tolerant=True):
-            fd = pathobj._cached_fd
-            if fd is not None:
-                return fd
-            try:
-                fd = self.open(pathobj, os.O_RDONLY)
-            except (PermissionError, FileNotFoundError):
-                if tolerant:
-                    # If the path doesn't exist or is forbidden, just let us
-                    # gracefully fallback on fd-less code.
-                    return None
-                raise
-            # This ensures the stat information is consistent with the fd.
-            try:
-                st = pathobj._cached_stat = os.fstat(fd)
-            except:
-                os.close(fd)
-                raise
-            if tolerant and not S_ISDIR(st.st_mode):
-                # Not a directory => no point in keeping the fd
-                os.close(fd)
-                return None
-            else:
-                pathobj._cached_fd = fd
-                pathobj._add_managed_fd(fd)
-                return fd
-
-        def init_path(self, pathobj):
-            self._make_fd(pathobj)
-
-        def make_child(self, pathobj, args):
-            drv, root, parts = pathobj._flavour.parse_parts(args)
-            if drv or root:
-                # Anchored path => we can't do any better
-                return None
-            # NOTE: In the code below, we want to expose errors instead of
-            # risking race conditions when e.g. a non-existing directory gets
-            # later created.  This means we want e.g. non-existing path
-            # components or insufficient permissions to raise an OSError.
-            pathfd = self._make_fd(pathobj, tolerant=False)
-            if not parts:
-                # This is the same path
-                newpath = pathobj._from_parsed_parts(
-                    pathobj._drv, pathobj._root, pathobj._parts, init=False)
-                newpath._init(template=pathobj, fd=pathfd)
-                return newpath
-            parent_fd = pathfd
-            for part in parts[:-1]:
-                fd = os.open(part, os.O_RDONLY, dir_fd=parent_fd)
-                if parent_fd != pathfd:
-                    # Forget intermediate fds
-                    os.close(parent_fd)
-                parent_fd = fd
-            # The last component may or may not exist, it doesn't matter: we
-            # have the fd of its parent
-            newpath = pathobj._from_parsed_parts(
-                pathobj._drv, pathobj._root, pathobj._parts + parts, init=False)
-            newpath._init(template=pathobj, parent_fd=parent_fd)
-            return newpath
-
-        # Helpers for resolve()
-        def walk_down(self, path, name, dir_fd):
-            if dir_fd != _NO_FD:
-                try:
-                    return os.open(name, os.O_RDONLY, dir_fd=dir_fd)
-                finally:
-                    os.close(dir_fd)
-            else:
-                return os.open(path, os.O_RDONLY)
-
-        def readlink(self, path, name, dir_fd):
-            if dir_fd != _NO_FD:
-                return os.readlink(name, dir_fd=dir_fd)
-            else:
-                return os.readlink(path)
-
-    _openat_accessor = _OpenatAccessor()
 
 
 class _NormalAccessor(_Accessor):
@@ -537,13 +355,8 @@ class _NormalAccessor(_Accessor):
     def make_child(self, pathobj, args):
         return None
 
-    # Helpers for resolve()
-    def walk_down(self, path, name, dir_fd):
-        assert dir_fd == _NO_FD
-        return _NO_FD
-
-    def readlink(self, path, name, dir_fd):
-        assert dir_fd == _NO_FD
+    # Helper for resolve()
+    def readlink(self, path):
         return os.readlink(path)
 
 _normal_accessor = _NormalAccessor()
@@ -1084,45 +897,28 @@ class Path(PurePath):
         '_accessor',
         '_cached_stat',
         '_closed',
-        # Used by _OpenatAccessor
-        '_cached_fd',
-        '_parent_fd',
-        '_managed_fds',
-        '__weakref__',
     )
 
     _wrs = {}
     _wr_id = count()
 
     def __new__(cls, *args, **kwargs):
-        use_openat = kwargs.get('use_openat', False)
         if cls is Path:
             cls = NTPath if os.name == 'nt' else PosixPath
         self = cls._from_parts(args, init=False)
         if not self._flavour.is_supported:
             raise NotImplementedError("cannot instantiate %r on your system"
                                       % (cls.__name__,))
-        self._init(use_openat)
+        self._init()
         return self
 
-    def _init(self, use_openat=False,
+    def _init(self,
               # Private non-constructor arguments
-              template=None, parent_fd=None, fd=None,
+              template=None,
               ):
         self._closed = False
-        self._managed_fds = None
-        self._parent_fd = parent_fd
-        self._cached_fd = fd
-        if parent_fd is not None:
-            self._add_managed_fd(parent_fd)
-        if fd is not None:
-            self._add_managed_fd(fd)
         if template is not None:
             self._accessor = template._accessor
-        elif use_openat:
-            if not supports_openat:
-                raise NotImplementedError("your system doesn't support openat()")
-            self._accessor = _openat_accessor
         else:
             self._accessor = _normal_accessor
         self._accessor.init_path(self)
@@ -1154,35 +950,6 @@ class Path(PurePath):
         self._cached_stat = st
         return st
 
-    @classmethod
-    def _cleanup(cls, fds, wr_id=None):
-        if wr_id is not None:
-            del cls._wrs[wr_id]
-        while fds:
-            _sub_fd_ref(fds.pop())
-
-    def _add_managed_fd(self, fd):
-        """Add a file descriptor managed by this object."""
-        if fd is None:
-            return
-        fds = self._managed_fds
-        if fds is None:
-            # This setup is done lazily so that most path objects avoid it
-            fds = self._managed_fds = []
-            cleanup = type(self)._cleanup
-            # We can't hash the weakref directly since distinct Path objects
-            # can compare equal.
-            wr_id = next(self._wr_id)
-            wr = weakref.ref(self, lambda wr: cleanup(fds, wr_id))
-            self._wrs[wr_id] = wr
-        _add_fd_ref(fd)
-        fds.append(fd)
-
-    def _sub_managed_fd(self, fd):
-        """Remove a file descriptor managed by this object."""
-        self._managed_fds.remove(fd)
-        _sub_fd_ref(fd)
-
     def __enter__(self):
         if self._closed:
             self._raise_closed()
@@ -1190,12 +957,6 @@ class Path(PurePath):
 
     def __exit__(self, t, v, tb):
         self._closed = True
-        fds = self._managed_fds
-        if fds is not None:
-            self._managed_fds = None
-            self._cached_fd = None
-            self._parent_fd = None
-            self._cleanup(fds)
 
     def _raise_closed(self):
         raise ValueError("I/O operation on closed path")
@@ -1207,11 +968,11 @@ class Path(PurePath):
     # Public API
 
     @classmethod
-    def cwd(cls, use_openat=False):
+    def cwd(cls):
         """Return a new path pointing to the current working directory
         (as returned by os.getcwd()).
         """
-        return cls(os.getcwd(), use_openat=use_openat)
+        return cls(os.getcwd())
 
     def __iter__(self):
         """Iterate over the files in this directory.  Does not yield any
@@ -1271,7 +1032,7 @@ class Path(PurePath):
         # FIXME this must defer to the specific flavour (and, under Windows,
         # use nt._getfullpathname())
         obj = self._from_parts([os.getcwd()] + self._parts, init=False)
-        obj._init(template=self, parent_fd=self._parent_fd, fd=self._cached_fd)
+        obj._init(template=self)
         return obj
 
     def resolve(self):
@@ -1291,7 +1052,7 @@ class Path(PurePath):
         # Now we have no symlinks in the path, it's safe to normalize it.
         normed = self._flavour.pathmod.normpath(s)
         obj = self._from_parts((normed,), init=False)
-        obj._init(template=self, parent_fd=self._parent_fd, fd=self._cached_fd)
+        obj._init(template=self)
         return obj
 
     def stat(self):
