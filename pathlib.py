@@ -725,6 +725,9 @@ class PurePath(object):
             cls = PureNTPath if os.name == 'nt' else PurePosixPath
         return cls._from_parts(args)
 
+    def __reduce__(self):
+        return (self.__class__, tuple(self._parts))
+
     @classmethod
     def _parse_args(cls, args):
         # This is useful when you don't want to create an instance, just
