@@ -24,6 +24,11 @@ except ImportError:
     from urllib.parse import quote as urlquote, quote_from_bytes as urlquote_from_bytes
 
 
+try:
+    intern = intern
+except NameError:
+    intern = sys.intern
+
 supports_symlinks = True
 try:
     import nt
@@ -74,10 +79,10 @@ class _Flavour(object):
             if sep in rel:
                 for x in reversed(rel.split(sep)):
                     if x and x != '.':
-                        parsed.append(x)
+                        parsed.append(intern(x))
             else:
                 if rel and rel != '.':
-                    parsed.append(rel)
+                    parsed.append(intern(rel))
             if drv or root:
                 if not drv:
                     # If no drive is present, try to find one in the previous
@@ -552,6 +557,11 @@ class PurePath(object):
         if cls is PurePath:
             cls = PureNTPath if os.name == 'nt' else PurePosixPath
         return cls._from_parts(args)
+
+    def __reduce__(self):
+        # Using the parts tuple helps share interned path parts
+        # when pickling related paths.
+        return (self.__class__, tuple(self._parts))
 
     @classmethod
     def _parse_args(cls, args):

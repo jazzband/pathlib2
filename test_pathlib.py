@@ -3,6 +3,7 @@ import io
 import os
 import errno
 import pathlib
+import pickle
 import shutil
 import stat
 import sys
@@ -559,6 +560,17 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, p.relative, P('/a/c'))
         self.assertRaises(ValueError, p.relative, P())
         self.assertRaises(ValueError, p.relative, P('a'))
+
+    def test_pickling_common(self):
+        P = self.cls
+        p = P('/a/b')
+        for proto in range(0, pickle.HIGHEST_PROTOCOL + 1):
+            dumped = pickle.dumps(p, proto)
+            pp = pickle.loads(dumped)
+            self.assertIs(pp.__class__, p.__class__)
+            self.assertEqual(pp, p)
+            self.assertEqual(hash(pp), hash(p))
+            self.assertEqual(str(pp), str(p))
 
 
 class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
@@ -1475,6 +1487,22 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertTrue((P / 'linkA').is_symlink())
             self.assertTrue((P / 'linkB').is_symlink())
+
+    def test_pickling_common(self):
+        p = self.cls(BASE, 'fileA')
+        for proto in range(0, pickle.HIGHEST_PROTOCOL + 1):
+            dumped = pickle.dumps(p, proto)
+            pp = pickle.loads(dumped)
+            self.assertEqual(pp.stat(), p.stat())
+
+    def test_parts_interning(self):
+        P = self.cls
+        p = P('/usr/bin/foo')
+        q = P('/usr/local/bin')
+        # 'usr'
+        self.assertIs(p.parts[1], q.parts[1])
+        # 'bin'
+        self.assertIs(p.parts[2], q.parts[3])
 
 
 class PathTest(_BasePathTest, unittest.TestCase):
