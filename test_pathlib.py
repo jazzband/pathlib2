@@ -1372,6 +1372,7 @@ class _BasePathTest(object):
         P = self.cls(BASE)
         self.assertTrue(P['dirA'].is_dir())
         self.assertFalse(P['fileA'].is_dir())
+        self.assertFalse(P['non-existing'].is_dir())
         if not symlink_skip_reason:
             self.assertFalse(P['linkA'].is_dir())
             self.assertTrue(P['linkB'].is_dir())
@@ -1380,6 +1381,7 @@ class _BasePathTest(object):
         P = self.cls(BASE)
         self.assertTrue(P['fileA'].is_file())
         self.assertFalse(P['dirA'].is_file())
+        self.assertFalse(P['non-existing'].is_file())
         if not symlink_skip_reason:
             self.assertTrue(P['linkA'].is_file())
             self.assertFalse(P['linkB'].is_file())
@@ -1388,6 +1390,7 @@ class _BasePathTest(object):
         P = self.cls(BASE)
         self.assertFalse(P['fileA'].is_symlink())
         self.assertFalse(P['dirA'].is_symlink())
+        self.assertFalse(P['non-existing'].is_symlink())
         if not symlink_skip_reason:
             self.assertTrue(P['linkA'].is_symlink())
             self.assertTrue(P['linkB'].is_symlink())

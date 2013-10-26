@@ -1449,20 +1449,40 @@ class Path(PurePath):
         """
         Whether this path is a directory.
         """
-        return S_ISDIR(self._stat.st_mode)
+        try:
+            return S_ISDIR(self._stat.st_mode)
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist or is a broken symlink
+            # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
 
     def is_file(self):
         """
         Whether this path is a regular file (also True for symlinks pointing
         to regular files).
         """
-        return S_ISREG(self._stat.st_mode)
+        try:
+            return S_ISREG(self._stat.st_mode)
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist or is a broken symlink
+            # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
 
     def is_symlink(self):
         """
         Whether this path is a symbolic link.
         """
-        st = self.lstat()
+        try:
+            st = self.lstat()
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist
+            return False
         return S_ISLNK(st.st_mode)
 
 
