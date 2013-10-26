@@ -1002,6 +1002,7 @@ class _BasePathTest(object):
                     os.symlink(src, dest)
             # Relative symlinks
             os.symlink('fileA', join('linkA'))
+            os.symlink('non-existing', join('brokenLink'))
             dirlink('dirB', join('linkB'))
             dirlink(os.path.join('..', 'dirB'), join('dirA', 'linkC'))
             # This one goes upwards but doesn't create a loop
@@ -1066,7 +1067,7 @@ class _BasePathTest(object):
         paths = set(it)
         expected = ['dirA', 'dirB', 'dirC', 'fileA']
         if not symlink_skip_reason:
-            expected += ['linkA', 'linkB']
+            expected += ['linkA', 'linkB', 'brokenLink']
         self.assertEqual(paths, { P(BASE, q) for q in expected })
 
     @with_symlinks
@@ -1376,6 +1377,7 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertFalse(P['linkA'].is_dir())
             self.assertTrue(P['linkB'].is_dir())
+            self.assertFalse(P['brokenLink'].is_dir())
 
     def test_is_file(self):
         P = self.cls(BASE)
@@ -1385,6 +1387,7 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertTrue(P['linkA'].is_file())
             self.assertFalse(P['linkB'].is_file())
+            self.assertFalse(P['brokenLink'].is_file())
 
     def test_is_symlink(self):
         P = self.cls(BASE)
@@ -1394,6 +1397,7 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertTrue(P['linkA'].is_symlink())
             self.assertTrue(P['linkB'].is_symlink())
+            self.assertTrue(P['brokenLink'].is_symlink())
 
     def test_pickling_common(self):
         p = self.cls(BASE, 'fileA')
