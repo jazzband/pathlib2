@@ -1406,7 +1406,13 @@ class _BasePathTest(object):
         self.assertFalse(p.exists())
         p.touch()
         self.assertTrue(p.exists())
+        old_mtime = p.restat().st_mtime
+        # Rewind the mtime sufficiently far in the past to work around
+        # filesystem-specific timestamp granularity.
+        os.utime(str(p), (old_mtime - 10, old_mtime - 10))
+        # The file mtime is refreshed by calling touch() again
         p.touch()
+        self.assertGreaterEqual(p.restat().st_mtime, old_mtime)
         p = P / 'newfileB'
         self.assertFalse(p.exists())
         p.touch(mode=0o700, exist_ok=False)

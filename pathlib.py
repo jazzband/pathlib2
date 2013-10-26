@@ -6,6 +6,7 @@ import os
 import posixpath
 import re
 import sys
+import time
 import weakref
 try:
     import threading
@@ -374,9 +375,12 @@ class _NormalAccessor(_Accessor):
         def symlink(a, b, target_is_directory):
             return os.symlink(str(a), str(b))
 
+    utime = _wrap_strfunc(os.utime)
+
     # Helper for resolve()
     def readlink(self, path):
         return os.readlink(path)
+
 
 _normal_accessor = _NormalAccessor()
 
@@ -1127,6 +1131,18 @@ class Path(PurePath):
         """
         if self._closed:
             self._raise_closed()
+        if exist_ok:
+            # First try to bump modification time
+            # Implementation note: GNU touch uses the UTIME_NOW option of
+            # the utimensat() / futimens() functions.
+            t = time.time()
+            try:
+                self._accessor.utime(self, (t, t))
+            except OSError:
+                # Avoid exception chaining
+                pass
+            else:
+                return
         flags = os.O_CREAT
         if not exist_ok:
             flags |= os.O_EXCL
