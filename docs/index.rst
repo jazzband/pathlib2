@@ -676,16 +676,25 @@ call fails (for example because the path doesn't exist):
    Return True if the path points to a directory (or a symbolic link
    pointing to a directory), False if it points to another kind of file.
 
+   False is also returned if the path doesn't exist or is a broken symlink;
+   other errors (such as permission errors) are propagated.
+
 
 .. method:: Path.is_file()
 
    Return True if the path points to a regular file (or a symbolic link
    pointing to a regular file), False if it points to another kind of file.
 
+   False is also returned if the path doesn't exist or is a broken symlink;
+   other errors (such as permission errors) are propagated.
+
 
 .. method:: Path.is_symlink()
 
    Return True if the path points to a symbolic link, False otherwise.
+
+   False is also returned if the path doesn't exist; other errors (such
+   as permission errors) are propagated.
 
 
 .. method:: Path.lchmod(mode)
