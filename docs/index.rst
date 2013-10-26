@@ -822,7 +822,8 @@ call fails (for example because the path doesn't exist):
    Create a file at this given path.  If *mode* is given, it is combined
    with the process' ``umask`` value to determine the file mode and access
    flags.  If the file already exists, the function succeeds if *exist_ok*
-   is true, otherwise :exc:`OSError` is raised.
+   is true (and its modification time is updated to the current time),
+   otherwise :exc:`OSError` is raised.
 
 
 .. method:: Path.unlink()

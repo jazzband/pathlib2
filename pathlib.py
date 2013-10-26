@@ -6,6 +6,7 @@ import os
 import posixpath
 import re
 import sys
+import time
 import weakref
 try:
     import threading
@@ -399,6 +400,8 @@ if supports_openat:
             parent_fd, name = _fdnamepair(pathobj)
             os.symlink(str(target), name, dir_fd=parent_fd)
 
+        utime = _wrap_atfunc(os.utime)
+
         def _make_fd(self, pathobj, tolerant=True):
             fd = pathobj._cached_fd
             if fd is not None:
@@ -530,6 +533,8 @@ class _NormalAccessor(_Accessor):
         @staticmethod
         def symlink(a, b, target_is_directory):
             return os.symlink(str(a), str(b))
+
+    utime = _wrap_strfunc(os.utime)
 
     def init_path(self, pathobj):
         pass
@@ -1322,6 +1327,18 @@ class Path(PurePath):
         """
         if self._closed:
             self._raise_closed()
+        if exist_ok:
+            # First try to bump modification time
+            # Implementation note: GNU touch uses the UTIME_NOW option of
+            # the utimensat() / futimens() functions.
+            t = time.time()
+            try:
+                self._accessor.utime(self, (t, t))
+            except OSError:
+                # Avoid exception chaining
+                pass
+            else:
+                return
         flags = os.O_CREAT
         if not exist_ok:
             flags |= os.O_EXCL
