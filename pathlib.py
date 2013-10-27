@@ -725,32 +725,31 @@ class PurePath(object):
     @property
     def suffix(self):
         """The final component's last suffix, if any."""
-        basename = self.name
-        if basename.endswith('.'):
+        name = self.name
+        i = name.rfind('.')
+        if 0 < i < len(name) - 1:
+            return name[i:]
+        else:
             return ''
-        basename = basename.lstrip('.')
-        i = basename.rfind('.')
-        if i == -1:
-            return ''
-        return basename[i:]
 
     @property
     def suffixes(self):
         """A list of the final component's suffixes, if any."""
-        basename = self.name
-        if basename.endswith('.'):
+        name = self.name
+        if name.endswith('.'):
             return []
-        basename = basename.lstrip('.')
-        return ['.' + suffix for suffix in basename.split('.')[1:]]
+        name = name.lstrip('.')
+        return ['.' + suffix for suffix in name.split('.')[1:]]
 
     @property
-    def basename(self):
+    def stem(self):
         """The final path component, minus its last suffix."""
-        basename = self.name
-        suffix = self.suffix
-        if not suffix:
-            return basename
-        return basename[:-len(suffix)]
+        name = self.name
+        i = name.rfind('.')
+        if 0 < i < len(name) - 1:
+            return name[:i]
+        else:
+            return name
 
     def with_name(self, name):
         """Return a new path with the file name changed."""

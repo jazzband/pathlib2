@@ -297,6 +297,7 @@ Pure paths provide the following methods an properties:
       >>> PureNTPath('//some/share').anchor
       '\\\\some\\share\\'
 
+
 .. data:: PurePath.name
 
    A string representing the final path component, excluding the drive and
@@ -312,16 +313,41 @@ Pure paths provide the following methods an properties:
       >>> PureNTPath('//some/share').name
       ''
 
-.. data:: PurePath.ext
 
-   A string representing the file extension of the final component, if any::
+.. data:: PurePath.suffix
 
-      >>> PurePosixPath('my/library/setup.py').ext
+   The file extension of the final component, if any::
+
+      >>> PurePosixPath('my/library/setup.py').suffix
       '.py'
-      >>> PurePosixPath('my/library.tar.gz').ext
-      '.tar.gz'
+      >>> PurePosixPath('my/library.tar.gz').suffix
+      '.gz'
       >>> PurePosixPath('my/library').ext
       ''
+
+
+.. data:: PurePath.suffixes
+
+   A list of the path's file extensions::
+
+      >>> PurePosixPath('my/library.tar.gar').suffixes
+      ['.tar', '.gar']
+      >>> PurePosixPath('my/library.tar.gz').suffixes
+      ['.tar', '.gz']
+      >>> PurePosixPath('my/library').suffixes
+      []
+
+
+.. data:: PurePath.stem
+
+   The final path component, without its suffix::
+
+      >>> PurePosixPath('my/library.tar.gz').stem
+      'library.tar'
+      >>> PurePosixPath('my/library.tar').stem
+      'library'
+      >>> PurePosixPath('my/library').stem
+      'library'
 
 
 .. method:: PurePath.as_bytes()

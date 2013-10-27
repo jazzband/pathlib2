@@ -500,18 +500,18 @@ class _BasePurePathTest(object):
         self.assertEqual(P('a/Some name. Ending with a dot.').suffixes, [])
         self.assertEqual(P('/a/Some name. Ending with a dot.').suffixes, [])
 
-    def test_basename_common(self):
+    def test_stem_common(self):
         P = self.cls
-        self.assertEqual(P('').basename, '')
-        self.assertEqual(P('.').basename, '')
-        self.assertEqual(P('..').basename, '..')
-        self.assertEqual(P('/').basename, '')
-        self.assertEqual(P('a/b').basename, 'b')
-        self.assertEqual(P('a/b.py').basename, 'b')
-        self.assertEqual(P('a/.hgrc').basename, '.hgrc')
-        self.assertEqual(P('a/.hg.rc').basename, '.hg')
-        self.assertEqual(P('a/b.tar.gz').basename, 'b.tar')
-        self.assertEqual(P('a/Some name. Ending with a dot.').basename,
+        self.assertEqual(P('').stem, '')
+        self.assertEqual(P('.').stem, '')
+        self.assertEqual(P('..').stem, '..')
+        self.assertEqual(P('/').stem, '')
+        self.assertEqual(P('a/b').stem, 'b')
+        self.assertEqual(P('a/b.py').stem, 'b')
+        self.assertEqual(P('a/.hgrc').stem, '.hgrc')
+        self.assertEqual(P('a/.hg.rc').stem, '.hg')
+        self.assertEqual(P('a/b.tar.gz').stem, 'b.tar')
+        self.assertEqual(P('a/Some name. Ending with a dot.').stem,
                          'Some name. Ending with a dot.')
 
     def test_with_name_common(self):
@@ -876,18 +876,18 @@ class PureNTPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertEqual(P('c:a/Some name. Ending with a dot.').suffixes, [])
         self.assertEqual(P('c:/a/Some name. Ending with a dot.').suffixes, [])
 
-    def test_basename(self):
+    def test_stem(self):
         P = self.cls
-        self.assertEqual(P('c:').basename, '')
-        self.assertEqual(P('c:.').basename, '')
-        self.assertEqual(P('c:..').basename, '..')
-        self.assertEqual(P('c:/').basename, '')
-        self.assertEqual(P('c:a/b').basename, 'b')
-        self.assertEqual(P('c:a/b.py').basename, 'b')
-        self.assertEqual(P('c:a/.hgrc').basename, '.hgrc')
-        self.assertEqual(P('c:a/.hg.rc').basename, '.hg')
-        self.assertEqual(P('c:a/b.tar.gz').basename, 'b.tar')
-        self.assertEqual(P('c:a/Some name. Ending with a dot.').basename,
+        self.assertEqual(P('c:').stem, '')
+        self.assertEqual(P('c:.').stem, '')
+        self.assertEqual(P('c:..').stem, '..')
+        self.assertEqual(P('c:/').stem, '')
+        self.assertEqual(P('c:a/b').stem, 'b')
+        self.assertEqual(P('c:a/b.py').stem, 'b')
+        self.assertEqual(P('c:a/.hgrc').stem, '.hgrc')
+        self.assertEqual(P('c:a/.hg.rc').stem, '.hg')
+        self.assertEqual(P('c:a/b.tar.gz').stem, 'b.tar')
+        self.assertEqual(P('c:a/Some name. Ending with a dot.').stem,
                          'Some name. Ending with a dot.')
 
     def test_with_name(self):
