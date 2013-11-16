@@ -7,9 +7,6 @@ pathlib
 
 .. moduleauthor:: Antoine Pitrou <solipsis@pitrou.net>
 
-.. toctree::
-   :maxdepth: 2
-
 
 Manipulating filesystem paths as string objects can quickly become cumbersome:
 multiple calls to :func:`os.path.join` or :func:`os.path.dirname`, etc.
