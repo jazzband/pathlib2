@@ -974,7 +974,7 @@ class Path(PurePath):
         """
         return cls(os.getcwd())
 
-    def __iter__(self):
+    def iterdir(self):
         """Iterate over the files in this directory.  Does not yield any
         result for the special paths '.' and '..'.
         """

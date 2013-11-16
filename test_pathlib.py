@@ -1162,11 +1162,10 @@ class _BasePathTest(object):
             self.assertIsInstance(f, io.RawIOBase)
             self.assertEqual(f.read().strip(), b"this is file A")
 
-    def test_iter(self):
+    def test_iterdir(self):
         P = self.cls
         p = P(BASE)
-        self.assertIsInstance(p, collections.Iterable)
-        it = iter(p)
+        it = p.iterdir()
         paths = set(it)
         expected = ['dirA', 'dirB', 'dirC', 'fileA']
         if not symlink_skip_reason:
@@ -1174,19 +1173,19 @@ class _BasePathTest(object):
         self.assertEqual(paths, { P(BASE, q) for q in expected })
 
     @with_symlinks
-    def test_iter_symlink(self):
+    def test_iterdir_symlink(self):
         # __iter__ on a symlink to a directory
         P = self.cls
         p = P(BASE, 'linkB')
-        paths = set(p)
+        paths = set(p.iterdir())
         expected = { P(BASE, 'linkB', q) for q in ['fileB', 'linkD'] }
         self.assertEqual(paths, expected)
 
-    def test_iter_nodir(self):
+    def test_iterdir_nodir(self):
         # __iter__ on something that is not a directory
         p = self.cls(BASE, 'fileA')
         with self.assertRaises(OSError) as cm:
-            list(p)
+            next(p.iterdir())
         # ENOENT or EINVAL under Windows, ENOTDIR otherwise
         # (see issue #12802)
         self.assertIn(cm.exception.errno, (errno.ENOTDIR,
@@ -1276,8 +1275,8 @@ class _BasePathTest(object):
 
     def test_with(self):
         p = self.cls(BASE)
-        it = iter(p)
-        it2 = iter(p)
+        it = p.iterdir()
+        it2 = p.iterdir()
         next(it2)
         with p:
             pass
@@ -1345,7 +1344,7 @@ class _BasePathTest(object):
 
     def test_rmdir(self):
         p = self.cls(BASE) / 'dirA'
-        for q in p:
+        for q in p.iterdir():
             q.unlink()
         p.rmdir()
         self.assertFileNotFound(p.stat)
@@ -1452,7 +1451,7 @@ class _BasePathTest(object):
         self.assertEqual(link.stat(), target.stat())
         self.assertNotEqual(link.lstat(), target.stat())
         self.assertTrue(link.is_dir())
-        self.assertTrue(list(link))
+        self.assertTrue(list(link.iterdir()))
 
     def test_is_dir(self):
         P = self.cls(BASE)

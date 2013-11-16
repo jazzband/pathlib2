@@ -36,7 +36,7 @@ Importing the module classes::
 Listing subdirectories::
 
    >>> p = Path('.')
-   >>> [x for x in p if x.is_dir()]
+   >>> [x for x in p.iterdir() if x.is_dir()]
    [PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),
     PosixPath('__pycache__'), PosixPath('build')]
 
@@ -564,24 +564,6 @@ bugs or failures in your application)::
    NotImplementedError: cannot instantiate 'NTPath' on your system
 
 
-Iterating
-^^^^^^^^^
-
-When a concrete path points to a directory, iterating over it yields path
-objects of the directory contents::
-
-   >>> p = Path('docs')
-   >>> for child in p: child
-   ...
-   PosixPath('docs/conf.py')
-   PosixPath('docs/_templates')
-   PosixPath('docs/make.bat')
-   PosixPath('docs/index.rst')
-   PosixPath('docs/_build')
-   PosixPath('docs/_static')
-   PosixPath('docs/Makefile')
-
-
 Methods
 ^^^^^^^
 
@@ -687,6 +669,22 @@ call fails (for example because the path doesn't exist):
    False is also returned if the path doesn't exist; other errors (such
    as permission errors) are propagated.
 
+
+.. method:: Path.iterdir()
+
+   When the path points to a directory, yield path objects of the directory
+   contents::
+
+      >>> p = Path('docs')
+      >>> for child in p.iterdir(): child
+      ...
+      PosixPath('docs/conf.py')
+      PosixPath('docs/_templates')
+      PosixPath('docs/make.bat')
+      PosixPath('docs/index.rst')
+      PosixPath('docs/_build')
+      PosixPath('docs/_static')
+      PosixPath('docs/Makefile')
 
 .. method:: Path.lchmod(mode)
 
