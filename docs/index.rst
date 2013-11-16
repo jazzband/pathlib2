@@ -505,21 +505,6 @@ Pure paths provide the following methods an properties:
       PureNTPath('c:\\')
 
 
-.. method:: PurePath.relative()
-
-   Return the path object stripped of its drive and root, if any::
-
-      >>> PurePosixPath('/etc/passwd').relative()
-      PurePosixPath('etc/passwd')
-      >>> PurePosixPath('lib/setup.py').relative()
-      PurePosixPath('lib/setup.py')
-
-      >>> PureNTPath('//some/share/setup.py').relative()
-      PureNTPath('setup.py')
-      >>> PureNTPath('//some/share/lib/setup.py').relative()
-      PureNTPath('lib\\setup.py')
-
-
 .. method:: PurePath.relative_to(*other)
 
    Compute a version of this path relative to the path represented by

@@ -772,15 +772,15 @@ class PurePath(object):
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + [name])
 
-    def relative(self, *other):
+    def relative_to(self, *other):
         """Return the relative path to another path identified by the passed
         arguments.  If the operation is not possible (because this is not
         a subpath of the other path), raise ValueError.
         """
         # For the purpose of this method, drive and root are considered
         # separate parts, i.e.:
-        #   Path('c:/').relative('c:')  gives Path('/')
-        #   Path('c:/').relative('/')   raise ValueError
+        #   Path('c:/').relative_to('c:')  gives Path('/')
+        #   Path('c:/').relative_to('/')   raise ValueError
         if not other:
             raise TypeError("need at least one argument")
         parts = self._parts
