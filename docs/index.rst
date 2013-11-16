@@ -723,18 +723,6 @@ call fails (for example because the path doesn't exist):
       '#!/usr/bin/env python3\n'
 
 
-.. method:: Path.raw_open(flags, mode=0o777)
-
-   Open the file pointed to by the path and return a numeric file descriptor,
-   as :func:`os.open` does::
-
-      >>> p = Path('setup.py')
-      >>> fd = p.raw_open(os.O_RDONLY)
-      >>> os.read(fd, 10)
-      b'#!/usr/bin'
-      >>> os.close(fd)
-
-
 .. method:: Path.rename(target)
 
    Rename this file or directory to the given *target*.  *target* can be

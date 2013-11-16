@@ -1285,7 +1285,6 @@ class _BasePathTest(object):
         self.assertRaises(ValueError, next, it)
         self.assertRaises(ValueError, next, it2)
         self.assertRaises(ValueError, p.open)
-        self.assertRaises(ValueError, p.raw_open, os.O_RDONLY)
         self.assertRaises(ValueError, p.resolve)
         self.assertRaises(ValueError, p.absolute)
         self.assertRaises(ValueError, p.__enter__)

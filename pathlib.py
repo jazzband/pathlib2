@@ -1073,7 +1073,7 @@ class Path(PurePath):
         import grp
         return grp.getgrgid(self.stat().st_gid).gr_name
 
-    def raw_open(self, flags, mode=0o777):
+    def _raw_open(self, flags, mode=0o777):
         """
         Open the file pointed by this path and return a file descriptor,
         as os.open() does.
@@ -1117,7 +1117,7 @@ class Path(PurePath):
         flags = os.O_CREAT
         if not exist_ok:
             flags |= os.O_EXCL
-        fd = self.raw_open(flags, mode)
+        fd = self._raw_open(flags, mode)
         os.close(fd)
 
     def mkdir(self, mode=0o777, parents=False):
