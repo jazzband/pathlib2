@@ -923,7 +923,6 @@ class PureNTPath(PurePath):
 class Path(PurePath):
     __slots__ = (
         '_accessor',
-        '_cached_stat',
         '_closed',
     )
 
@@ -952,16 +951,6 @@ class Path(PurePath):
         # a single part relative to this path.
         parts = self._parts + [part]
         return self._from_parsed_parts(self._drv, self._root, parts)
-
-    @property
-    def _stat(self):
-        try:
-            return self._cached_stat
-        except AttributeError:
-            pass
-        st = self._accessor.stat(self)
-        self._cached_stat = st
-        return st
 
     def __enter__(self):
         if self._closed:
@@ -1055,7 +1044,7 @@ class Path(PurePath):
         if s is None:
             # No symlink resolution => for consistency, raise an error if
             # the path doesn't exist or is forbidden
-            self._stat
+            self.stat()
             s = str(self.absolute())
         # Now we have no symlinks in the path, it's safe to normalize it.
         normed = self._flavour.pathmod.normpath(s)
@@ -1068,17 +1057,7 @@ class Path(PurePath):
         Return the result of the stat() system call on this path, like
         os.stat() does.
         """
-        return self._stat
-
-    def restat(self):
-        """
-        Same as stat(), but resets the internal cache to force a fresh value.
-        """
-        try:
-            del self._cached_stat
-        except AttributeError:
-            pass
-        return self._stat
+        return self._accessor.stat(self)
 
     @property
     def owner(self):
@@ -1086,7 +1065,7 @@ class Path(PurePath):
         Return the login name of the file owner.
         """
         import pwd
-        return pwd.getpwuid(self._stat.st_uid).pw_name
+        return pwd.getpwuid(self.stat().st_uid).pw_name
 
     @property
     def group(self):
@@ -1094,7 +1073,7 @@ class Path(PurePath):
         Return the group name of the file gid.
         """
         import grp
-        return grp.getgrgid(self._stat.st_gid).gr_name
+        return grp.getgrgid(self.stat().st_gid).gr_name
 
     def raw_open(self, flags, mode=0o777):
         """
@@ -1236,7 +1215,7 @@ class Path(PurePath):
         Whether this path exists.
         """
         try:
-            self.restat()
+            self.stat()
         except OSError as e:
             if e.errno != ENOENT:
                 raise
@@ -1248,7 +1227,7 @@ class Path(PurePath):
         Whether this path is a directory.
         """
         try:
-            return S_ISDIR(self._stat.st_mode)
+            return S_ISDIR(self.stat().st_mode)
         except OSError as e:
             if e.errno != ENOENT:
                 raise
@@ -1262,7 +1241,7 @@ class Path(PurePath):
         to regular files).
         """
         try:
-            return S_ISREG(self._stat.st_mode)
+            return S_ISREG(self.stat().st_mode)
         except OSError as e:
             if e.errno != ENOENT:
                 raise

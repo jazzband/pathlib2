@@ -609,21 +609,13 @@ call fails (for example because the path doesn't exist):
 .. method:: Path.stat()
 
    Return information about this path (similarly to :func:`os.stat`).
-   The result is cached accross calls.
+   The result is looked up at each call to this method.
 
       >>> p = Path('setup.py')
       >>> p.stat().st_size
       956
       >>> p.stat().st_mtime
       1327883547.852554
-
-   This information can also be accessed through :ref:`helper attributes <st_attrs>`.
-
-
-.. method:: Path.restat()
-
-   Like :meth:`Path.stat`, but ignores the cached value and always invokes
-   the underlying system call.
 
 
 .. method:: Path.chmod(mode)
@@ -634,7 +626,7 @@ call fails (for example because the path doesn't exist):
       >>> p.stat().st_mode
       33277
       >>> p.chmod(0o444)
-      >>> p.restat().st_mode
+      >>> p.stat().st_mode
       33060
 
 

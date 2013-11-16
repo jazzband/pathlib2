@@ -1297,11 +1297,11 @@ class _BasePathTest(object):
         # Clear writable bit
         new_mode = mode & ~0o222
         p.chmod(new_mode)
-        self.assertEqual(p.restat().st_mode, new_mode)
+        self.assertEqual(p.stat().st_mode, new_mode)
         # Set writable bit
         new_mode = mode | 0o222
         p.chmod(new_mode)
-        self.assertEqual(p.restat().st_mode, new_mode)
+        self.assertEqual(p.stat().st_mode, new_mode)
 
     # XXX also need a test for lchmod
 
@@ -1309,14 +1309,9 @@ class _BasePathTest(object):
         p = self.cls(BASE) / 'fileA'
         st = p.stat()
         self.assertEqual(p.stat(), st)
-        self.assertEqual(p.restat(), st)
         # Change file mode by flipping write bit
         p.chmod(st.st_mode ^ 0o222)
         self.addCleanup(p.chmod, st.st_mode)
-        # Cached value didn't change
-        self.assertEqual(p.stat(), st)
-        # restat() invalidates the cache
-        self.assertNotEqual(p.restat(), st)
         self.assertNotEqual(p.stat(), st)
 
     @with_symlinks
@@ -1347,7 +1342,7 @@ class _BasePathTest(object):
     def test_unlink(self):
         p = self.cls(BASE) / 'fileA'
         p.unlink()
-        self.assertFileNotFound(p.restat)
+        self.assertFileNotFound(p.stat)
         self.assertFileNotFound(p.unlink)
 
     def test_rmdir(self):
@@ -1355,7 +1350,7 @@ class _BasePathTest(object):
         for q in p:
             q.unlink()
         p.rmdir()
-        self.assertFileNotFound(p.restat)
+        self.assertFileNotFound(p.stat)
         self.assertFileNotFound(p.unlink)
 
     def test_rename(self):
@@ -1366,12 +1361,12 @@ class _BasePathTest(object):
         q = P / 'dirA' / 'fileAA'
         p.rename(q)
         self.assertEqual(q.stat().st_size, size)
-        self.assertFileNotFound(p.restat)
+        self.assertFileNotFound(p.stat)
         # Renaming to a str of a relative path
         r = rel_join('fileAAA')
         q.rename(r)
         self.assertEqual(os.stat(r).st_size, size)
-        self.assertFileNotFound(q.restat)
+        self.assertFileNotFound(q.stat)
 
     def test_replace(self):
         P = self.cls(BASE)
@@ -1384,12 +1379,12 @@ class _BasePathTest(object):
         q = P / 'dirA' / 'fileAA'
         p.replace(q)
         self.assertEqual(q.stat().st_size, size)
-        self.assertFileNotFound(p.restat)
+        self.assertFileNotFound(p.stat)
         # Replacing another (existing) path
         r = rel_join('dirB', 'fileB')
         q.replace(r)
         self.assertEqual(os.stat(r).st_size, size)
-        self.assertFileNotFound(q.restat)
+        self.assertFileNotFound(q.stat)
 
     def test_touch_common(self):
         P = self.cls(BASE)
@@ -1397,13 +1392,13 @@ class _BasePathTest(object):
         self.assertFalse(p.exists())
         p.touch()
         self.assertTrue(p.exists())
-        old_mtime = p.restat().st_mtime
+        old_mtime = p.stat().st_mtime
         # Rewind the mtime sufficiently far in the past to work around
         # filesystem-specific timestamp granularity.
         os.utime(str(p), (old_mtime - 10, old_mtime - 10))
         # The file mtime is refreshed by calling touch() again
         p.touch()
-        self.assertGreaterEqual(p.restat().st_mtime, old_mtime)
+        self.assertGreaterEqual(p.stat().st_mtime, old_mtime)
         p = P / 'newfileB'
         self.assertFalse(p.exists())
         p.touch(mode=0o700, exist_ok=False)
