@@ -44,8 +44,8 @@ else:
 
 
 __all__ = [
-    "PurePath", "PurePosixPath", "PureNTPath",
-    "Path", "PosixPath", "NTPath",
+    "PurePath", "PurePosixPath", "PureWindowsPath",
+    "Path", "PosixPath", "WindowsPath",
     ]
 
 #
@@ -544,7 +544,7 @@ class PurePath(object):
     """PurePath represents a filesystem path and offers operations which
     don't imply any actual filesystem I/O.  Depending on your system,
     instantiating a PurePath will return either a PurePosixPath or a
-    PureNTPath object.  You can also instantiate either of these classes
+    PureWindowsPath object.  You can also instantiate either of these classes
     directly, regardless of your system.
     """
     __slots__ = (
@@ -559,7 +559,7 @@ class PurePath(object):
         new PurePath object.
         """
         if cls is PurePath:
-            cls = PureNTPath if os.name == 'nt' else PurePosixPath
+            cls = PureWindowsPath if os.name == 'nt' else PurePosixPath
         return cls._from_parts(args)
 
     def __reduce__(self):
@@ -910,7 +910,7 @@ class PurePosixPath(PurePath):
     __slots__ = ()
 
 
-class PureNTPath(PurePath):
+class PureWindowsPath(PurePath):
     _flavour = _nt_flavour
     __slots__ = ()
 
@@ -926,7 +926,7 @@ class Path(PurePath):
 
     def __new__(cls, *args, **kwargs):
         if cls is Path:
-            cls = NTPath if os.name == 'nt' else PosixPath
+            cls = WindowsPath if os.name == 'nt' else PosixPath
         self = cls._from_parts(args, init=False)
         if not self._flavour.is_supported:
             raise NotImplementedError("cannot instantiate %r on your system"
@@ -1264,6 +1264,6 @@ class Path(PurePath):
 class PosixPath(Path, PurePosixPath):
     __slots__ = ()
 
-class NTPath(Path, PureNTPath):
+class WindowsPath(Path, PureWindowsPath):
     __slots__ = ()
 

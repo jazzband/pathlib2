@@ -88,18 +88,18 @@ we also call *flavours*:
       >>> PurePosixPath('/etc')
       PurePosixPath('/etc')
 
-.. class:: PureNTPath
+.. class:: PureWindowsPath
 
    A subclass of :class:`PurePath`, this path flavour represents Windows
    filesystem paths::
 
-      >>> PureNTPath('c:/Program Files/')
-      PureNTPath('c:\\Program Files')
+      >>> PureWindowsPath('c:/Program Files/')
+      PureWindowsPath('c:\\Program Files')
 
 .. class:: PurePath
 
    A generic class that represents the system's path flavour (instantiating
-   it creates either a :class:`PurePosixPath` or a :class:`PureNTPath`)::
+   it creates either a :class:`PurePosixPath` or a :class:`PureWindowsPath`)::
 
       >>> PurePath('setup.py')
       PurePosixPath('setup.py')
@@ -132,14 +132,14 @@ When several absolute paths are given, the last is taken as an anchor
 
    >>> PurePath('/etc', '/usr', 'lib64')
    PurePosixPath('/usr/lib64')
-   >>> PureNTPath('c:/Windows', 'd:bar')
-   PureNTPath('d:bar')
+   >>> PureWindowsPath('c:/Windows', 'd:bar')
+   PureWindowsPath('d:bar')
 
 However, in a Windows path, changing the local root doesn't discard the
 previous drive setting::
 
-   >>> PureNTPath('c:/Windows', '/Program Files')
-   PureNTPath('c:\\Program Files')
+   >>> PureWindowsPath('c:/Windows', '/Program Files')
+   PureWindowsPath('c:\\Program Files')
 
 Spurious slashes and single dots are collapsed, but double dots (``'..'``)
 are not, since this would change the meaning of a path in the face of
@@ -166,21 +166,21 @@ semantics::
 
    >>> PurePosixPath('foo') == PurePosixPath('FOO')
    False
-   >>> PureNTPath('foo') == PureNTPath('FOO')
+   >>> PureWindowsPath('foo') == PureWindowsPath('FOO')
    True
-   >>> PureNTPath('FOO') in { PureNTPath('foo') }
+   >>> PureWindowsPath('FOO') in { PureWindowsPath('foo') }
    True
-   >>> PureNTPath('C:') < PureNTPath('d:')
+   >>> PureWindowsPath('C:') < PureWindowsPath('d:')
    True
 
 Paths of a different flavour compare unequal and cannot be ordered::
 
-   >>> PureNTPath('foo') == PurePosixPath('foo')
+   >>> PureWindowsPath('foo') == PurePosixPath('foo')
    False
-   >>> PureNTPath('foo') < PurePosixPath('foo')
+   >>> PureWindowsPath('foo') < PurePosixPath('foo')
    Traceback (most recent call last):
      File "<stdin>", line 1, in <module>
-   TypeError: unorderable types: PureNTPath() < PurePosixPath()
+   TypeError: unorderable types: PureWindowsPath() < PurePosixPath()
 
 
 Operators
@@ -234,11 +234,11 @@ property:
       >>> p.parts[:-1]
       PurePosixPath('/usr/bin')
 
-      >>> p = PureNTPath('c:/Program Files/PSF')
+      >>> p = PureWindowsPath('c:/Program Files/PSF')
       >>> p.parts[0]
       'c:\\'
       >>> p.parts[1:]
-      PureNTPath('Program Files\\PSF')
+      PureWindowsPath('Program Files\\PSF')
 
    (note how the drive and local root are regrouped in a single part)
 
@@ -252,45 +252,45 @@ Pure paths provide the following methods an properties:
 
    A string representing the drive letter or name, if any::
 
-      >>> PureNTPath('c:/Program Files/').drive
+      >>> PureWindowsPath('c:/Program Files/').drive
       'c:'
-      >>> PureNTPath('/Program Files/').drive
+      >>> PureWindowsPath('/Program Files/').drive
       ''
       >>> PurePosixPath('/etc').drive
       ''
 
    UNC shares are also considered drives::
 
-      >>> PureNTPath('//some/share/foo.txt').drive
+      >>> PureWindowsPath('//some/share/foo.txt').drive
       '\\\\some\\share'
 
 .. data:: PurePath.root
 
    A string representing the (local or global) root, if any::
 
-      >>> PureNTPath('c:/Program Files/').root
+      >>> PureWindowsPath('c:/Program Files/').root
       '\\'
-      >>> PureNTPath('c:Program Files/').root
+      >>> PureWindowsPath('c:Program Files/').root
       ''
       >>> PurePosixPath('/etc').root
       '/'
 
    UNC shares always have a root::
 
-      >>> PureNTPath('//some/share').root
+      >>> PureWindowsPath('//some/share').root
       '\\'
 
 .. data:: PurePath.anchor
 
    The concatenation of the drive and root::
 
-      >>> PureNTPath('c:/Program Files/').anchor
+      >>> PureWindowsPath('c:/Program Files/').anchor
       'c:\\'
-      >>> PureNTPath('c:Program Files/').anchor
+      >>> PureWindowsPath('c:Program Files/').anchor
       'c:'
       >>> PurePosixPath('/etc').anchor
       '/'
-      >>> PureNTPath('//some/share').anchor
+      >>> PureWindowsPath('//some/share').anchor
       '\\\\some\\share\\'
 
 
@@ -304,9 +304,9 @@ Pure paths provide the following methods an properties:
 
    UNC drive names are not considered::
 
-      >>> PureNTPath('//some/share/setup.py').name
+      >>> PureWindowsPath('//some/share/setup.py').name
       'setup.py'
-      >>> PureNTPath('//some/share').name
+      >>> PureWindowsPath('//some/share').name
       ''
 
 
@@ -350,7 +350,7 @@ Pure paths provide the following methods an properties:
 
    Return a string representation of the path with forward slashes (``/``)::
 
-      >>> p = PureNTPath('c:\\windows')
+      >>> p = PureWindowsPath('c:\\windows')
       >>> str(p)
       'c:\\windows'
       >>> p.as_posix()
@@ -365,7 +365,7 @@ Pure paths provide the following methods an properties:
       >>> p = PurePosixPath('/etc/passwd')
       >>> p.as_uri()
       'file:///etc/passwd'
-      >>> p = PureNTPath('c:/Windows')
+      >>> p = PureWindowsPath('c:/Windows')
       >>> p.as_uri()
       'file:///c:/Windows'
 
@@ -380,23 +380,23 @@ Pure paths provide the following methods an properties:
       >>> PurePosixPath('a/b').is_absolute()
       False
 
-      >>> PureNTPath('c:/a/b').is_absolute()
+      >>> PureWindowsPath('c:/a/b').is_absolute()
       True
-      >>> PureNTPath('/a/b').is_absolute()
+      >>> PureWindowsPath('/a/b').is_absolute()
       False
-      >>> PureNTPath('c:').is_absolute()
+      >>> PureWindowsPath('c:').is_absolute()
       False
-      >>> PureNTPath('//some/share').is_absolute()
+      >>> PureWindowsPath('//some/share').is_absolute()
       True
 
 
 .. method:: PurePath.is_reserved()
 
-   With :class:`PureNTPath`, return True if the path is considered reserved
-   under Windows, False otherwise.  With :class:`PurePosixPath`, False is
-   always returned.
+   With :class:`PureWindowsPath`, return True if the path is considered
+   reserved under Windows, False otherwise.  With :class:`PurePosixPath`,
+   False is always returned.
 
-      >>> PureNTPath('nul').is_reserved()
+      >>> PureWindowsPath('nul').is_reserved()
       True
       >>> PurePosixPath('nul').is_reserved()
       False
@@ -416,8 +416,8 @@ Pure paths provide the following methods an properties:
       PurePosixPath('/etc/passwd')
       >>> PurePosixPath('/etc').joinpath('init.d', 'apache2')
       PurePosixPath('/etc/init.d/apache2')
-      >>> PureNTPath('c:').joinpath('/Program Files')
-      PureNTPath('c:\\Program Files')
+      >>> PureWindowsPath('c:').joinpath('/Program Files')
+      PureWindowsPath('c:\\Program Files')
 
 
 .. method:: PurePath.match(pattern)
@@ -445,7 +445,7 @@ Pure paths provide the following methods an properties:
 
    As with other methods, case-sensitivity is observed::
 
-      >>> PureNTPath('b.py').match('*.PY')
+      >>> PureWindowsPath('b.py').match('*.PY')
       True
 
 
@@ -486,11 +486,11 @@ Pure paths provide the following methods an properties:
 
    Iterate over the path's parents from the most to the least specific::
 
-      >>> for p in PureNTPath('c:/foo/bar/setup.py').parents(): p
+      >>> for p in PureWindowsPath('c:/foo/bar/setup.py').parents(): p
       ...
-      PureNTPath('c:\\foo\\bar')
-      PureNTPath('c:\\foo')
-      PureNTPath('c:\\')
+      PureWindowsPath('c:\\foo\\bar')
+      PureWindowsPath('c:\\foo')
+      PureWindowsPath('c:\\')
 
 
 .. method:: PurePath.relative_to(*other)
@@ -527,19 +527,19 @@ calls on path objects.  There are three ways to instantiate concrete paths:
       >>> PosixPath('/etc')
       PosixPath('/etc')
 
-.. class:: NTPath
+.. class:: WindowsPath
 
-   A subclass of :class:`Path` and :class:`PureNTPath`, this class represents
-   concrete Windows filesystem paths::
+   A subclass of :class:`Path` and :class:`PureWindowsPath`, this class
+   represents concrete Windows filesystem paths::
 
-      >>> NTPath('c:/Program Files/')
-      NTPath('c:\\Program Files')
+      >>> WindowsPath('c:/Program Files/')
+      WindowsPath('c:\\Program Files')
 
 .. class:: Path
 
    A subclass of :class:`PurePath`, this class represents concrete paths of
    the system's path flavour (instantiating it creates either a
-   :class:`PosixPath` or a :class:`NTPath`)::
+   :class:`PosixPath` or a :class:`WindowsPath`)::
 
       >>> Path('setup.py')
       PosixPath('setup.py')
@@ -556,12 +556,12 @@ bugs or failures in your application)::
    PosixPath('setup.py')
    >>> PosixPath('setup.py')
    PosixPath('setup.py')
-   >>> NTPath('setup.py')
+   >>> WindowsPath('setup.py')
    Traceback (most recent call last):
      File "<stdin>", line 1, in <module>
      File "pathlib.py", line 798, in __new__
        % (cls.__name__,))
-   NotImplementedError: cannot instantiate 'NTPath' on your system
+   NotImplementedError: cannot instantiate 'WindowsPath' on your system
 
 
 Methods

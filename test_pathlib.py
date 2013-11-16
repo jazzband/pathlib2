@@ -648,8 +648,8 @@ class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertEqual(pp, P('/c'))
 
 
-class PureNTPathTest(_BasePurePathTest, unittest.TestCase):
-    cls = pathlib.PureNTPath
+class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
+    cls = pathlib.PureWindowsPath
 
     equivalences = _BasePurePathTest.equivalences.copy()
     equivalences.update({
@@ -1002,18 +1002,18 @@ class PurePathTest(_BasePurePathTest, unittest.TestCase):
     def test_concrete_class(self):
         p = self.cls('a')
         self.assertIs(type(p),
-            pathlib.PureNTPath if os.name == 'nt' else pathlib.PurePosixPath)
+            pathlib.PureWindowsPath if os.name == 'nt' else pathlib.PurePosixPath)
 
     def test_different_flavours_unequal(self):
         p = pathlib.PurePosixPath('a')
-        q = pathlib.PureNTPath('a')
+        q = pathlib.PureWindowsPath('a')
         self.assertNotEqual(p, q)
 
     @unittest.skipIf(sys.version_info < (3, 0),
                      'Most types are orderable in Python 2')
     def test_different_flavours_unordered(self):
         p = pathlib.PurePosixPath('a')
-        q = pathlib.PureNTPath('a')
+        q = pathlib.PureWindowsPath('a')
         with self.assertRaises(TypeError):
             p < q
         with self.assertRaises(TypeError):
@@ -1058,8 +1058,8 @@ class PosixPathAsPureTest(PurePosixPathTest):
     cls = pathlib.PosixPath
 
 @only_nt
-class NTPathAsPureTest(PureNTPathTest):
-    cls = pathlib.NTPath
+class WindowsPathAsPureTest(PureWindowsPathTest):
+    cls = pathlib.WindowsPath
 
 
 class _BasePathTest(object):
@@ -1506,13 +1506,13 @@ class PathTest(_BasePathTest, unittest.TestCase):
     def test_concrete_class(self):
         p = self.cls('a')
         self.assertIs(type(p),
-            pathlib.NTPath if os.name == 'nt' else pathlib.PosixPath)
+            pathlib.WindowsPath if os.name == 'nt' else pathlib.PosixPath)
 
     def test_unsupported_flavour(self):
         if os.name == 'nt':
             self.assertRaises(NotImplementedError, pathlib.PosixPath)
         else:
-            self.assertRaises(NotImplementedError, pathlib.NTPath)
+            self.assertRaises(NotImplementedError, pathlib.WindowsPath)
 
 
 @only_posix
@@ -1609,8 +1609,8 @@ class Mock:
 
 
 @only_nt
-class NTPathTest(_BasePathTest, unittest.TestCase):
-    cls = pathlib.NTPath
+class Windows(_BasePathTest, unittest.TestCase):
+    cls = pathlib.WindowsPath
 
     def test_glob(self):
         P = self.cls
