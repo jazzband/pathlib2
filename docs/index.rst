@@ -346,14 +346,6 @@ Pure paths provide the following methods an properties:
       'library'
 
 
-.. method:: PurePath.as_bytes()
-
-   Equivalent to calling ``bytes()`` on the path object::
-
-      >>> PurePosixPath('/etc').as_bytes()
-      b'/etc'
-
-
 .. method:: PurePath.as_posix()
 
    Return a string representation of the path with forward slashes (``/``)::

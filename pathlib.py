@@ -309,7 +309,7 @@ class _PosixFlavour(_Flavour):
     def make_uri(self, path):
         # We represent the path using the local filesystem encoding,
         # for portability to other applications.
-        bpath = path.as_bytes()
+        bpath = bytes(path)
         return 'file://' + urlquote_from_bytes(bpath)
 
 
@@ -640,14 +640,12 @@ class PurePath(object):
         f = self._flavour
         return str(self).replace(f.sep, '/')
 
-    def as_bytes(self):
+    def __bytes__(self):
         """Return the bytes representation of the path.  This is only
         recommended to use under Unix."""
         if sys.version_info < (3, 2):
             raise NotImplementedError("needs Python 3.2 or later")
         return os.fsencode(str(self))
-
-    __bytes__ = as_bytes
 
     def __repr__(self):
         return "{}({!r})".format(self.__class__.__name__, str(self))

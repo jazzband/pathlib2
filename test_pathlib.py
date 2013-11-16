@@ -255,7 +255,6 @@ class _BasePurePathTest(object):
     def test_as_bytes_common(self):
         sep = os.fsencode(self.sep)
         P = self.cls
-        self.assertEqual(P('a/b').as_bytes(), b'a' + sep + b'b')
         self.assertEqual(bytes(P('a/b')), b'a' + sep + b'b')
 
     @with_fsencode
