@@ -1330,16 +1330,6 @@ class _BasePathTest(object):
         st = p.stat()
         self.assertEqual(st, p.lstat())
 
-    def test_st_fields(self):
-        p = self.cls(BASE) / 'fileA'
-        self.assertEqual(p.st_size, 15)
-        p.st_mtime
-        p.st_mode
-        with self.assertRaises(AttributeError):
-            p.st_foo
-        with self.assertRaises(AttributeError):
-            p.foo
-
     @unittest.skipUnless(pwd, "the pwd module is needed for this test")
     def test_owner(self):
         p = self.cls(BASE) / 'fileA'

@@ -1001,11 +1001,6 @@ class Path(PurePath):
             if self._closed:
                 self._raise_closed()
 
-    def __getattr__(self, name):
-        if name.startswith('st_'):
-            return getattr(self._stat, name)
-        return self.__getattribute__(name)
-
     def glob(self, pattern):
         """Iterate over this subtree and yield all existing files (of any
         kind, including directories) matching the given pattern.

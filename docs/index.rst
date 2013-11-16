@@ -862,25 +862,3 @@ Concrete paths provide the following attributes:
    The owner name and group name of the file, respectively.  :exc:`KeyError`
    is thrown if the file's uid or gid isn't found in the system database.
 
-
-.. data::
-      Path.st_mode
-      Path.st_ino
-      Path.st_dev
-      Path.st_nlink
-      Path.st_uid
-      Path.st_gid
-      Path.st_size
-      Path.st_atime
-      Path.st_mtime
-      Path.st_ctime
-      ...
-
-   Helper attributes returning the corresponding fields on :meth:`Path.stat`'s
-   result::
-
-      >>> p = Path('setup.py')
-      >>> p.st_size
-      956
-      >>> p.st_mtime
-      1327939910.2178059
