@@ -50,7 +50,7 @@ Listing Python source files in this directory tree::
 Navigating inside a directory tree::
 
    >>> p = Path('/etc')
-   >>> q = p['init.d/reboot']
+   >>> q = p / 'init.d' / 'reboot'
    >>> q
    PosixPath('/etc/init.d/reboot')
    >>> q.resolve()
@@ -62,8 +62,6 @@ Querying path properties::
    True
    >>> q.is_dir()
    False
-   >>> q.st_mode
-   33261
 
 Opening a file::
 
@@ -186,15 +184,16 @@ Paths of a different flavour compare unequal and cannot be ordered::
 Operators
 ^^^^^^^^^
 
-Indexing a path helps create child paths, similarly to ``os.path.join``::
+The slash operator helps create child paths, similarly to ``os.path.join``::
 
    >>> p = PurePath('/etc')
    >>> p
    PurePosixPath('/etc')
-   >>> p['passwd']
-   PurePosixPath('/etc/passwd')
-   >>> p['init.d/apache2']
+   >>> p / 'init.d' / 'apache2'
    PurePosixPath('/etc/init.d/apache2')
+   >>> q = PurePath('bin')
+   >>> '/usr' / q
+   PurePosixPath('/usr/bin')
 
 The string representation of a path is the raw filesystem path itself
 (in native form, e.g. with backslashes under Windows), which you can
