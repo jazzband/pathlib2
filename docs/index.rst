@@ -94,7 +94,7 @@ we also call *flavours*:
    filesystem paths::
 
       >>> PureWindowsPath('c:/Program Files/')
-      PureWindowsPath('c:\\Program Files')
+      PureWindowsPath('c:/Program Files')
 
 .. class:: PurePath
 
@@ -139,7 +139,7 @@ However, in a Windows path, changing the local root doesn't discard the
 previous drive setting::
 
    >>> PureWindowsPath('c:/Windows', '/Program Files')
-   PureWindowsPath('c:\\Program Files')
+   PureWindowsPath('c:/Program Files')
 
 Spurious slashes and single dots are collapsed, but double dots (``'..'``)
 are not, since this would change the meaning of a path in the face of
@@ -196,15 +196,19 @@ Indexing a path helps create child paths, similarly to ``os.path.join``::
    >>> p['init.d/apache2']
    PurePosixPath('/etc/init.d/apache2')
 
-The string representation of a path is the raw filesystem path itself, which
-you can pass to any function taking a file path as a string::
+The string representation of a path is the raw filesystem path itself
+(in native form, e.g. with backslashes under Windows), which you can
+pass to any function taking a file path as a string::
 
    >>> p = PurePath('/etc')
    >>> str(p)
    '/etc'
+   >>> p = PureWindowsPath('c:/Program Files')
+   >>> str(p)
+   'c:\\Program Files'
 
 Similarly, calling ``bytes`` on a path gives the raw filesystem path as a
-bytes object::
+bytes object, as encoded by ``os.fsencode``::
 
    >>> bytes(p)
    b'/etc'
@@ -238,7 +242,7 @@ property:
       >>> p.parts[0]
       'c:\\'
       >>> p.parts[1:]
-      PureWindowsPath('Program Files\\PSF')
+      PureWindowsPath('Program Files/PSF')
 
    (note how the drive and local root are regrouped in a single part)
 
@@ -261,8 +265,8 @@ Pure paths provide the following methods an properties:
 
    UNC shares are also considered drives::
 
-      >>> PureWindowsPath('//some/share/foo.txt').drive
-      '\\\\some\\share'
+      >>> PureWindowsPath('//host/share/foo.txt').drive
+      '\\\\host\\share'
 
 .. data:: PurePath.root
 
@@ -277,7 +281,7 @@ Pure paths provide the following methods an properties:
 
    UNC shares always have a root::
 
-      >>> PureWindowsPath('//some/share').root
+      >>> PureWindowsPath('//host/share').root
       '\\'
 
 .. data:: PurePath.anchor
@@ -290,8 +294,8 @@ Pure paths provide the following methods an properties:
       'c:'
       >>> PurePosixPath('/etc').anchor
       '/'
-      >>> PureWindowsPath('//some/share').anchor
-      '\\\\some\\share\\'
+      >>> PureWindowsPath('//host/share').anchor
+      '\\\\host\\share\\'
 
 
 .. data:: PurePath.name
@@ -417,7 +421,7 @@ Pure paths provide the following methods an properties:
       >>> PurePosixPath('/etc').joinpath('init.d', 'apache2')
       PurePosixPath('/etc/init.d/apache2')
       >>> PureWindowsPath('c:').joinpath('/Program Files')
-      PureWindowsPath('c:\\Program Files')
+      PureWindowsPath('c:/Program Files')
 
 
 .. method:: PurePath.match(pattern)
@@ -488,9 +492,9 @@ Pure paths provide the following methods an properties:
 
       >>> for p in PureWindowsPath('c:/foo/bar/setup.py').parents(): p
       ...
-      PureWindowsPath('c:\\foo\\bar')
-      PureWindowsPath('c:\\foo')
-      PureWindowsPath('c:\\')
+      PureWindowsPath('c:/foo/bar')
+      PureWindowsPath('c:/foo')
+      PureWindowsPath('c:/')
 
 
 .. method:: PurePath.relative_to(*other)
@@ -533,7 +537,7 @@ calls on path objects.  There are three ways to instantiate concrete paths:
    represents concrete Windows filesystem paths::
 
       >>> WindowsPath('c:/Program Files/')
-      WindowsPath('c:\\Program Files')
+      WindowsPath('c:/Program Files')
 
 .. class:: Path
 

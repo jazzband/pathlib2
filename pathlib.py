@@ -648,7 +648,7 @@ class PurePath(object):
         return os.fsencode(str(self))
 
     def __repr__(self):
-        return "{}({!r})".format(self.__class__.__name__, str(self))
+        return "{}({!r})".format(self.__class__.__name__, self.as_posix())
 
     def as_uri(self):
         """Return the path as a 'file' URI."""

@@ -270,11 +270,16 @@ class _BasePurePathTest(object):
             p = self.cls(pathstr)
             clsname = p.__class__.__name__
             r = repr(p)
-            # The repr() is in the form ClassName("canonical path")
+            # The repr() is in the form ClassName("forward-slashes path")
             self.assertTrue(r.startswith(clsname + '('), r)
             self.assertTrue(r.endswith(')'), r)
             inner = r[len(clsname) + 1 : -1]
-            self.assertEqual(eval(inner), str(p))
+            self.assertEqual(eval(inner), p.as_posix())
+            # The repr() roundtrips
+            q = eval(r, pathlib.__dict__)
+            self.assertIs(q.__class__, p.__class__)
+            self.assertEqual(q, p)
+            self.assertEqual(repr(q), r)
 
     def test_eq_common(self):
         P = self.cls
