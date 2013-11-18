@@ -1057,7 +1057,6 @@ class Path(PurePath):
         """
         return self._accessor.stat(self)
 
-    @property
     def owner(self):
         """
         Return the login name of the file owner.
@@ -1065,7 +1064,6 @@ class Path(PurePath):
         import pwd
         return pwd.getpwuid(self.stat().st_uid).pw_name
 
-    @property
     def group(self):
         """
         Return the group name of the file gid.

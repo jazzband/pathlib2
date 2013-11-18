@@ -647,6 +647,12 @@ call fails (for example because the path doesn't exist):
       an inordinate amount of time.
 
 
+.. method:: Path.group()
+
+   Return the name of the group owning the file.  :exc:`KeyError` is thrown
+   if the file's gid isn't found in the system database.
+
+
 .. method:: Path.is_dir()
 
    Return True if the path points to a directory (or a symbolic link
@@ -760,6 +766,12 @@ call fails (for example because the path doesn't exist):
       '#!/usr/bin/env python3\n'
 
 
+.. method:: Path.owner()
+
+   Return the name of the user owning the file.  :exc:`KeyError` is thrown
+   if the file's uid isn't found in the system database.
+
+
 .. method:: Path.rename(target)
 
    Rename this file or directory to the given *target*.  *target* can be
@@ -855,19 +867,4 @@ call fails (for example because the path doesn't exist):
 
    Remove this file or symbolic link.  If the path points to a directory,
    use :func:`Path.rmdir` instead.
-
-
-.. _st_attrs:
-
-Attributes
-^^^^^^^^^^
-
-Concrete paths provide the following attributes:
-
-.. data::
-      Path.owner
-      Path.group
-
-   The owner name and group name of the file, respectively.  :exc:`KeyError`
-   is thrown if the file's uid or gid isn't found in the system database.
 
