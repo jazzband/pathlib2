@@ -18,7 +18,7 @@ from contextlib import contextmanager
 from errno import EINVAL, ENOENT, EEXIST
 from itertools import chain, count
 from operator import attrgetter
-from stat import S_ISDIR, S_ISLNK, S_ISREG
+from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
 try:
     from urllib import quote as urlquote, quote as urlquote_from_bytes
 except ImportError:
@@ -1252,13 +1252,64 @@ class Path(PurePath):
         Whether this path is a symbolic link.
         """
         try:
-            st = self.lstat()
+            return S_ISLNK(self.lstat().st_mode)
         except OSError as e:
             if e.errno != ENOENT:
                 raise
             # Path doesn't exist
             return False
-        return S_ISLNK(st.st_mode)
+
+    def is_block_device(self):
+        """
+        Whether this path is a block device.
+        """
+        try:
+            return S_ISBLK(self.stat().st_mode)
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist or is a broken symlink
+            # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+
+    def is_char_device(self):
+        """
+        Whether this path is a character device.
+        """
+        try:
+            return S_ISCHR(self.stat().st_mode)
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist or is a broken symlink
+            # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+
+    def is_fifo(self):
+        """
+        Whether this path is a FIFO.
+        """
+        try:
+            return S_ISFIFO(self.stat().st_mode)
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist or is a broken symlink
+            # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+
+    def is_sock(self):
+        """
+        Whether this path is a socket.
+        """
+        try:
+            return S_ISSOCK(self.stat().st_mode)
+        except OSError as e:
+            if e.errno != ENOENT:
+                raise
+            # Path doesn't exist or is a broken symlink
+            # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
 
 
 class PosixPath(Path, PurePosixPath):

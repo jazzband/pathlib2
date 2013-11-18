@@ -673,6 +673,42 @@ call fails (for example because the path doesn't exist):
    as permission errors) are propagated.
 
 
+.. method:: Path.is_sock()
+
+   Return True if the path points to a Unix socket (or a symbolic link
+   pointing to a Unix socket), False if it points to another kind of file.
+
+   False is also returned if the path doesn't exist or is a broken symlink;
+   other errors (such as permission errors) are propagated.
+
+
+.. method:: Path.is_fifo()
+
+   Return True if the path points to a FIFO (or a symbolic link
+   pointing to a FIFO), False if it points to another kind of file.
+
+   False is also returned if the path doesn't exist or is a broken symlink;
+   other errors (such as permission errors) are propagated.
+
+
+.. method:: Path.is_block_device()
+
+   Return True if the path points to a block device (or a symbolic link
+   pointing to a block device), False if it points to another kind of file.
+
+   False is also returned if the path doesn't exist or is a broken symlink;
+   other errors (such as permission errors) are propagated.
+
+
+.. method:: Path.is_char_device()
+
+   Return True if the path points to a character device (or a symbolic link
+   pointing to a character device), False if it points to another kind of file.
+
+   False is also returned if the path doesn't exist or is a broken symlink;
+   other errors (such as permission errors) are propagated.
+
+
 .. method:: Path.iterdir()
 
    When the path points to a directory, yield path objects of the directory

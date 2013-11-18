@@ -5,6 +5,7 @@ import errno
 import pathlib
 import pickle
 import shutil
+import socket
 import stat
 import sys
 import tempfile
@@ -1487,6 +1488,57 @@ class _BasePathTest(object):
             self.assertTrue((P / 'linkA').is_symlink())
             self.assertTrue((P / 'linkB').is_symlink())
             self.assertTrue((P/ 'brokenLink').is_symlink())
+
+    def test_is_fifo_false(self):
+        P = self.cls(BASE)
+        self.assertFalse((P / 'fileA').is_fifo())
+        self.assertFalse((P / 'dirA').is_fifo())
+        self.assertFalse((P / 'non-existing').is_fifo())
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "os.mkfifo() required")
+    def test_is_fifo_true(self):
+        P = self.cls(BASE, 'myfifo')
+        os.mkfifo(str(P))
+        self.assertTrue(P.is_fifo())
+        self.assertFalse(P.is_sock())
+        self.assertFalse(P.is_file())
+
+    def test_is_sock_false(self):
+        P = self.cls(BASE)
+        self.assertFalse((P / 'fileA').is_sock())
+        self.assertFalse((P / 'dirA').is_sock())
+        self.assertFalse((P / 'non-existing').is_sock())
+
+    @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
+    def test_is_sock_true(self):
+        P = self.cls(BASE, 'mysock')
+        sock = socket.socket(socket.SOCK_STREAM, socket.AF_UNIX)
+        self.addCleanup(sock.close)
+        sock.bind(str(P))
+        self.assertTrue(P.is_sock())
+        self.assertFalse(P.is_fifo())
+        self.assertFalse(P.is_file())
+
+    def test_is_block_device_false(self):
+        P = self.cls(BASE)
+        self.assertFalse((P / 'fileA').is_block_device())
+        self.assertFalse((P / 'dirA').is_block_device())
+        self.assertFalse((P / 'non-existing').is_block_device())
+
+    def test_is_char_device_false(self):
+        P = self.cls(BASE)
+        self.assertFalse((P / 'fileA').is_char_device())
+        self.assertFalse((P / 'dirA').is_char_device())
+        self.assertFalse((P / 'non-existing').is_char_device())
+
+    def test_is_char_device_true(self):
+        # Under Unix, /dev/null should generally be a char device
+        P = self.cls('/dev/null')
+        if not P.exists():
+            self.skipTest("/dev/null required")
+        self.assertTrue(P.is_char_device())
+        self.assertFalse(P.is_block_device())
+        self.assertFalse(P.is_file())
 
     def test_pickling_common(self):
         p = self.cls(BASE, 'fileA')
