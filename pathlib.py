@@ -518,26 +518,37 @@ class _RecursiveWildcardSelector(_Selector):
 # Public API
 #
 
-#class _PathParts(Sequence):
-    #"""This object provides sequence-like access to the parts of a path.
-    #Don't try to construct it yourself."""
-    #__slots__ = ('_pathcls', '_parts')
+class _PathParents(Sequence):
+    """This object provides sequence-like access to the logical ancestors
+    of a path.  Don't try to construct it yourself."""
+    __slots__ = ('_pathcls', '_drv', '_root', '_parts')
 
-    #def __init__(self, path):
-        ## We don't store the instance to avoid reference cycles
-        #self._pathcls = type(path)
-        #self._parts = path._parts
+    def __init__(self, path):
+        # We don't store the instance to avoid reference cycles
+        self._pathcls = type(path)
+        self._drv = path._drv
+        self._root = path._root
+        self._parts = path._parts
 
-    #def __len__(self):
-        #return len(self._parts)
+    def __len__(self):
+        if self._drv or self._root:
+            return len(self._parts) - 1
+        else:
+            return len(self._parts)
 
-    #def __getitem__(self, idx):
-        #if isinstance(idx, slice):
-            #return self._pathcls(*self._parts[idx])
-        #return self._parts[idx]
+    def __getitem__(self, idx):
+        if idx < 0:
+            raise IndexError(idx)
+        if (self._drv or self._root) and idx >= len(self._parts) - 1:
+            # Anchored path, make sure the anchor remains
+            new_parts = self._parts[:1]
+        else:
+            new_parts = self._parts[:-idx-1]
+        return self._pathcls._from_parsed_parts(self._drv, self._root,
+                                                new_parts)
 
-    #def __repr__(self):
-        #return "<{}.parts: {!r}>".format(self._pathcls.__name__, self._parts)
+    def __repr__(self):
+        return "<{}.parents>".format(self._pathcls.__name__)
 
 
 class PurePath(object):
@@ -849,15 +860,10 @@ class PurePath(object):
                 raise ValueError("level greater than path length")
         return self._from_parsed_parts(drv, root, parts)
 
+    @property
     def parents(self):
-        """Iterate over this path's parents, in ascending order."""
-        drv = self._drv
-        root = self._root
-        parts = self._parts
-        n = len(parts)
-        end = 0 if (drv or root) else -1
-        for i in range(n - 1, end, -1):
-            yield self._from_parsed_parts(drv, root, parts[:i])
+        """A sequence of this path's logical parents."""
+        return _PathParents(self)
 
     def is_absolute(self):
         """True if the path is absolute (has both a root and, if applicable,

@@ -285,6 +285,20 @@ Pure paths provide the following methods an properties:
       '\\\\host\\share\\'
 
 
+.. data:: PurePath.parents
+
+   An immutable sequence providing access to the logical ancestors of
+   the path::
+
+      >>> p = PureWindowsPath('c:/foo/bar/setup.py')
+      >>> p.parents[0]
+      PureWindowsPath('c:/foo/bar')
+      >>> p.parents[1]
+      PureWindowsPath('c:/foo')
+      >>> p.parents[2]
+      PureWindowsPath('c:/')
+
+
 .. data:: PurePath.name
 
    A string representing the final path component, excluding the drive and
@@ -465,17 +479,6 @@ Pure paths provide the following methods an properties:
       If you want to walk an arbitrary filesystem path upwards, it is
       recommended to first call :meth:`Path.resolve` so as to resolve
       symlinks and eliminate `".."` components.
-
-
-.. method:: PurePath.parents()
-
-   Iterate over the path's parents from the most to the least specific::
-
-      >>> for p in PureWindowsPath('c:/foo/bar/setup.py').parents(): p
-      ...
-      PureWindowsPath('c:/foo/bar')
-      PureWindowsPath('c:/foo')
-      PureWindowsPath('c:/')
 
 
 .. method:: PurePath.relative_to(*other)

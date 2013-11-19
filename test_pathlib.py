@@ -415,14 +415,24 @@ class _BasePurePathTest(object):
         # Relative
         P = self.cls
         p = P('a/b/c')
-        it = p.parents()
-        self.assertEqual(next(it), P('a/b'))
-        self.assertEqual(list(it), [P('a'), P()])
+        par = p.parents
+        self.assertEqual(len(par), 3)
+        self.assertEqual(par[0], P('a/b'))
+        self.assertEqual(par[1], P('a'))
+        self.assertEqual(par[2], P('.'))
+        self.assertEqual(par[3], P('.'))
+        with self.assertRaises(IndexError):
+            par[-1]
+        with self.assertRaises(TypeError):
+            par[0] = p
         # Anchored
         p = P('/a/b/c')
-        it = p.parents()
-        self.assertEqual(next(it), P('/a/b'))
-        self.assertEqual(list(it), [P('/a'), P('/')])
+        par = p.parents
+        self.assertEqual(len(par), 3)
+        self.assertEqual(par[0], P('/a/b'))
+        self.assertEqual(par[1], P('/a'))
+        self.assertEqual(par[2], P('/'))
+        self.assertEqual(par[3], P('/'))
 
     def test_drive_common(self):
         P = self.cls
@@ -772,11 +782,23 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         # Anchored
         P = self.cls
         p = P('z:a/b/')
-        self.assertEqual(list(p.parents()), [P('z:a'), P('z:')])
+        par = p.parents
+        self.assertEqual(len(par), 2)
+        self.assertEqual(par[0], P('z:a'))
+        self.assertEqual(par[1], P('z:'))
+        self.assertEqual(par[2], P('z:'))
         p = P('z:/a/b/')
-        self.assertEqual(list(p.parents()), [P('z:/a'), P('z:/')])
+        par = p.parents
+        self.assertEqual(len(par), 2)
+        self.assertEqual(par[0], P('z:/a'))
+        self.assertEqual(par[1], P('z:/'))
+        self.assertEqual(par[2], P('z:/'))
         p = P('//a/b/c/d')
-        self.assertEqual(list(p.parents()), [P('//a/b/c'), P('//a/b')])
+        par = p.parents
+        self.assertEqual(len(par), 2)
+        self.assertEqual(par[0], P('//a/b/c'))
+        self.assertEqual(par[1], P('//a/b'))
+        self.assertEqual(par[2], P('//a/b'))
 
     def test_drive(self):
         P = self.cls
