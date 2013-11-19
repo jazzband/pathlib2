@@ -362,27 +362,18 @@ class _BasePurePathTest(object):
             P() < {}
 
     def test_parts_common(self):
+        # `parts` returns a tuple
         sep = self.sep
         P = self.cls
         p = P('a/b')
         parts = p.parts
+        self.assertEqual(parts, ('a', 'b'))
         # The object gets reused
         self.assertIs(parts, p.parts)
-        # Sequence protocol
-        self.assertIsInstance(parts, collections.Sequence)
-        self.assertEqual(len(parts), 2)
-        self.assertEqual(parts[0], 'a')
-        self.assertEqual(list(parts), ['a', 'b'])
-        self.assertEqual(parts[:], P('a/b'))
-        self.assertEqual(parts[0:1], P('a'))
+        # When the path is absolute, the anchor is a separate part
         p = P('/a/b')
         parts = p.parts
-        self.assertEqual(len(parts), 3)
-        self.assertEqual(parts[0], sep)
-        self.assertEqual(list(parts), [sep, 'a', 'b'])
-        self.assertEqual(parts[:], P('/a/b'))
-        self.assertEqual(parts[:2], P('/a'))
-        self.assertEqual(parts[1:], P('a/b'))
+        self.assertEqual(parts, (sep, 'a', 'b'))
 
     def test_equivalences(self):
         for k, tuples in self.equivalences.items():
@@ -751,22 +742,13 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         P = self.cls
         p = P('c:a/b')
         parts = p.parts
-        self.assertEqual(len(parts), 3)
-        self.assertEqual(list(parts), ['c:', 'a', 'b'])
-        self.assertEqual(parts[:2], P('c:a'))
-        self.assertEqual(parts[1:], P('a/b'))
+        self.assertEqual(parts, ('c:', 'a', 'b'))
         p = P('c:/a/b')
         parts = p.parts
-        self.assertEqual(len(parts), 3)
-        self.assertEqual(list(parts), ['c:\\', 'a', 'b'])
-        self.assertEqual(parts[:2], P('c:/a'))
-        self.assertEqual(parts[1:], P('a/b'))
+        self.assertEqual(parts, ('c:\\', 'a', 'b'))
         p = P('//a/b/c/d')
         parts = p.parts
-        self.assertEqual(len(parts), 3)
-        self.assertEqual(list(parts), ['\\\\a\\b\\', 'c', 'd'])
-        self.assertEqual(parts[:2], P('//a/b/c'))
-        self.assertEqual(parts[1:], P('c/d'))
+        self.assertEqual(parts, ('\\\\a\\b\\', 'c', 'd'))
 
     def test_parent(self):
         # Anchored

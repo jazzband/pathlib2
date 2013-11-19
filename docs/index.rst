@@ -221,27 +221,15 @@ property:
 
 .. data:: PurePath.parts
 
-   An immutable sequence-like object giving access to the path's various
-   components.  Indexing this object returns individual strings, while
-   slicing this object returns other path objects of the same flavour::
+   A tuple giving access to the path's various components::
 
       >>> p = PurePath('/usr/bin/python3')
       >>> p.parts
-      <PurePosixPath.parts: ['/', 'usr', 'bin', 'python3']>
-      >>> p.parts[0]
-      '/'
-      >>> p.parts[-1]
-      'python3'
-      >>> p.parts[1:]
-      PurePosixPath('usr/bin/python3')
-      >>> p.parts[:-1]
-      PurePosixPath('/usr/bin')
+      ('/', 'usr', 'bin', 'python3')
 
       >>> p = PureWindowsPath('c:/Program Files/PSF')
-      >>> p.parts[0]
-      'c:\\'
-      >>> p.parts[1:]
-      PureWindowsPath('Program Files/PSF')
+      >>> p.parts
+      ('c:\\', 'Program Files', 'PSF')
 
    (note how the drive and local root are regrouped in a single part)
 

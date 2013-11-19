@@ -518,26 +518,26 @@ class _RecursiveWildcardSelector(_Selector):
 # Public API
 #
 
-class _PathParts(Sequence):
-    """This object provides sequence-like access to the parts of a path.
-    Don't try to construct it yourself."""
-    __slots__ = ('_pathcls', '_parts')
+#class _PathParts(Sequence):
+    #"""This object provides sequence-like access to the parts of a path.
+    #Don't try to construct it yourself."""
+    #__slots__ = ('_pathcls', '_parts')
 
-    def __init__(self, path):
-        # We don't store the instance to avoid reference cycles
-        self._pathcls = type(path)
-        self._parts = path._parts
+    #def __init__(self, path):
+        ## We don't store the instance to avoid reference cycles
+        #self._pathcls = type(path)
+        #self._parts = path._parts
 
-    def __len__(self):
-        return len(self._parts)
+    #def __len__(self):
+        #return len(self._parts)
 
-    def __getitem__(self, idx):
-        if isinstance(idx, slice):
-            return self._pathcls(*self._parts[idx])
-        return self._parts[idx]
+    #def __getitem__(self, idx):
+        #if isinstance(idx, slice):
+            #return self._pathcls(*self._parts[idx])
+        #return self._parts[idx]
 
-    def __repr__(self):
-        return "<{}.parts: {!r}>".format(self._pathcls.__name__, self._parts)
+    #def __repr__(self):
+        #return "<{}.parts: {!r}>".format(self._pathcls.__name__, self._parts)
 
 
 class PurePath(object):
@@ -810,10 +810,12 @@ class PurePath(object):
     def parts(self):
         """An object providing sequence-like access to the
         components in the filesystem path."""
+        # We cache the tuple to avoid building a new one each time .parts
+        # is accessed.  XXX is this necessary?
         try:
             return self._pparts
         except AttributeError:
-            self._pparts = _PathParts(self)
+            self._pparts = tuple(self._parts)
             return self._pparts
 
     def joinpath(self, *args):
