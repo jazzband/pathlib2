@@ -102,7 +102,7 @@ class PosixFlavourTest(_BaseFlavourTest, unittest.TestCase):
 
 
 class NTFlavourTest(_BaseFlavourTest, unittest.TestCase):
-    flavour = pathlib._nt_flavour
+    flavour = pathlib._windows_flavour
 
     def test_parse_parts(self):
         check = self._check_parse_parts

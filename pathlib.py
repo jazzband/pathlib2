@@ -113,8 +113,8 @@ class _Flavour(object):
         return drv2 or drv, root, parts
 
 
-class _NTFlavour(_Flavour):
-    # Reference for NT paths can be found at
+class _WindowsFlavour(_Flavour):
+    # Reference for Windows paths can be found at
     # http://msdn.microsoft.com/en-us/library/aa365247%28v=vs.85%29.aspx
 
     sep = '\\'
@@ -313,7 +313,7 @@ class _PosixFlavour(_Flavour):
         return 'file://' + urlquote_from_bytes(bpath)
 
 
-_nt_flavour = _NTFlavour()
+_windows_flavour = _WindowsFlavour()
 _posix_flavour = _PosixFlavour()
 
 
@@ -911,7 +911,7 @@ class PurePosixPath(PurePath):
 
 
 class PureWindowsPath(PurePath):
-    _flavour = _nt_flavour
+    _flavour = _windows_flavour
     __slots__ = ()
 
 
