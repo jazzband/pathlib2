@@ -701,10 +701,10 @@ class PurePath(object):
         return self._cparts >= other._cparts
 
     drive = property(attrgetter('_drv'),
-                     doc="""The drive prefix (letter or UNC path), if any""")
+                     doc="""The drive prefix (letter or UNC path), if any.""")
 
     root = property(attrgetter('_root'),
-                    doc="""The root of the path, if any""")
+                    doc="""The root of the path, if any.""")
 
     @property
     def anchor(self):
