@@ -397,19 +397,16 @@ class _BasePurePathTest(object):
         # Relative
         P = self.cls
         p = P('a/b/c')
-        self.assertEqual(p.parent(), P('a/b'))
-        self.assertEqual(p.parent(2), P('a'))
-        self.assertEqual(p.parent(3), P())
-        self.assertRaises(ValueError, p.parent, 4)
+        self.assertEqual(p.parent, P('a/b'))
+        self.assertEqual(p.parent.parent, P('a'))
+        self.assertEqual(p.parent.parent.parent, P())
+        self.assertEqual(p.parent.parent.parent.parent, P())
         # Anchored
         p = P('/a/b/c')
-        self.assertEqual(p.parent(), P('/a/b'))
-        self.assertEqual(p.parent(2), P('/a'))
-        self.assertEqual(p.parent(3), P('/'))
-        self.assertRaises(ValueError, p.parent, 4)
-        # Invalid level values
-        self.assertRaises(ValueError, p.parent, 0)
-        self.assertRaises(ValueError, p.parent, -1)
+        self.assertEqual(p.parent, P('/a/b'))
+        self.assertEqual(p.parent.parent, P('/a'))
+        self.assertEqual(p.parent.parent.parent, P('/'))
+        self.assertEqual(p.parent.parent.parent.parent, P('/'))
 
     def test_parents_common(self):
         # Relative
@@ -764,19 +761,19 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         # Anchored
         P = self.cls
         p = P('z:a/b/c')
-        self.assertEqual(p.parent(), P('z:a/b'))
-        self.assertEqual(p.parent(2), P('z:a'))
-        self.assertEqual(p.parent(3), P('z:'))
-        self.assertRaises(ValueError, p.parent, 4)
+        self.assertEqual(p.parent, P('z:a/b'))
+        self.assertEqual(p.parent.parent, P('z:a'))
+        self.assertEqual(p.parent.parent.parent, P('z:'))
+        self.assertEqual(p.parent.parent.parent.parent, P('z:'))
         p = P('z:/a/b/c')
-        self.assertEqual(p.parent(), P('z:/a/b'))
-        self.assertEqual(p.parent(2), P('z:/a'))
-        self.assertEqual(p.parent(3), P('z:/'))
-        self.assertRaises(ValueError, p.parent, 4)
+        self.assertEqual(p.parent, P('z:/a/b'))
+        self.assertEqual(p.parent.parent, P('z:/a'))
+        self.assertEqual(p.parent.parent.parent, P('z:/'))
+        self.assertEqual(p.parent.parent.parent.parent, P('z:/'))
         p = P('//a/b/c/d')
-        self.assertEqual(p.parent(), P('//a/b/c'))
-        self.assertEqual(p.parent(2), P('//a/b'))
-        self.assertRaises(ValueError, p.parent, 3)
+        self.assertEqual(p.parent, P('//a/b/c'))
+        self.assertEqual(p.parent.parent, P('//a/b'))
+        self.assertEqual(p.parent.parent.parent, P('//a/b'))
 
     def test_parents(self):
         # Anchored

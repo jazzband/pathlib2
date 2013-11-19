@@ -299,6 +299,35 @@ Pure paths provide the following methods an properties:
       PureWindowsPath('c:/')
 
 
+.. data:: PurePath.parent
+
+   The logical parent of the path::
+
+      >>> p = PurePosixPath('/a/b/c/d')
+      >>> p.parent
+      PurePosixPath('/a/b/c')
+
+   You cannot go past an anchor, or empty path::
+
+      >>> p = PurePosixPath('/')
+      >>> p.parent
+      PurePosixPath('/')
+      >>> p = PurePosixPath('.')
+      >>> p.parent
+      PurePosixPath('.')
+
+   .. note::
+      This is a purely lexical operation, hence the following behaviour::
+
+         >>> p = PurePosixPath('foo/..')
+         >>> p.parent
+         PurePosixPath('foo')
+
+      If you want to walk an arbitrary filesystem path upwards, it is
+      recommended to first call :meth:`Path.resolve` so as to resolve
+      symlinks and eliminate `".."` components.
+
+
 .. data:: PurePath.name
 
    A string representing the final path component, excluding the drive and
@@ -452,33 +481,6 @@ Pure paths provide the following methods an properties:
 
       >>> PureWindowsPath('b.py').match('*.PY')
       True
-
-
-.. method:: PurePath.parent(level=1)
-
-   Return the path's parent at the *level*'th level.  If *level* is not given,
-   return the path's immediate parent::
-
-      >>> p = PurePosixPath('/a/b/c/d')
-      >>> p.parent()
-      PurePosixPath('/a/b/c')
-      >>> p.parent(2)
-      PurePosixPath('/a/b')
-      >>> p.parent(3)
-      PurePosixPath('/a')
-      >>> p.parent(4)
-      PurePosixPath('/')
-
-   .. note::
-      This is a purely lexical operation, hence the following behaviour::
-
-         >>> p = PurePosixPath('foo/..')
-         >>> p.parent()
-         PurePosixPath('foo')
-
-      If you want to walk an arbitrary filesystem path upwards, it is
-      recommended to first call :meth:`Path.resolve` so as to resolve
-      symlinks and eliminate `".."` components.
 
 
 .. method:: PurePath.relative_to(*other)

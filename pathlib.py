@@ -848,17 +848,15 @@ class PurePath(object):
         __rdiv__ = __rtruediv__
         del __truediv__, __rtruediv__
 
-    def parent(self, level=1):
-        """A parent or ancestor (if `level` is specified) of this path."""
-        if level < 1:
-            raise ValueError("`level` must be a non-zero positive integer")
+    @property
+    def parent(self):
+        """The logical parent of the path."""
         drv = self._drv
         root = self._root
-        parts = self._parts[:-level]
-        if not parts:
-            if level > len(self._parts) - bool(drv or root):
-                raise ValueError("level greater than path length")
-        return self._from_parsed_parts(drv, root, parts)
+        parts = self._parts
+        if len(parts) == 1 and (drv or root):
+            return self
+        return self._from_parsed_parts(drv, root, parts[:-1])
 
     @property
     def parents(self):
@@ -1127,7 +1125,7 @@ class Path(PurePath):
             except OSError as e:
                 if e.errno != ENOENT:
                     raise
-                self.parent().mkdir(mode, True)
+                self.parent.mkdir(mode, True)
                 self._accessor.mkdir(self, mode)
 
     def chmod(self, mode):
