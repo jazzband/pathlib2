@@ -536,6 +536,10 @@ class _PathParents(Sequence):
         else:
             return len(self._parts)
 
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self[i]
+
     def __getitem__(self, idx):
         if idx < 0:
             raise IndexError(idx)
