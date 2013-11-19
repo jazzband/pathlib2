@@ -452,12 +452,6 @@ Pure paths provide the following methods an properties:
       True
 
 
-.. method:: PurePath.normcase()
-
-   Return a case-folded version of the path.  Calling this method is *not*
-   needed before comparing path objects.
-
-
 .. method:: PurePath.parent(level=1)
 
    Return the path's parent at the *level*'th level.  If *level* is not given,

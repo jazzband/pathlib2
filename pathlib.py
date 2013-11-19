@@ -864,16 +864,6 @@ class PurePath(object):
             return False
         return not self._flavour.has_drv or bool(self._drv)
 
-    def normcase(self):
-        """Return this path, possibly lowercased if the path flavour has
-        case-insensitive path semantics.
-        Calling this method is not needed before comparing Path instances."""
-        fix = self._flavour.casefold_parts
-        drv, = fix((self._drv,))
-        root = self._root
-        parts = fix(self._parts)
-        return self._from_parsed_parts(drv, root, parts)
-
     def is_reserved(self):
         """Return True if the path contains one of the special names reserved
         by the system, if any."""

@@ -619,12 +619,6 @@ class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertTrue(P('//a').is_absolute())
         self.assertTrue(P('//a/b').is_absolute())
 
-    def test_normcase(self):
-        P = self.cls
-        p = P('/Aa/Bb/Cc').normcase()
-        self.assertEqual(P('/Aa/Bb/Cc'), p)
-        self.assertEqual('/Aa/Bb/Cc', str(p))
-
     def test_is_reserved(self):
         P = self.cls
         self.assertIs(False, P('').is_reserved())
@@ -975,12 +969,6 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertTrue(P('//a/b/').is_absolute())
         self.assertTrue(P('//a/b/c').is_absolute())
         self.assertTrue(P('//a/b/c/d').is_absolute())
-
-    def test_normcase(self):
-        P = self.cls
-        p = P('D:/Aa/Bb/Cc').normcase()
-        self.assertEqual(P('d:/aa/bb/cc'), p)
-        self.assertEqual(r'd:\aa\bb\cc', str(p))
 
     def test_is_reserved(self):
         P = self.cls
