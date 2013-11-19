@@ -1500,22 +1500,22 @@ class _BasePathTest(object):
         P = self.cls(BASE, 'myfifo')
         os.mkfifo(str(P))
         self.assertTrue(P.is_fifo())
-        self.assertFalse(P.is_sock())
+        self.assertFalse(P.is_socket())
         self.assertFalse(P.is_file())
 
-    def test_is_sock_false(self):
+    def test_is_socket_false(self):
         P = self.cls(BASE)
-        self.assertFalse((P / 'fileA').is_sock())
-        self.assertFalse((P / 'dirA').is_sock())
-        self.assertFalse((P / 'non-existing').is_sock())
+        self.assertFalse((P / 'fileA').is_socket())
+        self.assertFalse((P / 'dirA').is_socket())
+        self.assertFalse((P / 'non-existing').is_socket())
 
     @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
-    def test_is_sock_true(self):
+    def test_is_socket_true(self):
         P = self.cls(BASE, 'mysock')
         sock = socket.socket(socket.SOCK_STREAM, socket.AF_UNIX)
         self.addCleanup(sock.close)
         sock.bind(str(P))
-        self.assertTrue(P.is_sock())
+        self.assertTrue(P.is_socket())
         self.assertFalse(P.is_fifo())
         self.assertFalse(P.is_file())
 

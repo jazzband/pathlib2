@@ -1296,7 +1296,7 @@ class Path(PurePath):
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
             return False
 
-    def is_sock(self):
+    def is_socket(self):
         """
         Whether this path is a socket.
         """

@@ -679,7 +679,7 @@ call fails (for example because the path doesn't exist):
    as permission errors) are propagated.
 
 
-.. method:: Path.is_sock()
+.. method:: Path.is_socket()
 
    Return True if the path points to a Unix socket (or a symbolic link
    pointing to a Unix socket), False if it points to another kind of file.
