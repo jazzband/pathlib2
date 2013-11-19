@@ -352,7 +352,7 @@ Pure paths provide the following methods an properties:
       '.py'
       >>> PurePosixPath('my/library.tar.gz').suffix
       '.gz'
-      >>> PurePosixPath('my/library').ext
+      >>> PurePosixPath('my/library').suffix
       ''
 
 
