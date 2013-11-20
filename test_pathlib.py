@@ -1640,7 +1640,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
 
 
 @only_nt
-class Windows(_BasePathTest, unittest.TestCase):
+class WindowsPathTest(_BasePathTest, unittest.TestCase):
     cls = pathlib.WindowsPath
 
     def test_glob(self):
