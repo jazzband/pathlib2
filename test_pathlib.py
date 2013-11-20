@@ -417,10 +417,11 @@ class _BasePurePathTest(object):
         self.assertEqual(par[0], P('a/b'))
         self.assertEqual(par[1], P('a'))
         self.assertEqual(par[2], P('.'))
-        self.assertEqual(par[3], P('.'))
         self.assertEqual(list(par), [P('a/b'), P('a'), P('.')])
         with self.assertRaises(IndexError):
             par[-1]
+        with self.assertRaises(IndexError):
+            par[3]
         with self.assertRaises(TypeError):
             par[0] = p
         # Anchored
@@ -430,8 +431,9 @@ class _BasePurePathTest(object):
         self.assertEqual(par[0], P('/a/b'))
         self.assertEqual(par[1], P('/a'))
         self.assertEqual(par[2], P('/'))
-        self.assertEqual(par[3], P('/'))
         self.assertEqual(list(par), [P('/a/b'), P('/a'), P('/')])
+        with self.assertRaises(IndexError):
+            par[3]
 
     def test_drive_common(self):
         P = self.cls
@@ -785,22 +787,25 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertEqual(len(par), 2)
         self.assertEqual(par[0], P('z:a'))
         self.assertEqual(par[1], P('z:'))
-        self.assertEqual(par[2], P('z:'))
         self.assertEqual(list(par), [P('z:a'), P('z:')])
+        with self.assertRaises(IndexError):
+            par[2]
         p = P('z:/a/b/')
         par = p.parents
         self.assertEqual(len(par), 2)
         self.assertEqual(par[0], P('z:/a'))
         self.assertEqual(par[1], P('z:/'))
-        self.assertEqual(par[2], P('z:/'))
         self.assertEqual(list(par), [P('z:/a'), P('z:/')])
+        with self.assertRaises(IndexError):
+            par[2]
         p = P('//a/b/c/d')
         par = p.parents
         self.assertEqual(len(par), 2)
         self.assertEqual(par[0], P('//a/b/c'))
         self.assertEqual(par[1], P('//a/b'))
-        self.assertEqual(par[2], P('//a/b'))
         self.assertEqual(list(par), [P('//a/b/c'), P('//a/b')])
+        with self.assertRaises(IndexError):
+            par[2]
 
     def test_drive(self):
         P = self.cls

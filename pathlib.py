@@ -536,20 +536,11 @@ class _PathParents(Sequence):
         else:
             return len(self._parts)
 
-    def __iter__(self):
-        for i in range(len(self)):
-            yield self[i]
-
     def __getitem__(self, idx):
-        if idx < 0:
+        if idx < 0 or idx >= len(self):
             raise IndexError(idx)
-        if (self._drv or self._root) and idx >= len(self._parts) - 1:
-            # Anchored path, make sure the anchor remains
-            new_parts = self._parts[:1]
-        else:
-            new_parts = self._parts[:-idx-1]
         return self._pathcls._from_parsed_parts(self._drv, self._root,
-                                                new_parts)
+                                                self._parts[:-idx - 1])
 
     def __repr__(self):
         return "<{}.parents>".format(self._pathcls.__name__)
