@@ -1639,31 +1639,6 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         self.assertEqual(set(p.rglob("FILEd")), set())
 
 
-class Mock:
-    def __init__(self, fullname):
-        parts = fullname.split('.')
-        obj = __import__('.'.join(parts[:-1]))
-        for part in parts[1:]:
-            module = obj
-            obj = getattr(obj, part)
-        self.module = module
-        self.qualname = parts[-1]
-        self.orig_func = obj
-
-    def __enter__(self):
-        def wrapper(*args, **kwargs):
-            self.calls += 1
-            self.call_params.append((args, kwargs))
-            return self.orig_func(*args, **kwargs)
-        self.calls = 0
-        self.call_params = []
-        setattr(self.module, self.qualname, wrapper)
-        return self
-
-    def __exit__(self, *_):
-        setattr(self.module, self.qualname, self.orig_func)
-
-
 @only_nt
 class Windows(_BasePathTest, unittest.TestCase):
     cls = pathlib.WindowsPath
