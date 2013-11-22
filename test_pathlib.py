@@ -1278,21 +1278,6 @@ class _BasePathTest(object):
         p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
         self._check_resolve_absolute(p, P(BASE, 'dirB', 'fileB'))
 
-    def test_with(self):
-        p = self.cls(BASE)
-        it = p.iterdir()
-        it2 = p.iterdir()
-        next(it2)
-        with p:
-            pass
-        # I/O operation on closed path
-        self.assertRaises(ValueError, next, it)
-        self.assertRaises(ValueError, next, it2)
-        self.assertRaises(ValueError, p.open)
-        self.assertRaises(ValueError, p.resolve)
-        self.assertRaises(ValueError, p.absolute)
-        self.assertRaises(ValueError, p.__enter__)
-
     def test_chmod(self):
         p = self.cls(BASE) / 'fileA'
         mode = p.stat().st_mode
