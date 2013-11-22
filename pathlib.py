@@ -286,7 +286,7 @@ class _PosixFlavour(_Flavour):
             if cur in symlinks and symlinks[cur] <= len(parts):
                 # We've already seen the symlink and there's not less
                 # work to do than the last time.
-                raise ValueError("Symlink loop from %r" % cur)
+                raise RuntimeError("Symlink loop from %r" % cur)
             try:
                 target = accessor.readlink(cur)
             except OSError as e:

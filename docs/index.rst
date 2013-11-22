@@ -800,7 +800,8 @@ call fails (for example because the path doesn't exist):
       PosixPath('/home/antoine/pathlib/setup.py')
 
    If the path doesn't exist, an :exc:`OSError` is raised.  If an infinite
-   loop is encountered along the resolution path, :exc:`ValueError` is raised.
+   loop is encountered along the resolution path, :exc:`RuntimeError` is
+   raised.
 
 
 .. method:: Path.rglob(pattern)
