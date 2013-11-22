@@ -1076,7 +1076,7 @@ class Path(PurePath):
                 pass
             else:
                 return
-        flags = os.O_CREAT
+        flags = os.O_CREAT | os.O_WRONLY
         if not exist_ok:
             flags |= os.O_EXCL
         fd = self._raw_open(flags, mode)
