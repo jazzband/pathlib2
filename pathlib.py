@@ -7,16 +7,9 @@ import posixpath
 import re
 import sys
 import time
-import weakref
-try:
-    import threading
-except ImportError:
-    import dummy_threading as threading
-
-from collections import Sequence, defaultdict
+from collections import Sequence
 from contextlib import contextmanager
 from errno import EINVAL, ENOENT
-from itertools import chain, count
 from operator import attrgetter
 from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
 try:
