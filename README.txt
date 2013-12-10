@@ -29,7 +29,7 @@ Importing the module classes::
 
    >>> from pathlib import *
 
-Listing Python source files in a directory:
+Listing Python source files in a directory::
 
    >>> list(p.glob('*.py'))
    [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
@@ -78,11 +78,13 @@ History
 Version 0.97
 ^^^^^^^^^^^^
 
-- Reintegrate all changes made for :pep:`428`; they are too long to list
-  here.
+This version brings ``pathlib`` up to date with the final API specified
+in :pep:`428`.  The changes are too long to list here, it is recommended
+to read the `documentation <https://pathlib.readthedocs.org/>`_.
 
 .. warning::
-   The API in this version is changed from pathlib 0.8 and earlier.
+   The API in this version is partially incompatible with pathlib 0.8 and
+   earlier.  Be sure to check your code for possible breakage!
 
 Version 0.8
 ^^^^^^^^^^^
