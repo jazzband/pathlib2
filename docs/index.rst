@@ -22,8 +22,7 @@ with Python 2.7.
    need to install it for Python 3.3 or older.
 
 .. seealso::
-   :pep:`428`: The pathlib module -- object-oriented filesystem paths
-      Rationale for the final pathlib design and API.
+   :pep:`428`: Rationale for the final pathlib design and API.
 
 Download
 --------
