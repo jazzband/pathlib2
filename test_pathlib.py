@@ -1419,6 +1419,13 @@ class _BasePathTest(object):
         self.assertTrue(p.exists())
         self.assertRaises(OSError, p.touch, exist_ok=False)
 
+    def test_touch_nochange(self):
+        P = self.cls(BASE)
+        p = P / 'fileA'
+        p.touch()
+        with p.open('rb') as f:
+            self.assertEqual(f.read().strip(), b"this is file A")
+
     def test_mkdir(self):
         P = self.cls(BASE)
         p = P / 'newdirA'
@@ -1650,6 +1657,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         given = set(p.glob("FILEa"))
         expect = set() if not support.fs_is_case_insensitive(BASE) else given
         self.assertEqual(given, expect)
+        self.assertEqual(set(p.glob("FILEa*")), set())
 
     def test_rglob(self):
         P = self.cls
@@ -1657,6 +1665,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         given = set(p.rglob("FILEd"))
         expect = set() if not support.fs_is_case_insensitive(BASE) else given
         self.assertEqual(given, expect)
+        self.assertEqual(set(p.rglob("FILEd*")), set())
 
 
 @only_nt
