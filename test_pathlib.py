@@ -24,6 +24,25 @@ except ImportError:
     grp = pwd = None
 
 
+# Backported from 3.4
+def fs_is_case_insensitive(directory):
+    """Detects if the file system for the specified directory is case-insensitive."""
+    base_fp, base_path = tempfile.mkstemp(dir=directory)
+    case_path = base_path.upper()
+    if case_path == base_path:
+        case_path = base_path.lower()
+    try:
+        return os.path.samefile(base_path, case_path)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+        return False
+    finally:
+        os.unlink(base_path)
+
+support.fs_is_case_insensitive = fs_is_case_insensitive
+
+
 class _BaseFlavourTest(object):
 
     def _check_parse_parts(self, arg, expected):
@@ -1628,12 +1647,16 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
     def test_glob(self):
         P = self.cls
         p = P(BASE)
-        self.assertEqual(set(p.glob("FILEa")), set())
+        given = set(p.glob("FILEa"))
+        expect = set() if not support.fs_is_case_insensitive(BASE) else given
+        self.assertEqual(given, expect)
 
     def test_rglob(self):
         P = self.cls
         p = P(BASE, "dirC")
-        self.assertEqual(set(p.rglob("FILEd")), set())
+        given = set(p.rglob("FILEd"))
+        expect = set() if not support.fs_is_case_insensitive(BASE) else given
+        self.assertEqual(given, expect)
 
 
 @only_nt
