@@ -13,7 +13,7 @@ setup(
     author='Antoine Pitrou',
     author_email='solipsis@pitrou.net',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
@@ -21,9 +21,10 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
     download_url='https://pypi.python.org/pypi/pathlib/',
-    url='http://readthedocs.org/docs/pathlib/',
+    url='https://pathlib.readthedocs.org/',
 )

@@ -18,65 +18,51 @@ Python 3.2 or later is recommended, but pathlib is also usable with Python 2.7.
 Install
 -------
 
-``easy_install pathlib`` or ``pip install pathlib`` should do the trick.
+In Python 3.4, pathlib is now part of the standard library.  For Python 3.3
+and earlier, ``easy_install pathlib`` or ``pip install pathlib`` should do
+the trick.
 
 Examples
 --------
 
 Importing the module classes::
 
-    >>> from pathlib import *
+   >>> from pathlib import *
 
-Listing Python source files in a directory::
+Listing Python source files in a directory:
 
-    >>> p = Path('.')
-    >>> list(p.glob('*.py'))
-    [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
-     PosixPath('pathlib.py')]
-
-Listing all Python source files in this directory tree::
-
-    >>> list(p.glob('**/*.py'))
-    [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
-     PosixPath('pathlib.py'), PosixPath('docs/conf.py'),
-     PosixPath('build/lib/pathlib.py')]
-
-Listing subdirectories::
-
-    >>> [x for x in p if x.is_dir()]
-    [PosixPath('.hg'), PosixPath('docs'), PosixPath('dist'),
-     PosixPath('__pycache__'), PosixPath('build')]
+   >>> list(p.glob('*.py'))
+   [PosixPath('test_pathlib.py'), PosixPath('setup.py'),
+    PosixPath('pathlib.py')]
 
 Navigating inside a directory tree::
 
-    >>> p = Path('/etc')
-    >>> q = p['init.d/reboot']
-    >>> q
-    PosixPath('/etc/init.d/reboot')
-    >>> q.resolve()
-    PosixPath('/etc/rc.d/init.d/halt')
+   >>> p = Path('/etc')
+   >>> q = p / 'init.d' / 'reboot'
+   >>> q
+   PosixPath('/etc/init.d/reboot')
+   >>> q.resolve()
+   PosixPath('/etc/rc.d/init.d/halt')
 
 Querying path properties::
 
-    >>> q.exists()
-    True
-    >>> q.is_dir()
-    False
-    >>> q.st_mode
-    33261
+   >>> q.exists()
+   True
+   >>> q.is_dir()
+   False
 
 Opening a file::
 
-    >>> with q.open() as f: f.readline()
-    ...
-    '#!/bin/bash\n'
+   >>> with q.open() as f: f.readline()
+   ...
+   '#!/bin/bash\n'
 
 
 Documentation
 -------------
 
 The full documentation can be read at `Read the Docs
-<http://readthedocs.org/docs/pathlib/en/latest/>`_.
+<https://pathlib.readthedocs.org/>`_.
 
 
 Contributing
@@ -88,6 +74,15 @@ The issue tracker and repository are hosted by `BitBucket
 
 History
 -------
+
+Version 0.97
+^^^^^^^^^^^^
+
+- Reintegrate all changes made for :pep:`428`; they are too long to list
+  here.
+
+.. warning::
+   The API in this version is changed from pathlib 0.8 and earlier.
 
 Version 0.8
 ^^^^^^^^^^^
