@@ -23,7 +23,7 @@ with Python 2.7.
 
 .. seealso::
    :pep:`428`: The pathlib module -- object-oriented filesystem paths
-      Rationale for the stabilized pathlib design and API.
+      Rationale for the final pathlib design and API.
 
 Download
 --------
@@ -36,6 +36,33 @@ the `Python developer's guide <http://docs.python.org/devguide/>`_.
 The maintenance repository for this standalone backport module can be
 found on BitBucket, but activity is expected to be quite low:
 https://bitbucket.org/pitrou/pathlib/
+
+
+High-level view
+---------------
+
+This module offers classes representing filesystem paths with semantics
+appropriate for different operating systems.  Path classes are divided
+between :ref:`pure paths <pure-paths>`, which provide purely computational
+operations without I/O, and :ref:`concrete paths <concrete-paths>`, which
+inherit from pure paths but also provide I/O operations.
+
+.. image:: pathlib-inheritance.png
+   :align: center
+
+If you've never used this module before or just aren't sure which class is
+right for your task, :class:`Path` is most likely what you need. It instantiates
+a :ref:`concrete path <concrete-paths>` for the platform the code is running on.
+
+Pure paths are useful in some special cases; for example:
+
+#. If you want to manipulate Windows paths on a Unix machine (or vice versa).
+   You cannot instantiate a :class:`WindowsPath` when running on Unix, but you
+   can instantiate :class:`PureWindowsPath`.
+#. You want to make sure that your code only manipulates paths without actually
+   accessing the OS. In this case, instantiating one of the pure classes may be
+   useful since those simply don't have any OS-accessing operations.
+
 
 Basic use
 ---------
@@ -81,6 +108,8 @@ Opening a file::
    '#!/bin/bash\n'
 
 
+.. _pure-paths:
+
 Pure paths
 ----------
 
@@ -88,8 +117,57 @@ Pure path objects provide path-handling operations which don't actually
 access a filesystem.  There are three ways to access these classes, which
 we also call *flavours*:
 
+.. class:: PurePath(*pathsegments)
 
-.. class:: PurePosixPath
+   A generic class that represents the system's path flavour (instantiating
+   it creates either a :class:`PurePosixPath` or a :class:`PureWindowsPath`)::
+
+      >>> PurePath('setup.py')      # Running on a Unix machine
+      PurePosixPath('setup.py')
+
+   Each element of *pathsegments* can be either a string or bytes object
+   representing a path segment; it can also be another path object::
+
+      >>> PurePath('foo', 'some/path', 'bar')
+      PurePosixPath('foo/some/path/bar')
+      >>> PurePath(Path('foo'), Path('bar'))
+      PurePosixPath('foo/bar')
+
+   When *pathsegments* is empty, the current directory is assumed::
+
+      >>> PurePath()
+      PurePosixPath('.')
+
+   When several absolute paths are given, the last is taken as an anchor
+   (mimicking :func:`os.path.join`'s behaviour)::
+
+      >>> PurePath('/etc', '/usr', 'lib64')
+      PurePosixPath('/usr/lib64')
+      >>> PureWindowsPath('c:/Windows', 'd:bar')
+      PureWindowsPath('d:bar')
+
+   However, in a Windows path, changing the local root doesn't discard the
+   previous drive setting::
+
+      >>> PureWindowsPath('c:/Windows', '/Program Files')
+      PureWindowsPath('c:/Program Files')
+
+   Spurious slashes and single dots are collapsed, but double dots (``'..'``)
+   are not, since this would change the meaning of a path in the face of
+   symbolic links::
+
+      >>> PurePath('foo//bar')
+      PurePosixPath('foo/bar')
+      >>> PurePath('foo/./bar')
+      PurePosixPath('foo/bar')
+      >>> PurePath('foo/../bar')
+      PurePosixPath('foo/../bar')
+
+   (a naïve approach would make ``PurePosixPath('foo/../bar')`` equivalent
+   to ``PurePosixPath('bar')``, which is wrong if ``foo`` is a symbolic link
+   to another directory)
+
+.. class:: PurePosixPath(*pathsegments)
 
    A subclass of :class:`PurePath`, this path flavour represents non-Windows
    filesystem paths::
@@ -97,7 +175,9 @@ we also call *flavours*:
       >>> PurePosixPath('/etc')
       PurePosixPath('/etc')
 
-.. class:: PureWindowsPath
+   *pathsegments* is specified similarly to :class:`PurePath`.
+
+.. class:: PureWindowsPath(*pathsegments)
 
    A subclass of :class:`PurePath`, this path flavour represents Windows
    filesystem paths::
@@ -105,65 +185,10 @@ we also call *flavours*:
       >>> PureWindowsPath('c:/Program Files/')
       PureWindowsPath('c:/Program Files')
 
-.. class:: PurePath
-
-   A generic class that represents the system's path flavour (instantiating
-   it creates either a :class:`PurePosixPath` or a :class:`PureWindowsPath`)::
-
-      >>> PurePath('setup.py')
-      PurePosixPath('setup.py')
-
+   *pathsegments* is specified similarly to :class:`PurePath`.
 
 Regardless of the system you're running on, you can instantiate all of
 these classes, since they don't provide any operation that does system calls.
-
-
-Constructing paths
-^^^^^^^^^^^^^^^^^^
-
-Path constructors accept an arbitrary number of positional arguments.
-When called without any argument, a path object points to the current
-directory::
-
-   >>> PurePath()
-   PurePosixPath('.')
-
-Any argument can be a string or bytes object representing an arbitrary number
-of path segments, but it can also be another path object::
-
-   >>> PurePath('foo', 'some/path', 'bar')
-   PurePosixPath('foo/some/path/bar')
-   >>> PurePath(Path('foo'), Path('bar'))
-   PurePosixPath('foo/bar')
-
-When several absolute paths are given, the last is taken as an anchor
-(mimicking ``os.path.join``'s behaviour)::
-
-   >>> PurePath('/etc', '/usr', 'lib64')
-   PurePosixPath('/usr/lib64')
-   >>> PureWindowsPath('c:/Windows', 'd:bar')
-   PureWindowsPath('d:bar')
-
-However, in a Windows path, changing the local root doesn't discard the
-previous drive setting::
-
-   >>> PureWindowsPath('c:/Windows', '/Program Files')
-   PureWindowsPath('c:/Program Files')
-
-Spurious slashes and single dots are collapsed, but double dots (``'..'``)
-are not, since this would change the meaning of a path in the face of
-symbolic links::
-
-   >>> PurePath('foo//bar')
-   PurePosixPath('foo/bar')
-   >>> PurePath('foo/./bar')
-   PurePosixPath('foo/bar')
-   >>> PurePath('foo/../bar')
-   PurePosixPath('foo/../bar')
-
-(a naïve approach would make ``PurePosixPath('foo/../bar')`` equivalent
-to ``PurePosixPath('bar')``, which is wrong if ``foo`` is a symbolic link
-to another directory)
 
 
 General properties
@@ -512,6 +537,8 @@ Pure paths provide the following methods and properties:
       ValueError: '/etc/passwd' does not start with '/usr'
 
 
+.. _concrete-paths:
+
 Concrete paths
 --------------
 
@@ -519,24 +546,7 @@ Concrete paths are subclasses of the pure path classes.  In addition to
 operations provided by the latter, they also provide methods to do system
 calls on path objects.  There are three ways to instantiate concrete paths:
 
-
-.. class:: PosixPath
-
-   A subclass of :class:`Path` and :class:`PurePosixPath`, this class
-   represents concrete non-Windows filesystem paths::
-
-      >>> PosixPath('/etc')
-      PosixPath('/etc')
-
-.. class:: WindowsPath
-
-   A subclass of :class:`Path` and :class:`PureWindowsPath`, this class
-   represents concrete Windows filesystem paths::
-
-      >>> WindowsPath('c:/Program Files/')
-      WindowsPath('c:/Program Files')
-
-.. class:: Path
+.. class:: Path(*pathsegments)
 
    A subclass of :class:`PurePath`, this class represents concrete paths of
    the system's path flavour (instantiating it creates either a
@@ -545,6 +555,27 @@ calls on path objects.  There are three ways to instantiate concrete paths:
       >>> Path('setup.py')
       PosixPath('setup.py')
 
+   *pathsegments* is specified similarly to :class:`PurePath`.
+
+.. class:: PosixPath(*pathsegments)
+
+   A subclass of :class:`Path` and :class:`PurePosixPath`, this class
+   represents concrete non-Windows filesystem paths::
+
+      >>> PosixPath('/etc')
+      PosixPath('/etc')
+
+   *pathsegments* is specified similarly to :class:`PurePath`.
+
+.. class:: WindowsPath(*pathsegments)
+
+   A subclass of :class:`Path` and :class:`PureWindowsPath`, this class
+   represents concrete Windows filesystem paths::
+
+      >>> WindowsPath('c:/Program Files/')
+      WindowsPath('c:/Program Files')
+
+   *pathsegments* is specified similarly to :class:`PurePath`.
 
 You can only instantiate the class flavour that corresponds to your system
 (allowing system calls on non-compatible path flavours could lead to
