@@ -4,3 +4,5 @@ syntax: regexp
 ^MANIFEST
 ^docs/_
 .*\.pyc
+^\.tox/
+
