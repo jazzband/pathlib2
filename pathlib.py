@@ -838,7 +838,6 @@ class PurePath(object):
     if sys.version_info < (3,):
         __div__ = __truediv__
         __rdiv__ = __rtruediv__
-        del __truediv__, __rtruediv__
 
     @property
     def parent(self):
