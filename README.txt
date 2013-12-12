@@ -75,6 +75,12 @@ The issue tracker and repository are hosted by `BitBucket
 History
 -------
 
+In development (unreleased)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Issue #21: fix TypeError under 2.7 when using new division.
+- Add tox support for easier testing.
+
 Version 0.97
 ^^^^^^^^^^^^
 
