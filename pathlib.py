@@ -22,6 +22,10 @@ try:
     intern = intern
 except NameError:
     intern = sys.intern
+try:
+    basestring = basestring
+except NameError:
+    basestring = str
 
 supports_symlinks = True
 try:
@@ -45,6 +49,14 @@ __all__ = [
 # Internals
 #
 
+_py2 = sys.version_info < (3,)
+_py2_fs_encoding = 'ascii'
+
+def _py2_fsencode(parts):
+    # py2 => minimal unicode support
+    return [part.encode(_py2_fs_encoding) if isinstance(part, unicode)
+            else part for part in parts]
+
 def _is_wildcard_pattern(pat):
     # Whether this pattern needs actual matching using fnmatch, or can
     # be looked up directly as a file.
@@ -59,6 +71,8 @@ class _Flavour(object):
         self.join = self.sep.join
 
     def parse_parts(self, parts):
+        if _py2:
+            parts = _py2_fsencode(parts)
         parsed = []
         sep = self.sep
         altsep = self.altsep
@@ -578,8 +592,7 @@ class PurePath(object):
         for a in args:
             if isinstance(a, PurePath):
                 parts += a._parts
-            elif isinstance(a, str):
-                # Assuming a str
+            elif isinstance(a, basestring):
                 parts.append(a)
             else:
                 raise TypeError(

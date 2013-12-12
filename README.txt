@@ -78,7 +78,9 @@ History
 In development (unreleased)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Issue #21: fix TypeError under 2.7 when using new division.
+- Make pathlib usable under Python 2.7 with unicode pathnames (only pure
+  ASCII, though).
+- Issue #21: fix TypeError under Python 2.7 when using new division.
 - Add tox support for easier testing.
 
 Version 0.97

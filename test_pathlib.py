@@ -54,6 +54,12 @@ class _BaseFlavourTest(object):
         if altsep:
             actual = f([x.replace('/', altsep) for x in arg])
             self.assertEqual(actual, expected)
+        drv, root, parts = actual
+        # neither bytes (py3) nor unicode (py2)
+        self.assertIsInstance(drv, str)
+        self.assertIsInstance(root, str)
+        for p in parts:
+            self.assertIsInstance(p, str)
 
     def test_parse_parts_common(self):
         check = self._check_parse_parts
@@ -255,7 +261,9 @@ class _BasePurePathTest(object):
 
     def _check_str(self, expected, args):
         p = self.cls(*args)
-        self.assertEqual(str(p), expected.replace('/', self.sep))
+        s = str(p)
+        self.assertEqual(s, expected.replace('/', self.sep))
+        self.assertIsInstance(s, str)
 
     def test_str_common(self):
         # Canonicalized paths roundtrip
@@ -277,7 +285,6 @@ class _BasePurePathTest(object):
         P = self.cls
         self.assertEqual(bytes(P('a/b')), b'a' + sep + b'b')
 
-    @with_fsencode
     def test_as_uri_common(self):
         P = self.cls
         with self.assertRaises(ValueError):
@@ -290,6 +297,7 @@ class _BasePurePathTest(object):
             p = self.cls(pathstr)
             clsname = p.__class__.__name__
             r = repr(p)
+            self.assertIsInstance(r, str)
             # The repr() is in the form ClassName("forward-slashes path")
             self.assertTrue(r.startswith(clsname + '('), r)
             self.assertTrue(r.endswith(')'), r)
@@ -387,6 +395,8 @@ class _BasePurePathTest(object):
         p = P('a/b')
         parts = p.parts
         self.assertEqual(parts, ('a', 'b'))
+        for part in parts:
+            self.assertIsInstance(part, str)
         # The object gets reused
         self.assertIs(parts, p.parts)
         # When the path is absolute, the anchor is a separate part
@@ -615,7 +625,6 @@ class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertEqual(P('/a'), P('///a'))
         self.assertNotEqual(P('/a'), P('//a'))
 
-    @with_fsencode
     def test_as_uri(self):
         P = self.cls
         self.assertEqual(P('/').as_uri(), 'file:///')
@@ -719,7 +728,6 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
 
     @with_fsencode
     def test_as_uri(self):
-        from urllib.parse import quote_from_bytes
         P = self.cls
         with self.assertRaises(ValueError):
             P('/a/b').as_uri()
@@ -1744,5 +1752,9 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
         self.assertEqual(set(p.rglob("FILEd")), { P(BASE, "dirC/dirD/fileD") })
 
 
+def main():
+    unittest.main(__name__)
+
+
 if __name__ == "__main__":
-    unittest.main()
+    main()
