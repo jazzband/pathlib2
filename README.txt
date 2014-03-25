@@ -75,9 +75,11 @@ The issue tracker and repository are hosted by `BitBucket
 History
 -------
 
-In development (unreleased)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 1.0
+^^^^^^^^^^^
 
+- Python issue #19887: Improve the Path.resolve() algorithm to support
+  certain symlink chains.
 - Make pathlib usable under Python 2.7 with unicode pathnames (only pure
   ASCII, though).
 - Issue #21: fix TypeError under Python 2.7 when using new division.
