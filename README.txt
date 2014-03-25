@@ -78,6 +78,8 @@ History
 Version 1.0
 ^^^^^^^^^^^
 
+- Python issue #20765: Add missing documentation for PurePath.with_name()
+  and PurePath.with_suffix().
 - Fix test_mkdir_parents when the working directory has additional bits
   set (such as the setgid or sticky bits).
 - Python issue #20111: pathlib.Path.with_suffix() now sanity checks the
