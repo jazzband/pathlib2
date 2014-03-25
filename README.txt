@@ -68,8 +68,13 @@ The full documentation can be read at `Read the Docs
 Contributing
 ------------
 
-The issue tracker and repository are hosted by `BitBucket
-<https://bitbucket.org/pitrou/pathlib/>`_.
+Main development now takes place in the Python standard library: see
+the `Python developer's guide <http://docs.python.org/devguide/>`_, and
+report issues on the `Python bug tracker <http://bugs.python.org/>`_.
+
+However, if you find an issue specific to prior versions of Python
+(such as 2.7 or 3.2), you can post an issue on the
+`BitBucket project page <https://bitbucket.org/pitrou/pathlib/>`_.
 
 
 History
@@ -77,6 +82,9 @@ History
 
 Version 1.0
 ^^^^^^^^^^^
+
+This version brings ``pathlib`` up to date with the official Python 3.4
+release, and also fixes a couple of 2.7-specific issues.
 
 - Python issue #20765: Add missing documentation for PurePath.with_name()
   and PurePath.with_suffix().
