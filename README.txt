@@ -78,6 +78,8 @@ History
 Version 1.0
 ^^^^^^^^^^^
 
+- Fix test_mkdir_parents when the working directory has additional bits
+  set (such as the setgid or sticky bits).
 - Python issue #20111: pathlib.Path.with_suffix() now sanity checks the
   given suffix.
 - Python issue #19918: Fix PurePath.relative_to() under Windows.
