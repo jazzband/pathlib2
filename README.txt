@@ -78,6 +78,9 @@ History
 Version 1.0
 ^^^^^^^^^^^
 
+- Python issue #19921: When Path.mkdir() is called with parents=True, any
+  missing parent is created with the default permissions, ignoring the mode
+  argument (mimicking the POSIX "mkdir -p" command).
 - Python issue #19887: Improve the Path.resolve() algorithm to support
   certain symlink chains.
 - Make pathlib usable under Python 2.7 with unicode pathnames (only pure
