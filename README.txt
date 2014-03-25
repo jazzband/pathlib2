@@ -78,6 +78,7 @@ History
 Version 1.0
 ^^^^^^^^^^^
 
+- Python issue #19918: Fix PurePath.relative_to() under Windows.
 - Python issue #19921: When Path.mkdir() is called with parents=True, any
   missing parent is created with the default permissions, ignoring the mode
   argument (mimicking the POSIX "mkdir -p" command).
