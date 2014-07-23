@@ -142,9 +142,9 @@ class _WindowsFlavour(_Flavour):
     ext_namespace_prefix = '\\\\?\\'
 
     reserved_names = (
-        {'CON', 'PRN', 'AUX', 'NUL'} |
-        {'COM%d' % i for i in range(1, 10)} |
-        {'LPT%d' % i for i in range(1, 10)}
+        set(['CON', 'PRN', 'AUX', 'NUL']) |
+        set(['COM%d' % i for i in range(1, 10)]) |
+        set(['LPT%d' % i for i in range(1, 10)])
         )
 
     # Interesting findings about extended paths:
@@ -980,7 +980,7 @@ class Path(PurePath):
         result for the special paths '.' and '..'.
         """
         for name in self._accessor.listdir(self):
-            if name in {'.', '..'}:
+            if name in set(['.', '..']):
                 # Yielding a path object for these makes little sense
                 continue
             yield self._make_child_relpath(name)

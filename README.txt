@@ -80,6 +80,11 @@ However, if you find an issue specific to prior versions of Python
 History
 -------
 
+Version 1.0.1
+^^^^^^^^^^^^^
+
+- Python 2.6 compatibility.
+
 Version 1.0
 ^^^^^^^^^^^
 
