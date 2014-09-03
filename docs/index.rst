@@ -14,7 +14,7 @@ This module offers a set of classes featuring all the common operations on
 paths in an easy, object-oriented way.
 
 This module is best used with Python 3.2 or later, but it is also compatible
-with Python 2.7.
+with Python 2.6 and 2.7.
 
 .. note::
    This module has been `included <http://docs.python.org/dev/library/pathlib.html>`_
