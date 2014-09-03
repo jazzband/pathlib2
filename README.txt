@@ -13,7 +13,8 @@ following advantages over using string objects:
 Requirements
 ------------
 
-Python 3.2 or later is recommended, but pathlib is also usable with Python 2.7.
+Python 3.2 or later is recommended, but pathlib is also usable with Python 2.7
+and 2.6.
 
 Install
 -------
@@ -83,7 +84,7 @@ History
 Version 1.0.1
 ^^^^^^^^^^^^^
 
-- Python 2.6 compatibility.
+- Pull requestion #4: Python 2.6 compatibility by eevee.
 
 Version 1.0
 ^^^^^^^^^^^
