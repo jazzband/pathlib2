@@ -142,9 +142,9 @@ class _WindowsFlavour(_Flavour):
     ext_namespace_prefix = '\\\\?\\'
 
     reserved_names = (
-        {'CON', 'PRN', 'AUX', 'NUL'} |
-        {'COM%d' % i for i in range(1, 10)} |
-        {'LPT%d' % i for i in range(1, 10)}
+        set(['CON', 'PRN', 'AUX', 'NUL']) |
+        set(['COM%d' % i for i in range(1, 10)]) |
+        set(['LPT%d' % i for i in range(1, 10)])
         )
 
     # Interesting findings about extended paths:
@@ -559,7 +559,7 @@ class _PathParents(Sequence):
                                                 self._parts[:-idx - 1])
 
     def __repr__(self):
-        return "<{}.parents>".format(self._pathcls.__name__)
+        return "<{0}.parents>".format(self._pathcls.__name__)
 
 
 class PurePath(object):
@@ -669,7 +669,7 @@ class PurePath(object):
         return os.fsencode(str(self))
 
     def __repr__(self):
-        return "{}({!r})".format(self.__class__.__name__, self.as_posix())
+        return "{0}({1!r})".format(self.__class__.__name__, self.as_posix())
 
     def as_uri(self):
         """Return the path as a 'file' URI."""
@@ -980,7 +980,7 @@ class Path(PurePath):
         result for the special paths '.' and '..'.
         """
         for name in self._accessor.listdir(self):
-            if name in {'.', '..'}:
+            if name in ('.', '..'):
                 # Yielding a path object for these makes little sense
                 continue
             yield self._make_child_relpath(name)

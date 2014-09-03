@@ -5,4 +5,4 @@ syntax: regexp
 ^docs/_
 .*\.pyc
 ^\.tox/
-
+.*\.egg-info

@@ -12,6 +12,12 @@ import tempfile
 import unittest
 from contextlib import contextmanager
 
+if sys.version_info < (2, 7):
+    try:
+        import unittest2 as unittest
+    except ImportError:
+        raise ImportError("unittest2 is required for tests on pre-2.7")
+
 try:
     from test import support
 except ImportError:
@@ -417,7 +423,7 @@ class _BasePurePathTest(object):
             pcanon = self.cls(canon)
             for t in tuples:
                 p = self.cls(*t)
-                self.assertEqual(p, pcanon, "failed with args {}".format(t))
+                self.assertEqual(p, pcanon, "failed with args {0}".format(t))
                 self.assertEqual(hash(p), hash(pcanon))
                 self.assertEqual(str(p), canon)
                 self.assertEqual(p.as_posix(), posix)
@@ -1252,7 +1258,11 @@ class _BasePathTest(object):
     def assertFileNotFound(self, func, *args, **kwargs):
         exc = FileNotFoundError if sys.version_info >= (3, 3) else EnvironmentError
         with self.assertRaises(exc) as cm:
-            func(*args, **kwargs)
+            # Python 2.6 kludge for http://bugs.python.org/issue7853
+            try:
+                func(*args, **kwargs)
+            except:
+                raise
         self.assertEqual(cm.exception.errno, errno.ENOENT)
 
     def _test_cwd(self, p):
@@ -1303,7 +1313,7 @@ class _BasePathTest(object):
         expected = ['dirA', 'dirB', 'dirC', 'fileA']
         if not symlink_skip_reason:
             expected += ['linkA', 'linkB', 'brokenLink']
-        self.assertEqual(paths, { P(BASE, q) for q in expected })
+        self.assertEqual(paths, set( P(BASE, q) for q in expected ))
 
     @with_symlinks
     def test_iterdir_symlink(self):
@@ -1311,14 +1321,18 @@ class _BasePathTest(object):
         P = self.cls
         p = P(BASE, 'linkB')
         paths = set(p.iterdir())
-        expected = { P(BASE, 'linkB', q) for q in ['fileB', 'linkD'] }
+        expected = set( P(BASE, 'linkB', q) for q in ['fileB', 'linkD'] )
         self.assertEqual(paths, expected)
 
     def test_iterdir_nodir(self):
         # __iter__ on something that is not a directory
         p = self.cls(BASE, 'fileA')
         with self.assertRaises(OSError) as cm:
-            next(p.iterdir())
+            # Python 2.6 kludge for http://bugs.python.org/issue7853
+            try:
+                next(p.iterdir())
+            except:
+                raise
         # ENOENT or EINVAL under Windows, ENOTDIR otherwise
         # (see issue #12802)
         self.assertIn(cm.exception.errno, (errno.ENOTDIR,
@@ -1326,7 +1340,7 @@ class _BasePathTest(object):
 
     def test_glob_common(self):
         def _check(glob, expected):
-            self.assertEqual(set(glob), { P(BASE, q) for q in expected })
+            self.assertEqual(set(glob), set( P(BASE, q) for q in expected ))
         P = self.cls
         p = P(BASE)
         it = p.glob("fileA")
@@ -1350,7 +1364,7 @@ class _BasePathTest(object):
 
     def test_rglob_common(self):
         def _check(glob, expected):
-            self.assertEqual(set(glob), { P(BASE, q) for q in expected })
+            self.assertEqual(set(glob), set( P(BASE, q) for q in expected ))
         P = self.cls
         p = P(BASE)
         it = p.rglob("fileA")
@@ -1370,8 +1384,8 @@ class _BasePathTest(object):
         # ".." is not special in globs
         P = self.cls
         p = P(BASE)
-        self.assertEqual(set(p.glob("..")), { P(BASE, "..") })
-        self.assertEqual(set(p.glob("dirA/../file*")), { P(BASE, "dirA/../fileA") })
+        self.assertEqual(set(p.glob("..")), set([ P(BASE, "..") ]))
+        self.assertEqual(set(p.glob("dirA/../file*")), set([ P(BASE, "dirA/../fileA") ]))
         self.assertEqual(set(p.glob("../xyzzy")), set())
 
     def _check_resolve_relative(self, p, expected):
@@ -1553,7 +1567,11 @@ class _BasePathTest(object):
         self.assertTrue(p.exists())
         self.assertTrue(p.is_dir())
         with self.assertRaises(OSError) as cm:
-            p.mkdir()
+            # Python 2.6 kludge for http://bugs.python.org/issue7853
+            try:
+                p.mkdir()
+            except:
+                raise
         self.assertEqual(cm.exception.errno, errno.EEXIST)
 
     def test_mkdir_parents(self):
@@ -1561,13 +1579,20 @@ class _BasePathTest(object):
         p = self.cls(BASE, 'newdirB', 'newdirC')
         self.assertFalse(p.exists())
         with self.assertRaises(OSError) as cm:
-            p.mkdir()
+            # Python 2.6 kludge for http://bugs.python.org/issue7853
+            try:
+                p.mkdir()
+            except:
+                raise
         self.assertEqual(cm.exception.errno, errno.ENOENT)
         p.mkdir(parents=True)
         self.assertTrue(p.exists())
         self.assertTrue(p.is_dir())
         with self.assertRaises(OSError) as cm:
-            p.mkdir(parents=True)
+            try:
+                p.mkdir(parents=True)
+            except:
+                raise
         self.assertEqual(cm.exception.errno, errno.EEXIST)
         # test `mode` arg
         mode = stat.S_IMODE(p.stat().st_mode) # default mode
@@ -1856,12 +1881,12 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
     def test_glob(self):
         P = self.cls
         p = P(BASE)
-        self.assertEqual(set(p.glob("FILEa")), { P(BASE, "fileA") })
+        self.assertEqual(set(p.glob("FILEa")), set( P(BASE, "fileA") ))
 
     def test_rglob(self):
         P = self.cls
         p = P(BASE, "dirC")
-        self.assertEqual(set(p.rglob("FILEd")), { P(BASE, "dirC/dirD/fileD") })
+        self.assertEqual(set(p.rglob("FILEd")), set( P(BASE, "dirC/dirD/fileD") ))
 
 
 def main():
