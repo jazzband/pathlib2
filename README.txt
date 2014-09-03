@@ -84,7 +84,7 @@ History
 Version 1.0.1
 ^^^^^^^^^^^^^
 
-- Pull requestion #4: Python 2.6 compatibility by eevee.
+- Pull request #4: Python 2.6 compatibility by eevee.
 
 Version 1.0
 ^^^^^^^^^^^
