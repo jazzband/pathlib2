@@ -19,5 +19,8 @@ if __name__ == "__main__":
     mod = types.ModuleType('test_pathlib')
     mod.__file__ = "test_pathlib.py"
     sys.modules[mod.__name__] = mod
+    # hack six.u() not to try to decode the string
+    import six
+    six.u = lambda s: s
     eval(code, mod.__dict__)
     mod.main()

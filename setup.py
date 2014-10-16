@@ -28,4 +28,5 @@ setup(
         ],
     download_url='https://pypi.python.org/pypi/pathlib/',
     url='https://pathlib.readthedocs.org/',
+    install_requires='six',
 )

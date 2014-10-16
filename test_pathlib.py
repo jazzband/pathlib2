@@ -5,6 +5,7 @@ import errno
 import pathlib
 import pickle
 import shutil
+import six
 import socket
 import stat
 import sys
@@ -1310,17 +1311,17 @@ class _BasePathTest(object):
         (p / 'fileA').write_bytes(b'abcdefg')
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
         # check that trying to write str does not truncate the file
-        self.assertRaises(TypeError, (p / 'fileA').write_bytes, 'somestr')
+        self.assertRaises(TypeError, (p / 'fileA').write_bytes, six.u('somestr'))
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
 
     def test_read_write_text(self):
         p = self.cls(BASE)
-        (p / 'fileA').write_text('äbcdefg', encoding='latin-1')
+        (p / 'fileA').write_text(six.u('\u00e4bcdefg'), encoding='latin-1')
         self.assertEqual((p / 'fileA').read_text(
-            encoding='utf-8', errors='ignore'), 'bcdefg')
+            encoding='utf-8', errors='ignore'), six.u('bcdefg'))
         # check that trying to write bytes does not truncate the file
         self.assertRaises(TypeError, (p / 'fileA').write_text, b'somebytes')
-        self.assertEqual((p / 'fileA').read_text(encoding='latin-1'), 'äbcdefg')
+        self.assertEqual((p / 'fileA').read_text(encoding='latin-1'), six.u('\u00e4bcdefg'))
 
     def test_iterdir(self):
         P = self.cls

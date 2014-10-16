@@ -5,6 +5,7 @@ import ntpath
 import os
 import posixpath
 import re
+import six
 import sys
 import time
 from collections import Sequence
@@ -1094,16 +1095,21 @@ class Path(PurePath):
         """
         Open the file in bytes mode, write to it, and close the file.
         """
+        if not isinstance(data, six.binary_type):
+            raise TypeError(
+                'data must be %s, not %s' %
+                six.binary_type.__class__.__name__, data.__class__.__name__)
         with self.open(mode='wb') as f:
-            return f.write(view)
+            return f.write(data)
 
     def write_text(self, data, encoding=None, errors=None):
         """
         Open the file in text mode, write to it, and close the file.
         """
-        if not isinstance(data, str):
-            raise TypeError('data must be str, not %s' %
-                            data.__class__.__name__)
+        if not isinstance(data, six.text_type):
+            raise TypeError(
+                'data must be %s, not %s' %
+                six.text_type.__class__.__name__, data.__class__.__name__)
         with self.open(mode='w', encoding=encoding, errors=errors) as f:
             return f.write(data)
 
