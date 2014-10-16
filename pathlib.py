@@ -1094,8 +1094,6 @@ class Path(PurePath):
         """
         Open the file in bytes mode, write to it, and close the file.
         """
-        # type-check for the buffer interface before truncating the file
-        view = memoryview(data)
         with self.open(mode='wb') as f:
             return f.write(view)
 
