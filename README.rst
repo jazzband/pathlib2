@@ -42,6 +42,10 @@ documentation.
     :target: https://travis-ci.org/mcmtroffaes/pathlib2
     :alt: travis-ci
 
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/baddx3rpet2wyi2c?svg=true
+    :target: https://ci.appveyor.com/project/mcmtroffaes/pathlib2
+    :alt: appveyor
+
 .. |coveralls| image:: https://coveralls.io/repos/mcmtroffaes/pathlib2/badge.png?branch=develop
     :target: https://coveralls.io/r/mcmtroffaes/pathlib2?branch=develop
     :alt: coveralls.io
