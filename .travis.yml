@@ -10,6 +10,7 @@ branches:
     - develop
 install:
   - "pip install -r requirements.txt"
+  - "pip install pytest"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install coveralls check-manifest flake8; fi"
 script:
