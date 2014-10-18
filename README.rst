@@ -1,7 +1,7 @@
 pathlib2
 ========
 
-|travis| |coveralls| |downloads| |version| |license|
+|appveyor| |travis| |coveralls| |downloads| |version| |license|
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
