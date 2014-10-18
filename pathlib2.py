@@ -79,6 +79,8 @@ try:
 except AttributeError:
     # backported from Python 3.4
     def _samestat(s1, s2):
+        print(s1)
+        print(s2)
         return (s1.st_ino == s2.st_ino and
                 s1.st_dev == s2.st_dev)
 
