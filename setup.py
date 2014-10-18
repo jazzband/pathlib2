@@ -4,9 +4,9 @@ from distutils.core import setup
 
 
 setup(
-    name='pathlib',
+    name='pathlib2',
     version=open('VERSION.txt').read().strip(),
-    py_modules=['pathlib'],
+    py_modules=['pathlib2'],
     license='MIT License',
     description='Object-oriented filesystem paths',
     long_description=open('README.txt').read(),
@@ -26,7 +26,7 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
-    download_url='https://pypi.python.org/pypi/pathlib/',
-    url='https://pathlib.readthedocs.org/',
+    download_url='https://pypi.python.org/pypi/pathlib2/',
+    url='https://pathlib2.readthedocs.org/',
     install_requires='six',
 )
