@@ -1,0 +1,19 @@
+environment:
+
+  matrix:
+    - PYTHON: "C:\\Python27"
+
+    - PYTHON: "C:\\Python33"
+
+    - PYTHON: "C:\\Python34"
+
+init:
+  - "%PYTHON%/python --version"
+
+install:
+  - "powershell appveyor\\install.ps1"
+
+build: off
+
+test_script:
+  - "%PYTHON%/python setup.py test"
