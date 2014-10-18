@@ -1,8 +1,0 @@
-syntax: regexp
-^build/
-^dist/
-^MANIFEST
-^docs/_
-.*\.pyc
-^\.tox/
-.*\.egg-info
