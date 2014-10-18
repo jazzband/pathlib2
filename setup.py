@@ -1,14 +1,37 @@
 import io
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
+import sys
+
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
 
 
 def readfile(filename):
     with io.open(filename, encoding="utf-8") as stream:
         return stream.read().split("\n")
 
+
 readme = readfile("README.rst")[5:]  # skip title and badges
 requires = readfile("requirements.txt")
 version = readfile("VERSION")[0].strip()
+
 
 setup(
     name='pathlib2',
@@ -38,4 +61,6 @@ setup(
     download_url='https://pypi.python.org/pypi/pathlib2/',
     url='https://pathlib2.readthedocs.org/',
     install_requires=requires,
+    tests_require=['pytest'],
+    cmdclass = {'test': PyTest},
 )
