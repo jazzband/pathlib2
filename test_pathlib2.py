@@ -1777,12 +1777,8 @@ class _BasePathTest(object):
         self.assertTrue(p.exists())
         # An exception is raised when the last path component is an existing
         # regular file, regardless of whether exist_ok is true or not.
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir()
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir(exist_ok=True)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertFileExists(p.mkdir)
+        self.assertFileExists(p.mkdir, exist_ok=True)
 
     @with_symlinks
     def test_symlink_to(self):
