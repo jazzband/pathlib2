@@ -25,8 +25,14 @@ function InstallPackage ($python_home, $pkg) {
     & $pip_path install $pkg
 }
 
+function InstallRequirements ($python_home, $reqs) {
+    $pip_path = $python_home + "/Scripts/pip.exe"
+    & $pip_path install -r $reqs
+}
+
 function main () {
     InstallPip $env:PYTHON
+    InstallReqs $env:PYTHON -r requirements.txt
     InstallPackage $env:PYTHON pytest
 }
 
