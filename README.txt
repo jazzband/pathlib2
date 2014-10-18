@@ -1,3 +1,8 @@
+pathlib2
+========
+
+Fork of pathlib aiming to support the full stdlib Python API.
+
 pathlib offers a set of classes to handle filesystem paths.  It offers the
 following advantages over using string objects:
 
