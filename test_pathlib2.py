@@ -2066,5 +2066,9 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
                          set(P(BASE, "dirC/dirD/fileD")))
 
 
+def main():
+    unittest.main(__name__)
+
+
 if __name__ == "__main__":
     unittest.main()
