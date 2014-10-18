@@ -12,7 +12,8 @@ from collections import Sequence
 from contextlib import contextmanager
 from errno import EINVAL, ENOENT
 from operator import attrgetter
-from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
+from stat import (
+    S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
 try:
     from urllib import quote as urlquote_from_bytes
 except ImportError:
@@ -245,7 +246,8 @@ class _WindowsFlavour(_Flavour):
                 drive, urlquote_from_bytes(rest.encode('utf-8')))
         else:
             # It's a path on a network drive => 'file://host/share/a/b'
-            return 'file:' + urlquote_from_bytes(path.as_posix().encode('utf-8'))
+            return 'file:' + urlquote_from_bytes(
+                path.as_posix().encode('utf-8'))
 
 
 class _PosixFlavour(_Flavour):
@@ -260,7 +262,8 @@ class _PosixFlavour(_Flavour):
         if part and part[0] == sep:
             stripped_part = part.lstrip(sep)
             # According to POSIX path resolution:
-            # http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap04.html#tag_04_11
+            # http://pubs.opengroup.org/onlinepubs/009695399/basedefs/
+            # xbd_chap04.html#tag_04_11
             # "A pathname that begins with two successive slashes may be
             # interpreted in an implementation-defined manner, although more
             # than two leading slashes shall be treated as a single slash".
@@ -489,7 +492,8 @@ class _PreciseSelector(_Selector):
             return
         path = parent_path._make_child_relpath(self.name)
         if exists(path):
-            for p in self.successor._select_from(path, is_dir, exists, listdir):
+            for p in self.successor._select_from(
+                    path, is_dir, exists, listdir):
                 yield p
 
 
@@ -507,7 +511,8 @@ class _WildcardSelector(_Selector):
             casefolded = cf(name)
             if self.pat.match(casefolded):
                 path = parent_path._make_child_relpath(name)
-                for p in self.successor._select_from(path, is_dir, exists, listdir):
+                for p in self.successor._select_from(
+                        path, is_dir, exists, listdir):
                     yield p
 
 
@@ -531,8 +536,10 @@ class _RecursiveWildcardSelector(_Selector):
             yielded = set()
             try:
                 successor_select = self.successor._select_from
-                for starting_point in self._iterate_directories(parent_path, is_dir, listdir):
-                    for p in successor_select(starting_point, is_dir, exists, listdir):
+                for starting_point in self._iterate_directories(
+                        parent_path, is_dir, listdir):
+                    for p in successor_select(
+                            starting_point, is_dir, exists, listdir):
                         if p not in yielded:
                             yield p
                             yielded.add(p)
@@ -701,7 +708,9 @@ class PurePath(object):
     def __eq__(self, other):
         if not isinstance(other, PurePath):
             return NotImplemented
-        return self._cparts == other._cparts and self._flavour is other._flavour
+        return (
+            self._cparts == other._cparts
+            and self._flavour is other._flavour)
 
     def __ne__(self, other):
         return not self == other
@@ -714,22 +723,26 @@ class PurePath(object):
             return self._hash
 
     def __lt__(self, other):
-        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
+        if (not isinstance(other, PurePath)
+                or self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts < other._cparts
 
     def __le__(self, other):
-        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
+        if (not isinstance(other, PurePath)
+                or self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts <= other._cparts
 
     def __gt__(self, other):
-        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
+        if (not isinstance(other, PurePath)
+                or self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts > other._cparts
 
     def __ge__(self, other):
-        if not isinstance(other, PurePath) or self._flavour is not other._flavour:
+        if (not isinstance(other, PurePath)
+                or self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts >= other._cparts
 
@@ -790,7 +803,9 @@ class PurePath(object):
                                        self._parts[:-1] + [name])
 
     def with_suffix(self, suffix):
-        """Return a new path with the file suffix changed (or added, if none)."""
+        """Return a new path with the file suffix changed (or added, if
+        none).
+        """
         # XXX if suffix is None, should the current suffix be removed?
         drv, root, parts = self._flavour.parse_parts((suffix,))
         if drv or root or len(parts) != 1:
@@ -1087,7 +1102,8 @@ class Path(PurePath):
                 str(self), mode, buffering, encoding, errors, newline,
                 opener=self._opener)
         else:
-            return io.open(str(self), mode, buffering, encoding, errors, newline)
+            return io.open(str(self), mode, buffering,
+                           encoding, errors, newline)
 
     def read_bytes(self):
         """
@@ -1211,7 +1227,8 @@ class Path(PurePath):
     def symlink_to(self, target, target_is_directory=False):
         """
         Make this path a symlink pointing to the given path.
-        Note the order of arguments (self, target) is the reverse of os.symlink's.
+        Note the order of arguments (self, target) is the reverse of
+        os.symlink's.
         """
         self._accessor.symlink(target, self, target_is_directory)
 
