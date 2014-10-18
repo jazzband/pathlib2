@@ -74,6 +74,15 @@ def _try_except_fileexistserror(try_func, except_func):
                 except_func(exc)
 
 
+try:
+    _samestat = os.path.samestat
+except AttributeError:
+    # backported from Python 3.4
+    def _samestat(s1, s2):
+        return (s1.st_ino == s2.st_ino and
+                s1.st_dev == s2.st_dev)
+
+
 def _is_wildcard_pattern(pat):
     # Whether this pattern needs actual matching using fnmatch, or can
     # be looked up directly as a file.
@@ -1045,7 +1054,7 @@ class Path(PurePath):
             other_st = other_path.stat()
         except AttributeError:
             other_st = os.stat(other_path)
-        return os.path.samestat(st, other_st)
+        return _samestat(st, other_st)
 
     def iterdir(self):
         """Iterate over the files in this directory.  Does not yield any
