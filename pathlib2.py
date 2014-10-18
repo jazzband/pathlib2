@@ -9,7 +9,7 @@ import six
 import sys
 from collections import Sequence
 from contextlib import contextmanager
-from errno import EINVAL, ENOENT
+from errno import EINVAL, ENOENT, EEXIST
 from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
@@ -56,6 +56,22 @@ def _py2_fsencode(parts):
     assert six.PY2
     return [part.encode('ascii') if isinstance(part, six.text_type)
             else part for part in parts]
+
+
+def _try_except_fileexistserror(try_func, except_func):
+    if sys.version_info >= (3, 3):
+        try:
+            try_func()
+        except FileExistsError as exc:
+            except_func(exc)
+    else:
+        try:
+            try_func()
+        except EnvironmentError as exc:
+            if exc.errno != EEXIST:
+                raise
+            else:
+                except_func(exc)
 
 
 def _is_wildcard_pattern(pat):
@@ -1204,20 +1220,22 @@ class Path(PurePath):
         os.close(fd)
 
     def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+
+        def helper(exc):
+            if not exist_ok or not self.is_dir():
+                raise exc
+
         if self._closed:
             self._raise_closed()
         if not parents:
-            try:
-                self._accessor.mkdir(self, mode)
-            except FileExistsError:
-                if not exist_ok or not self.is_dir():
-                    raise
+            _try_except_fileexistserror(
+                lambda: self._accessor.mkdir(self, mode),
+                helper)
         else:
             try:
-                self._accessor.mkdir(self, mode)
-            except FileExistsError:
-                if not exist_ok or not self.is_dir():
-                    raise
+                _try_except_fileexistserror(
+                    lambda: self._accessor.mkdir(self, mode),
+                    helper)
             except OSError as e:
                 if e.errno != ENOENT:
                     raise
