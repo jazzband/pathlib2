@@ -59,7 +59,7 @@ setup(
         'Topic :: System :: Filesystems',
         ],
     download_url='https://pypi.python.org/pypi/pathlib2/',
-    url='https://pathlib2.readthedocs.org/',
+    url='https://pypi.python.org/pypi/pathlib2/',
     install_requires=requires,
     tests_require=['pytest'],
     cmdclass = {'test': PyTest},
