@@ -51,7 +51,7 @@ copyright = '2012-2014, Antoine Pitrou and contributors'
 # The short X.Y version.
 version = open(os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
-            'VERSION.txt')).read().strip()
+            'VERSION')).read().strip()
 # The full version, including alpha/beta/rc tags.
 release = version
 
