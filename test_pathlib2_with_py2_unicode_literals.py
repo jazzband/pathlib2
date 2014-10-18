@@ -15,9 +15,9 @@ if __name__ == "__main__":
     # Compile and run test_pathlib.py as if
     # "from __future__ import unicode_literals" had been added at the top.
     flags = __future__.CO_FUTURE_UNICODE_LITERALS
-    code = compile_source_file("test_pathlib.py", flags)
-    mod = types.ModuleType('test_pathlib')
-    mod.__file__ = "test_pathlib.py"
+    code = compile_source_file("test_pathlib2.py", flags)
+    mod = types.ModuleType('test_pathlib2')
+    mod.__file__ = "test_pathlib2.py"
     sys.modules[mod.__name__] = mod
     # hack six.u() not to try to decode the string
     import six

@@ -2,7 +2,7 @@ import collections
 import io
 import os
 import errno
-import pathlib
+import pathlib2 as pathlib
 import pickle
 import shutil
 import six
