@@ -4,7 +4,6 @@ import os
 import errno
 import pathlib2 as pathlib
 import pickle
-import shutil
 import six
 import socket
 import stat
@@ -220,13 +219,13 @@ class _BasePurePathTest(object):
             ('a/b/',), ('a//b',), ('a//b//',),
             # empty components get removed
             ('', 'a', 'b'), ('a', '', 'b'), ('a', 'b', ''),
-        ],
+            ],
         '/b/c/d': [
             ('a', '/b/c', 'd'), ('a', '///b//c', 'd/'),
             ('/a', '/b/c', 'd'),
             # empty components get removed
             ('/', 'b', '', 'c/d'), ('/', '', 'b/c/d'), ('', '/b/c/d'),
-        ],
+            ],
     }
 
     def setUp(self):
@@ -246,6 +245,25 @@ class _BasePurePathTest(object):
         self.assertEqual(P(P('a')), P('a'))
         self.assertEqual(P(P('a'), 'b'), P('a/b'))
         self.assertEqual(P(P('a'), P('b')), P('a/b'))
+
+    def _check_str_subclass(self, *args):
+        # Issue #21127: it should be possible to construct a PurePath object
+        # from an str subclass instance, and it then gets converted to
+        # a pure str object.
+        class StrSubclass(str):
+            pass
+        P = self.cls
+        p = P(*(StrSubclass(x) for x in args))
+        self.assertEqual(p, P(*args))
+        for part in p.parts:
+            self.assertIs(type(part), str)
+
+    def test_str_subclass_common(self):
+        self._check_str_subclass('')
+        self._check_str_subclass('.')
+        self._check_str_subclass('a')
+        self._check_str_subclass('a/b.txt')
+        self._check_str_subclass('/a/b.txt')
 
     def test_join_common(self):
         P = self.cls
@@ -280,9 +298,7 @@ class _BasePurePathTest(object):
 
     def _check_str(self, expected, args):
         p = self.cls(*args)
-        s = str(p)
-        self.assertEqual(s, expected.replace('/', self.sep))
-        self.assertIsInstance(s, str)
+        self.assertEqual(str(p), expected.replace('/', self.sep))
 
     def test_str_common(self):
         # Canonicalized paths roundtrip
@@ -316,7 +332,6 @@ class _BasePurePathTest(object):
             p = self.cls(pathstr)
             clsname = p.__class__.__name__
             r = repr(p)
-            self.assertIsInstance(r, str)
             # The repr() is in the form ClassName("forward-slashes path")
             self.assertTrue(r.startswith(clsname + '('), r)
             self.assertTrue(r.endswith(')'), r)
@@ -431,7 +446,7 @@ class _BasePurePathTest(object):
                 tuples = tuples + [
                     tuple(part.replace('/', self.sep) for part in t)
                     for t in tuples
-                ]
+                    ]
                 tuples.append((posix, ))
             pcanon = self.cls(canon)
             for t in tuples:
@@ -580,6 +595,10 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, P('').with_name, 'd.xml')
         self.assertRaises(ValueError, P('.').with_name, 'd.xml')
         self.assertRaises(ValueError, P('/').with_name, 'd.xml')
+        self.assertRaises(ValueError, P('a/b').with_name, '')
+        self.assertRaises(ValueError, P('a/b').with_name, '/c')
+        self.assertRaises(ValueError, P('a/b').with_name, 'c/')
+        self.assertRaises(ValueError, P('a/b').with_name, 'c/d')
 
     def test_with_suffix_common(self):
         P = self.cls
@@ -587,6 +606,9 @@ class _BasePurePathTest(object):
         self.assertEqual(P('/a/b').with_suffix('.gz'), P('/a/b.gz'))
         self.assertEqual(P('a/b.py').with_suffix('.gz'), P('a/b.gz'))
         self.assertEqual(P('/a/b.py').with_suffix('.gz'), P('/a/b.gz'))
+        # Stripping suffix
+        self.assertEqual(P('a/b.py').with_suffix(''), P('a/b'))
+        self.assertEqual(P('/a/b').with_suffix(''), P('/a/b'))
         # Path doesn't have a "filename" component
         self.assertRaises(ValueError, P('').with_suffix, '.gz')
         self.assertRaises(ValueError, P('.').with_suffix, '.gz')
@@ -594,15 +616,18 @@ class _BasePurePathTest(object):
         # Invalid suffix
         self.assertRaises(ValueError, P('a/b').with_suffix, 'gz')
         self.assertRaises(ValueError, P('a/b').with_suffix, '/')
+        self.assertRaises(ValueError, P('a/b').with_suffix, '.')
         self.assertRaises(ValueError, P('a/b').with_suffix, '/.gz')
         self.assertRaises(ValueError, P('a/b').with_suffix, 'c/d')
         self.assertRaises(ValueError, P('a/b').with_suffix, '.c/.d')
+        self.assertRaises(ValueError, P('a/b').with_suffix, './.d')
+        self.assertRaises(ValueError, P('a/b').with_suffix, '.d/.')
 
     def test_relative_to_common(self):
         P = self.cls
         p = P('a/b')
         self.assertRaises(TypeError, p.relative_to)
-        if sys.version_info > (3,):
+        if six.PY3:
             self.assertRaises(TypeError, p.relative_to, b'a')
         self.assertEqual(p.relative_to(P()), P('a/b'))
         self.assertEqual(p.relative_to(''), P('a/b'))
@@ -732,11 +757,11 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         'c:/a': [
             ('c:/', 'a'), ('c:', '/', 'a'), ('c:', '/a'),
             ('/z', 'c:/', 'a'), ('//x/y', 'c:/', 'a'),
-        ],
+            ],
         '//a/b/': [('//a/b',)],
         '//a/b/c': [
             ('//a/b', 'c'), ('//a/b/', 'c'),
-        ],
+            ],
     })
 
     def test_str(self):
@@ -750,6 +775,17 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertEqual(str(p), '\\\\a\\b\\c')
         p = self.cls('//a/b/c/d')
         self.assertEqual(str(p), '\\\\a\\b\\c\\d')
+
+    def test_str_subclass(self):
+        self._check_str_subclass('c:')
+        self._check_str_subclass('c:a')
+        self._check_str_subclass('c:a\\b.txt')
+        self._check_str_subclass('c:\\')
+        self._check_str_subclass('c:\\a')
+        self._check_str_subclass('c:\\a\\b.txt')
+        self._check_str_subclass('\\\\some\\share')
+        self._check_str_subclass('\\\\some\\share\\a')
+        self._check_str_subclass('\\\\some\\share\\a\\b.txt')
 
     def test_eq(self):
         P = self.cls
@@ -983,6 +1019,10 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         self.assertRaises(ValueError, P('c:').with_name, 'd.xml')
         self.assertRaises(ValueError, P('c:/').with_name, 'd.xml')
         self.assertRaises(ValueError, P('//My/Share').with_name, 'd.xml')
+        self.assertRaises(ValueError, P('c:a/b').with_name, 'd:')
+        self.assertRaises(ValueError, P('c:a/b').with_name, 'd:e')
+        self.assertRaises(ValueError, P('c:a/b').with_name, 'd:/e')
+        self.assertRaises(ValueError, P('c:a/b').with_name, '//My/Share')
 
     def test_with_suffix(self):
         P = self.cls
@@ -1240,7 +1280,7 @@ class _BasePathTest(object):
 
     def setUp(self):
         os.mkdir(BASE)
-        self.addCleanup(shutil.rmtree, BASE)
+        self.addCleanup(support.rmtree, BASE)
         os.mkdir(join('dirA'))
         os.mkdir(join('dirB'))
         os.mkdir(join('dirC'))
@@ -1287,6 +1327,18 @@ class _BasePathTest(object):
                 raise
         self.assertEqual(cm.exception.errno, errno.ENOENT)
 
+    def assertFileExists(self, func, *args, **kwargs):
+        exc = (
+            FileExistsError if sys.version_info >= (3, 3)
+            else EnvironmentError)
+        with self.assertRaises(exc) as cm:
+            # Python 2.6 kludge for http://bugs.python.org/issue7853
+            try:
+                func(*args, **kwargs)
+            except:
+                raise
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
+
     def _test_cwd(self, p):
         q = self.cls(os.getcwd())
         self.assertEqual(p, q)
@@ -1297,6 +1349,26 @@ class _BasePathTest(object):
     def test_cwd(self):
         p = self.cls.cwd()
         self._test_cwd(p)
+
+    def test_samefile(self):
+        fileA_path = os.path.join(BASE, 'fileA')
+        fileB_path = os.path.join(BASE, 'dirB', 'fileB')
+        p = self.cls(fileA_path)
+        pp = self.cls(fileA_path)
+        q = self.cls(fileB_path)
+        self.assertTrue(p.samefile(fileA_path))
+        self.assertTrue(p.samefile(pp))
+        self.assertFalse(p.samefile(fileB_path))
+        self.assertFalse(p.samefile(q))
+        # Test the non-existent file case
+        non_existent = os.path.join(BASE, 'foo')
+        r = self.cls(non_existent)
+        self.assertFileNotFound(p.samefile, r)
+        self.assertFileNotFound(p.samefile, non_existent)
+        self.assertFileNotFound(r.samefile, p)
+        self.assertFileNotFound(r.samefile, non_existent)
+        self.assertFileNotFound(r.samefile, r)
+        self.assertFileNotFound(r.samefile, non_existent)
 
     def test_empty_path(self):
         # The empty path points to '.'
@@ -1456,7 +1528,7 @@ class _BasePathTest(object):
         self._check_resolve_relative(p, P(BASE, 'dirB', 'fileB'))
         # Now create absolute symlinks
         d = tempfile.mkdtemp(suffix='-dirD')
-        self.addCleanup(shutil.rmtree, d)
+        self.addCleanup(support.rmtree, d)
         os.symlink(os.path.join(d), join('dirA', 'linkX'))
         os.symlink(join('dirB'), os.path.join(d, 'linkY'))
         p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
@@ -1472,6 +1544,21 @@ class _BasePathTest(object):
         self.dirlink(os.path.join('1', '1'), join('2'))
         q = p / '2'
         self.assertEqual(q.resolve(), p)
+
+    def test_with(self):
+        p = self.cls(BASE)
+        it = p.iterdir()
+        it2 = p.iterdir()
+        next(it2)
+        with p:
+            pass
+        # I/O operation on closed path
+        self.assertRaises(ValueError, next, it)
+        self.assertRaises(ValueError, next, it2)
+        self.assertRaises(ValueError, p.open)
+        self.assertRaises(ValueError, p.resolve)
+        self.assertRaises(ValueError, p.absolute)
+        self.assertRaises(ValueError, p.__enter__)
 
     def test_chmod(self):
         p = self.cls(BASE) / 'fileA'
@@ -1582,13 +1669,18 @@ class _BasePathTest(object):
         self.assertFalse(p.exists())
         p.touch()
         self.assertTrue(p.exists())
-        old_mtime = p.stat().st_mtime
+        st = p.stat()
+        old_mtime = st.st_mtime
+        old_mtime_ns = st.st_mtime_ns
         # Rewind the mtime sufficiently far in the past to work around
         # filesystem-specific timestamp granularity.
         os.utime(str(p), (old_mtime - 10, old_mtime - 10))
-        # The file mtime is refreshed by calling touch() again
+        # The file mtime should be refreshed by calling touch() again
         p.touch()
-        self.assertGreaterEqual(p.stat().st_mtime, old_mtime)
+        st = p.stat()
+        self.assertGreaterEqual(st.st_mtime_ns, old_mtime_ns)
+        self.assertGreaterEqual(st.st_mtime, old_mtime)
+        # Now with exist_ok=False
         p = P / 'newfileB'
         self.assertFalse(p.exists())
         p.touch(mode=0o700, exist_ok=False)
@@ -1648,6 +1740,49 @@ class _BasePathTest(object):
             self.assertEqual(stat.S_IMODE(p.stat().st_mode), 0o7555 & mode)
         # the parent's permissions follow the default process settings
         self.assertEqual(stat.S_IMODE(p.parent.stat().st_mode), mode)
+
+    def test_mkdir_exist_ok(self):
+        p = self.cls(BASE, 'dirB')
+        st_ctime_first = p.stat().st_ctime
+        self.assertTrue(p.exists())
+        self.assertTrue(p.is_dir())
+        self.assertFileExists(p.mkdir)
+        p.mkdir(exist_ok=True)
+        self.assertTrue(p.exists())
+        self.assertEqual(p.stat().st_ctime, st_ctime_first)
+
+    def test_mkdir_exist_ok_with_parent(self):
+        p = self.cls(BASE, 'dirC')
+        self.assertTrue(p.exists())
+        self.assertFileExists(p.mkdir)
+        p = p / 'newdirC'
+        p.mkdir(parents=True)
+        st_ctime_first = p.stat().st_ctime
+        self.assertTrue(p.exists())
+        self.assertFileExists(p.mkdir, parents=True)
+        p.mkdir(parents=True, exist_ok=True)
+        self.assertTrue(p.exists())
+        self.assertEqual(p.stat().st_ctime, st_ctime_first)
+
+    def test_mkdir_with_child_file(self):
+        p = self.cls(BASE, 'dirB', 'fileB')
+        self.assertTrue(p.exists())
+        # An exception is raised when the last path component is an existing
+        # regular file, regardless of whether exist_ok is true or not.
+        self.assertFileExists(p.mkdir, parents=True)
+        self.assertFileExists(p.mkdir, parents=True, exist_ok=True)
+
+    def test_mkdir_no_parents_file(self):
+        p = self.cls(BASE, 'fileA')
+        self.assertTrue(p.exists())
+        # An exception is raised when the last path component is an existing
+        # regular file, regardless of whether exist_ok is true or not.
+        with self.assertRaises(FileExistsError) as cm:
+            p.mkdir()
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        with self.assertRaises(FileExistsError) as cm:
+            p.mkdir(exist_ok=True)
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
 
     @with_symlinks
     def test_symlink_to(self):
@@ -1933,9 +2068,5 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
                          set(P(BASE, "dirC/dirD/fileD")))
 
 
-def main():
-    unittest.main(__name__)
-
-
 if __name__ == "__main__":
-    main()
+    unittest.main()
