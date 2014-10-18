@@ -7,7 +7,6 @@ import posixpath
 import re
 import six
 import sys
-import time
 from collections import Sequence
 from contextlib import contextmanager
 from errno import EINVAL, ENOENT
@@ -45,7 +44,7 @@ else:
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
     "Path", "PosixPath", "WindowsPath",
-]
+    ]
 
 #
 # Internals
@@ -148,7 +147,7 @@ class _WindowsFlavour(_Flavour):
         set(['CON', 'PRN', 'AUX', 'NUL']) |
         set(['COM%d' % i for i in range(1, 10)]) |
         set(['LPT%d' % i for i in range(1, 10)])
-    )
+        )
 
     # Interesting findings about extended paths:
     # - '\\?\c:\a', '//?/c:\a' and '//?/c:/a' are all supported
@@ -617,7 +616,8 @@ class PurePath(object):
             if isinstance(a, PurePath):
                 parts += a._parts
             elif isinstance(a, basestring):
-                parts.append(a)
+                # Force-cast str subclasses to str (issue #21127)
+                parts.append(str(a))
             else:
                 raise TypeError(
                     "argument should be a path or str object, not %r"
@@ -799,6 +799,10 @@ class PurePath(object):
         """Return a new path with the file name changed."""
         if not self.name:
             raise ValueError("%r has an empty name" % (self,))
+        drv, root, parts = self._flavour.parse_parts((name,))
+        if (not name or name[-1] in [self._flavour.sep, self._flavour.altsep]
+                or drv or root or len(parts) != 1):
+            raise ValueError("Invalid name %r" % (name))
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + [name])
 
@@ -807,11 +811,10 @@ class PurePath(object):
         none).
         """
         # XXX if suffix is None, should the current suffix be removed?
-        drv, root, parts = self._flavour.parse_parts((suffix,))
-        if drv or root or len(parts) != 1:
+        f = self._flavour
+        if f.sep in suffix or f.altsep and f.altsep in suffix:
             raise ValueError("Invalid suffix %r" % (suffix))
-        suffix = parts[0]
-        if not suffix.startswith('.'):
+        if suffix and not suffix.startswith('.') or suffix == '.':
             raise ValueError("Invalid suffix %r" % (suffix))
         name = self.name
         if not name:
@@ -882,7 +885,7 @@ class PurePath(object):
     def __rtruediv__(self, key):
         return self._from_parts([key] + self._parts)
 
-    if sys.version_info < (3,):
+    if six.PY2:
         __div__ = __truediv__
         __rdiv__ = __rtruediv__
 
@@ -955,6 +958,7 @@ class PureWindowsPath(PurePath):
 class Path(PurePath):
     __slots__ = (
         '_accessor',
+        '_closed',
     )
 
     def __new__(cls, *args, **kwargs):
@@ -971,6 +975,7 @@ class Path(PurePath):
               # Private non-constructor arguments
               template=None,
               ):
+        self._closed = False
         if template is not None:
             self._accessor = template._accessor
         else:
@@ -982,6 +987,17 @@ class Path(PurePath):
         parts = self._parts + [part]
         return self._from_parsed_parts(self._drv, self._root, parts)
 
+    def __enter__(self):
+        if self._closed:
+            self._raise_closed()
+        return self
+
+    def __exit__(self, t, v, tb):
+        self._closed = True
+
+    def _raise_closed(self):
+        raise ValueError("I/O operation on closed path")
+
     def _opener(self, name, flags, mode=0o666):
         # A stub for the opener argument to built-in open()
         return self._accessor.open(self, flags, mode)
@@ -991,6 +1007,8 @@ class Path(PurePath):
         Open the file pointed by this path and return a file descriptor,
         as os.open() does.
         """
+        if self._closed:
+            self._raise_closed()
         return self._accessor.open(self, flags, mode)
 
     # Public API
@@ -1002,15 +1020,30 @@ class Path(PurePath):
         """
         return cls(os.getcwd())
 
+    def samefile(self, other_path):
+        """Return whether `other_file` is the same or not as this file.
+        (as returned by os.path.samefile(file, other_file)).
+        """
+        st = self.stat()
+        try:
+            other_st = other_path.stat()
+        except AttributeError:
+            other_st = os.stat(other_path)
+        return os.path.samestat(st, other_st)
+
     def iterdir(self):
         """Iterate over the files in this directory.  Does not yield any
         result for the special paths '.' and '..'.
         """
+        if self._closed:
+            self._raise_closed()
         for name in self._accessor.listdir(self):
             if name in ('.', '..'):
                 # Yielding a path object for these makes little sense
                 continue
             yield self._make_child_relpath(name)
+            if self._closed:
+                self._raise_closed()
 
     def glob(self, pattern):
         """Iterate over this subtree and yield all existing files (of any
@@ -1044,6 +1077,8 @@ class Path(PurePath):
         Use resolve() to get the canonical path to a file.
         """
         # XXX untested yet!
+        if self._closed:
+            self._raise_closed()
         if self.is_absolute():
             return self
         # FIXME this must defer to the specific flavour (and, under Windows,
@@ -1058,6 +1093,8 @@ class Path(PurePath):
         normalizing it (for example turning slashes into backslashes under
         Windows).
         """
+        if self._closed:
+            self._raise_closed()
         s = self._flavour.resolve(self)
         if s is None:
             # No symlink resolution => for consistency, raise an error if
@@ -1097,6 +1134,8 @@ class Path(PurePath):
         Open the file pointed by this path and return a file object, as
         the built-in open() function does.
         """
+        if self._closed:
+            self._raise_closed()
         if sys.version_info >= (3, 3):
             return io.open(
                 str(self), mode, buffering, encoding, errors, newline,
@@ -1145,13 +1184,14 @@ class Path(PurePath):
         """
         Create this file with the given access mode, if it doesn't exist.
         """
+        if self._closed:
+            self._raise_closed()
         if exist_ok:
             # First try to bump modification time
             # Implementation note: GNU touch uses the UTIME_NOW option of
             # the utimensat() / futimens() functions.
-            t = time.time()
             try:
-                self._accessor.utime(self, (t, t))
+                self._accessor.utime(self, None)
             except OSError:
                 # Avoid exception chaining
                 pass
@@ -1163,12 +1203,21 @@ class Path(PurePath):
         fd = self._raw_open(flags, mode)
         os.close(fd)
 
-    def mkdir(self, mode=0o777, parents=False):
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        if self._closed:
+            self._raise_closed()
         if not parents:
-            self._accessor.mkdir(self, mode)
+            try:
+                self._accessor.mkdir(self, mode)
+            except FileExistsError:
+                if not exist_ok or not self.is_dir():
+                    raise
         else:
             try:
                 self._accessor.mkdir(self, mode)
+            except FileExistsError:
+                if not exist_ok or not self.is_dir():
+                    raise
             except OSError as e:
                 if e.errno != ENOENT:
                     raise
@@ -1179,6 +1228,8 @@ class Path(PurePath):
         """
         Change the permissions of the path, like os.chmod().
         """
+        if self._closed:
+            self._raise_closed()
         self._accessor.chmod(self, mode)
 
     def lchmod(self, mode):
@@ -1186,6 +1237,8 @@ class Path(PurePath):
         Like chmod(), except if the path points to a symlink, the symlink's
         permissions are changed, rather than its target's.
         """
+        if self._closed:
+            self._raise_closed()
         self._accessor.lchmod(self, mode)
 
     def unlink(self):
@@ -1193,12 +1246,16 @@ class Path(PurePath):
         Remove this file or link.
         If the path is a directory, use rmdir() instead.
         """
+        if self._closed:
+            self._raise_closed()
         self._accessor.unlink(self)
 
     def rmdir(self):
         """
         Remove this directory.  The directory must be empty.
         """
+        if self._closed:
+            self._raise_closed()
         self._accessor.rmdir(self)
 
     def lstat(self):
@@ -1206,12 +1263,16 @@ class Path(PurePath):
         Like stat(), except if the path points to a symlink, the symlink's
         status information is returned, rather than its target's.
         """
+        if self._closed:
+            self._raise_closed()
         return self._accessor.lstat(self)
 
     def rename(self, target):
         """
         Rename this path to the given path.
         """
+        if self._closed:
+            self._raise_closed()
         self._accessor.rename(self, target)
 
     def replace(self, target):
@@ -1222,6 +1283,8 @@ class Path(PurePath):
         if sys.version_info < (3, 3):
             raise NotImplementedError("replace() is only available "
                                       "with Python 3.3 and later")
+        if self._closed:
+            self._raise_closed()
         self._accessor.replace(self, target)
 
     def symlink_to(self, target, target_is_directory=False):
@@ -1230,6 +1293,8 @@ class Path(PurePath):
         Note the order of arguments (self, target) is the reverse of
         os.symlink's.
         """
+        if self._closed:
+            self._raise_closed()
         self._accessor.symlink(target, self, target_is_directory)
 
     # Convenience functions for querying the stat results
