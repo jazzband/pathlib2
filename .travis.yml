@@ -13,10 +13,10 @@ install:
   - "pip install -r requirements.txt"
   - "pip install coveralls pytest-cov"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install check-manifest flake8; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then pip install check-manifest flake8; fi"
 script:
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then check-manifest; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then flake8; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then check-manifest; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.4' ]]; then flake8; fi"
   - py.test test_pathlib2.py --cov=pathlib2
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python -Qnew test_pathlib2.py; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python test_pathlib2_with_py2_unicode_literals.py; fi"
