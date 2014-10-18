@@ -3,4 +3,3 @@ include *.rst
 include VERSION
 include requirements.txt
 exclude .travis.yml
-exclude tox.ini
