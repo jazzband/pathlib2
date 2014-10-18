@@ -10,14 +10,14 @@ import socket
 import stat
 import sys
 import tempfile
-import unittest
-from contextlib import contextmanager
 
 if sys.version_info < (2, 7):
     try:
         import unittest2 as unittest
     except ImportError:
         raise ImportError("unittest2 is required for tests on pre-2.7")
+else:
+    import unittest
 
 try:
     from test import support
@@ -26,14 +26,17 @@ except ImportError:
 TESTFN = support.TESTFN
 
 try:
-    import grp, pwd
+    import grp
+    import pwd
 except ImportError:
     grp = pwd = None
 
 
 # Backported from 3.4
 def fs_is_case_insensitive(directory):
-    """Detects if the file system for the specified directory is case-insensitive."""
+    """Detects if the file system for the specified directory is
+    case-insensitive.
+    """
     base_fp, base_path = tempfile.mkstemp(dir=directory)
     case_path = base_path.upper()
     if case_path == base_path:
@@ -148,23 +151,30 @@ class NTFlavourTest(_BaseFlavourTest, unittest.TestCase):
         # UNC paths
         check(['\\\\a\\b'],             ('\\\\a\\b', '\\', ['\\\\a\\b\\']))
         check(['\\\\a\\b\\'],           ('\\\\a\\b', '\\', ['\\\\a\\b\\']))
-        check(['\\\\a\\b\\c'],          ('\\\\a\\b', '\\', ['\\\\a\\b\\', 'c']))
+        check(['\\\\a\\b\\c'],
+              ('\\\\a\\b', '\\', ['\\\\a\\b\\', 'c']))
         # Second part is anchored, so that the first part is ignored
         check(['a', 'Z:b', 'c'],        ('Z:', '', ['Z:', 'b', 'c']))
         check(['a', 'Z:\\b', 'c'],      ('Z:', '\\', ['Z:\\', 'b', 'c']))
         check(['a', '\\b', 'c'],        ('', '\\', ['\\', 'b', 'c']))
         # UNC paths
-        check(['a', '\\\\b\\c', 'd'],   ('\\\\b\\c', '\\', ['\\\\b\\c\\', 'd']))
+        check(['a', '\\\\b\\c', 'd'],
+              ('\\\\b\\c', '\\', ['\\\\b\\c\\', 'd']))
         # Collapsing and stripping excess slashes
-        check(['a', 'Z:\\\\b\\\\c\\', 'd\\'], ('Z:', '\\', ['Z:\\', 'b', 'c', 'd']))
+        check(['a', 'Z:\\\\b\\\\c\\', 'd\\'],
+              ('Z:', '\\', ['Z:\\', 'b', 'c', 'd']))
         # UNC paths
-        check(['a', '\\\\b\\c\\\\', 'd'], ('\\\\b\\c', '\\', ['\\\\b\\c\\', 'd']))
+        check(['a', '\\\\b\\c\\\\', 'd'],
+              ('\\\\b\\c', '\\', ['\\\\b\\c\\', 'd']))
         # Extended paths
         check(['\\\\?\\c:\\'],          ('\\\\?\\c:', '\\', ['\\\\?\\c:\\']))
-        check(['\\\\?\\c:\\a'],         ('\\\\?\\c:', '\\', ['\\\\?\\c:\\', 'a']))
+        check(['\\\\?\\c:\\a'],
+              ('\\\\?\\c:', '\\', ['\\\\?\\c:\\', 'a']))
         # Extended UNC paths (format is "\\?\UNC\server\share")
-        check(['\\\\?\\UNC\\b\\c'],     ('\\\\?\\UNC\\b\\c', '\\', ['\\\\?\\UNC\\b\\c\\']))
-        check(['\\\\?\\UNC\\b\\c\\d'],  ('\\\\?\\UNC\\b\\c', '\\', ['\\\\?\\UNC\\b\\c\\', 'd']))
+        check(['\\\\?\\UNC\\b\\c'],
+              ('\\\\?\\UNC\\b\\c', '\\', ['\\\\?\\UNC\\b\\c\\']))
+        check(['\\\\?\\UNC\\b\\c\\d'],
+              ('\\\\?\\UNC\\b\\c', '\\', ['\\\\?\\UNC\\b\\c\\', 'd']))
 
     def test_splitroot(self):
         f = self.flavour.splitroot
@@ -195,8 +205,10 @@ class NTFlavourTest(_BaseFlavourTest, unittest.TestCase):
 # Tests for the pure classes
 #
 
-with_fsencode = unittest.skipIf(sys.version_info < (3, 2),
+with_fsencode = unittest.skipIf(
+    sys.version_info < (3, 2),
     'os.fsencode has been introduced in version 3.2')
+
 
 class _BasePurePathTest(object):
 
@@ -208,13 +220,13 @@ class _BasePurePathTest(object):
             ('a/b/',), ('a//b',), ('a//b//',),
             # empty components get removed
             ('', 'a', 'b'), ('a', '', 'b'), ('a', 'b', ''),
-            ],
+        ],
         '/b/c/d': [
             ('a', '/b/c', 'd'), ('a', '///b//c', 'd/'),
             ('/a', '/b/c', 'd'),
             # empty components get removed
             ('/', 'b', '', 'c/d'), ('/', '', 'b/c/d'), ('', '/b/c/d'),
-            ],
+        ],
     }
 
     def setUp(self):
@@ -263,7 +275,7 @@ class _BasePurePathTest(object):
         self.assertEqual(pp, P('c/a/b/d'))
         pp = p / P('c')
         self.assertEqual(pp, P('a/b/c'))
-        pp = p/ '/c'
+        pp = p / '/c'
         self.assertEqual(pp, P('/c'))
 
     def _check_str(self, expected, args):
@@ -308,7 +320,7 @@ class _BasePurePathTest(object):
             # The repr() is in the form ClassName("forward-slashes path")
             self.assertTrue(r.startswith(clsname + '('), r)
             self.assertTrue(r.endswith(')'), r)
-            inner = r[len(clsname) + 1 : -1]
+            inner = r[len(clsname) + 1: -1]
             self.assertEqual(eval(inner), p.as_posix())
             # The repr() roundtrips
             q = eval(r, pathlib.__dict__)
@@ -419,7 +431,7 @@ class _BasePurePathTest(object):
                 tuples = tuples + [
                     tuple(part.replace('/', self.sep) for part in t)
                     for t in tuples
-                    ]
+                ]
                 tuples.append((posix, ))
             pcanon = self.cls(canon)
             for t in tuples:
@@ -716,15 +728,15 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
 
     equivalences = _BasePurePathTest.equivalences.copy()
     equivalences.update({
-        'c:a': [ ('c:', 'a'), ('c:', 'a/'), ('/', 'c:', 'a') ],
+        'c:a': [('c:', 'a'), ('c:', 'a/'), ('/', 'c:', 'a')],
         'c:/a': [
             ('c:/', 'a'), ('c:', '/', 'a'), ('c:', '/a'),
             ('/z', 'c:/', 'a'), ('//x/y', 'c:/', 'a'),
-            ],
-        '//a/b/': [ ('//a/b',) ],
+        ],
+        '//a/b/': [('//a/b',)],
         '//a/b/c': [
             ('//a/b', 'c'), ('//a/b/', 'c'),
-            ],
+        ],
     })
 
     def test_str(self):
@@ -964,8 +976,10 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
         P = self.cls
         self.assertEqual(P('c:a/b').with_name('d.xml'), P('c:a/d.xml'))
         self.assertEqual(P('c:/a/b').with_name('d.xml'), P('c:/a/d.xml'))
-        self.assertEqual(P('c:a/Dot ending.').with_name('d.xml'), P('c:a/d.xml'))
-        self.assertEqual(P('c:/a/Dot ending.').with_name('d.xml'), P('c:/a/d.xml'))
+        self.assertEqual(
+            P('c:a/Dot ending.').with_name('d.xml'), P('c:a/d.xml'))
+        self.assertEqual(
+            P('c:/a/Dot ending.').with_name('d.xml'), P('c:/a/d.xml'))
         self.assertRaises(ValueError, P('c:').with_name, 'd.xml')
         self.assertRaises(ValueError, P('c:/').with_name, 'd.xml')
         self.assertRaises(ValueError, P('//My/Share').with_name, 'd.xml')
@@ -1140,8 +1154,10 @@ class PurePathTest(_BasePurePathTest, unittest.TestCase):
 
     def test_concrete_class(self):
         p = self.cls('a')
-        self.assertIs(type(p),
-            pathlib.PureWindowsPath if os.name == 'nt' else pathlib.PurePosixPath)
+        self.assertIs(
+            type(p),
+            pathlib.PureWindowsPath
+            if os.name == 'nt' else pathlib.PurePosixPath)
 
     def test_different_flavours_unequal(self):
         p = pathlib.PurePosixPath('a')
@@ -1172,6 +1188,7 @@ BASE = os.path.realpath(TESTFN)
 join = lambda *x: os.path.join(BASE, *x)
 rel_join = lambda *x: os.path.join(TESTFN, *x)
 
+
 def symlink_skip_reason():
     if not pathlib.supports_symlinks:
         return "no system support for symlinks"
@@ -1196,12 +1213,14 @@ with_symlinks = unittest.skipIf(symlink_skip_reason, symlink_skip_reason)
 class PosixPathAsPureTest(PurePosixPathTest):
     cls = pathlib.PosixPath
 
+
 @only_nt
 class WindowsPathAsPureTest(PureWindowsPathTest):
     cls = pathlib.WindowsPath
 
 
 class _BasePathTest(object):
+
     """Tests for the FS-accessing functionalities of the Path classes."""
 
     # (BASE)
@@ -1257,7 +1276,9 @@ class _BasePathTest(object):
                         (path_a, path_b))
 
     def assertFileNotFound(self, func, *args, **kwargs):
-        exc = FileNotFoundError if sys.version_info >= (3, 3) else EnvironmentError
+        exc = (
+            FileNotFoundError if sys.version_info >= (3, 3)
+            else EnvironmentError)
         with self.assertRaises(exc) as cm:
             # Python 2.6 kludge for http://bugs.python.org/issue7853
             try:
