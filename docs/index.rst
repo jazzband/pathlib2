@@ -30,7 +30,7 @@ In particular, new features should be submitted to the
 
 Issues that occur in this backport, but that do not occur not in the
 standard Python pathlib module can be submitted on
-the `pathlib2 bug tracker <https://github.com/mcmtroffaes/pathlib2/>`_.
+the `pathlib2 bug tracker <https://github.com/mcmtroffaes/pathlib2/issues>`_.
 
 Documentation
 -------------
