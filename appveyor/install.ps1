@@ -32,7 +32,7 @@ function InstallRequirements ($python_home, $reqs) {
 
 function main () {
     InstallPip $env:PYTHON
-    InstallReqs $env:PYTHON -r requirements.txt
+    InstallRequirements $env:PYTHON -r requirements.txt
     InstallPackage $env:PYTHON pytest
 }
 
