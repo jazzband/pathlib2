@@ -16,7 +16,7 @@ script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then check-manifest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then flake8; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then coverage run --source=pathlib2 `type -p pytest`; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION != '2.7' ]]; then nosetests; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION != '2.7' ]]; then pytest; fi"
 after_success:
   - "pushd test"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then coveralls; fi"

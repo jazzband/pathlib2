@@ -1,6 +1,8 @@
 pathlib2
 ========
 
+|travis| |coveralls| |downloads| |version| |license|
+
 Fork of pathlib aiming to support the full stdlib Python API.
 
 The `old pathlib <https://bitbucket.org/pitrou/pathlib>`_
@@ -35,3 +37,23 @@ Documentation
 Refer to the
 `standard pathlib <http://docs.python.org/dev/library/pathlib.html>`_
 documentation.
+
+.. |travis| image:: https://travis-ci.org/mcmtroffaes/pathlib2.png?branch=develop
+    :target: https://travis-ci.org/mcmtroffaes/pathlib2
+    :alt: travis-ci
+
+.. |coveralls| image:: https://coveralls.io/repos/mcmtroffaes/pathlib2/badge.png?branch=develop
+    :target: https://coveralls.io/r/mcmtroffaes/pathlib2?branch=develop
+    :alt: coveralls.io
+
+.. |downloads| image:: https://pypip.in/d/pathlib2/badge.png
+    :target: http://pypi.python.org/pypi/pathlib2/
+    :alt: downloads
+
+.. |version| image:: https://pypip.in/v/pathlib2/badge.png
+    :target: http://pypi.python.org/pypi/pathlib2/
+    :alt: latest version
+
+.. |license| image:: https://pypip.in/license/pathlib2/badge.png
+    :target: http://pypi.python.org/pypi/pathlib2/
+    :alt: license
