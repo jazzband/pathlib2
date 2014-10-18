@@ -9,7 +9,8 @@ branches:
   only:
     - develop
 install:
-  - "pip install ."
+  - "pip install -r requirements.txt"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then pip install coveralls check-manifest flake8 Sphinx; fi"
 script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then check-manifest; fi"
@@ -17,10 +18,8 @@ script:
   - "pushd doc"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then make html; fi"
   - "popd"
-  - "pushd test"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then coverage run --source=pathlib2 `type -p nosetests`; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then coverage run --source=pathlib2 `type -p pytest`; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION != '2.7' ]]; then nosetests; fi"
-  - "popd"
 after_success:
   - "pushd test"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then coveralls; fi"
