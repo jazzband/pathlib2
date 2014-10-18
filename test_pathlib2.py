@@ -1311,7 +1311,8 @@ class _BasePathTest(object):
         (p / 'fileA').write_bytes(b'abcdefg')
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
         # check that trying to write str does not truncate the file
-        self.assertRaises(TypeError, (p / 'fileA').write_bytes, six.u('somestr'))
+        self.assertRaises(TypeError, (p / 'fileA').write_bytes,
+                          six.u('somestr'))
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
 
     def test_read_write_text(self):
@@ -1321,7 +1322,8 @@ class _BasePathTest(object):
             encoding='utf-8', errors='ignore'), six.u('bcdefg'))
         # check that trying to write bytes does not truncate the file
         self.assertRaises(TypeError, (p / 'fileA').write_text, b'somebytes')
-        self.assertEqual((p / 'fileA').read_text(encoding='latin-1'), six.u('\u00e4bcdefg'))
+        self.assertEqual((p / 'fileA').read_text(encoding='latin-1'),
+                         six.u('\u00e4bcdefg'))
 
     def test_iterdir(self):
         P = self.cls
@@ -1331,7 +1333,7 @@ class _BasePathTest(object):
         expected = ['dirA', 'dirB', 'dirC', 'fileA']
         if not symlink_skip_reason:
             expected += ['linkA', 'linkB', 'brokenLink']
-        self.assertEqual(paths, set( P(BASE, q) for q in expected ))
+        self.assertEqual(paths, set(P(BASE, q) for q in expected))
 
     @with_symlinks
     def test_iterdir_symlink(self):
@@ -1339,7 +1341,7 @@ class _BasePathTest(object):
         P = self.cls
         p = P(BASE, 'linkB')
         paths = set(p.iterdir())
-        expected = set( P(BASE, 'linkB', q) for q in ['fileB', 'linkD'] )
+        expected = set(P(BASE, 'linkB', q) for q in ['fileB', 'linkD'])
         self.assertEqual(paths, expected)
 
     def test_iterdir_nodir(self):
@@ -1358,7 +1360,7 @@ class _BasePathTest(object):
 
     def test_glob_common(self):
         def _check(glob, expected):
-            self.assertEqual(set(glob), set( P(BASE, q) for q in expected ))
+            self.assertEqual(set(glob), set(P(BASE, q) for q in expected))
         P = self.cls
         p = P(BASE)
         it = p.glob("fileA")
@@ -1382,17 +1384,17 @@ class _BasePathTest(object):
 
     def test_rglob_common(self):
         def _check(glob, expected):
-            self.assertEqual(set(glob), set( P(BASE, q) for q in expected ))
+            self.assertEqual(set(glob), set(P(BASE, q) for q in expected))
         P = self.cls
         p = P(BASE)
         it = p.rglob("fileA")
         self.assertIsInstance(it, collections.Iterator)
         # XXX cannot test because of symlink loops in the test setup
-        #_check(it, ["fileA"])
-        #_check(p.rglob("fileB"), ["dirB/fileB"])
-        #_check(p.rglob("*/fileA"), [""])
-        #_check(p.rglob("*/fileB"), ["dirB/fileB"])
-        #_check(p.rglob("file*"), ["fileA", "dirB/fileB"])
+        # _check(it, ["fileA"])
+        # _check(p.rglob("fileB"), ["dirB/fileB"])
+        # _check(p.rglob("*/fileA"), [""])
+        # _check(p.rglob("*/fileB"), ["dirB/fileB"])
+        # _check(p.rglob("file*"), ["fileA", "dirB/fileB"])
         # No symlink loops here
         p = P(BASE, "dirC")
         _check(p.rglob("file*"), ["dirC/fileC", "dirC/dirD/fileD"])
@@ -1402,8 +1404,9 @@ class _BasePathTest(object):
         # ".." is not special in globs
         P = self.cls
         p = P(BASE)
-        self.assertEqual(set(p.glob("..")), set([ P(BASE, "..") ]))
-        self.assertEqual(set(p.glob("dirA/../file*")), set([ P(BASE, "dirA/../fileA") ]))
+        self.assertEqual(set(p.glob("..")), set([P(BASE, "..")]))
+        self.assertEqual(set(p.glob("dirA/../file*")),
+                         set([P(BASE, "dirA/../fileA")]))
         self.assertEqual(set(p.glob("../xyzzy")), set())
 
     def _check_resolve_relative(self, p, expected):
@@ -1440,7 +1443,8 @@ class _BasePathTest(object):
 
     @with_symlinks
     def test_resolve_dot(self):
-        # See https://bitbucket.org/pitrou/pathlib/issue/9/pathresolve-fails-on-complex-symlinks
+        # See https://bitbucket.org/pitrou/pathlib/issue/9/
+        # pathresolve-fails-on-complex-symlinks
         p = self.cls(BASE)
         self.dirlink('.', join('0'))
         self.dirlink(os.path.join('0', '0'), join('1'))
@@ -1473,7 +1477,7 @@ class _BasePathTest(object):
 
     @with_symlinks
     def test_lstat(self):
-        p = self.cls(BASE)/ 'linkA'
+        p = self.cls(BASE) / 'linkA'
         st = p.stat()
         self.assertNotEqual(st, p.lstat())
 
@@ -1613,7 +1617,7 @@ class _BasePathTest(object):
                 raise
         self.assertEqual(cm.exception.errno, errno.EEXIST)
         # test `mode` arg
-        mode = stat.S_IMODE(p.stat().st_mode) # default mode
+        mode = stat.S_IMODE(p.stat().st_mode)  # default mode
         p = self.cls(BASE, 'newdirD', 'newdirE')
         p.mkdir(0o555, parents=True)
         self.assertTrue(p.exists())
@@ -1656,7 +1660,7 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertFalse((P / 'linkA').is_dir())
             self.assertTrue((P / 'linkB').is_dir())
-            self.assertFalse((P/ 'brokenLink').is_dir())
+            self.assertFalse((P / 'brokenLink').is_dir())
 
     def test_is_file(self):
         P = self.cls(BASE)
@@ -1666,7 +1670,7 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertTrue((P / 'linkA').is_file())
             self.assertFalse((P / 'linkB').is_file())
-            self.assertFalse((P/ 'brokenLink').is_file())
+            self.assertFalse((P / 'brokenLink').is_file())
 
     def test_is_symlink(self):
         P = self.cls(BASE)
@@ -1676,7 +1680,7 @@ class _BasePathTest(object):
         if not symlink_skip_reason:
             self.assertTrue((P / 'linkA').is_symlink())
             self.assertTrue((P / 'linkB').is_symlink())
-            self.assertTrue((P/ 'brokenLink').is_symlink())
+            self.assertTrue((P / 'brokenLink').is_symlink())
 
     def test_is_fifo_false(self):
         P = self.cls(BASE)
@@ -1808,7 +1812,8 @@ class PathTest(_BasePathTest, unittest.TestCase):
 
     def test_concrete_class(self):
         p = self.cls('a')
-        self.assertIs(type(p),
+        self.assertIs(
+            type(p),
             pathlib.WindowsPath if os.name == 'nt' else pathlib.PosixPath)
 
     def test_unsupported_flavour(self):
@@ -1859,7 +1864,6 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
     @with_symlinks
     def test_resolve_loop(self):
         # Loop detection for broken symlinks under POSIX
-        P = self.cls
         # Loops with relative symlinks
         os.symlink('linkX/inside', join('linkX'))
         self._check_symlink_loop(BASE, 'linkX')
@@ -1899,12 +1903,13 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
     def test_glob(self):
         P = self.cls
         p = P(BASE)
-        self.assertEqual(set(p.glob("FILEa")), set( P(BASE, "fileA") ))
+        self.assertEqual(set(p.glob("FILEa")), set(P(BASE, "fileA")))
 
     def test_rglob(self):
         P = self.cls
         p = P(BASE, "dirC")
-        self.assertEqual(set(p.rglob("FILEd")), set( P(BASE, "dirC/dirD/fileD") ))
+        self.assertEqual(set(p.rglob("FILEd")),
+                         set(P(BASE, "dirC/dirD/fileD")))
 
 
 def main():
