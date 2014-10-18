@@ -14,9 +14,9 @@ from errno import EINVAL, ENOENT
 from operator import attrgetter
 from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
 try:
-    from urllib import quote as urlquote, quote as urlquote_from_bytes
+    from urllib import quote as urlquote_from_bytes
 except ImportError:
-    from urllib.parse import quote as urlquote, quote_from_bytes as urlquote_from_bytes
+    from urllib.parse import quote_from_bytes as urlquote_from_bytes
 
 
 try:
@@ -44,19 +44,19 @@ else:
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
     "Path", "PosixPath", "WindowsPath",
-    ]
+]
 
 #
 # Internals
 #
 
-_py2 = sys.version_info < (3,)
-_py2_fs_encoding = 'ascii'
 
 def _py2_fsencode(parts):
     # py2 => minimal unicode support
-    return [part.encode(_py2_fs_encoding) if isinstance(part, unicode)
+    assert six.PY2
+    return [part.encode('ascii') if isinstance(part, six.text_type)
             else part for part in parts]
+
 
 def _is_wildcard_pattern(pat):
     # Whether this pattern needs actual matching using fnmatch, or can
@@ -65,6 +65,7 @@ def _is_wildcard_pattern(pat):
 
 
 class _Flavour(object):
+
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
 
@@ -72,7 +73,7 @@ class _Flavour(object):
         self.join = self.sep.join
 
     def parse_parts(self, parts):
-        if _py2:
+        if six.PY2:
             parts = _py2_fsencode(parts)
         parsed = []
         sep = self.sep
@@ -146,7 +147,7 @@ class _WindowsFlavour(_Flavour):
         set(['CON', 'PRN', 'AUX', 'NUL']) |
         set(['COM%d' % i for i in range(1, 10)]) |
         set(['LPT%d' % i for i in range(1, 10)])
-        )
+    )
 
     # Interesting findings about extended paths:
     # - '\\?\c:\a', '//?/c:\a' and '//?/c:/a' are all supported
@@ -180,9 +181,9 @@ class _WindowsFlavour(_Flavour):
                     if index2 == -1:
                         index2 = len(part)
                     if prefix:
-                        return prefix + part[1:index2], sep, part[index2+1:]
+                        return prefix + part[1:index2], sep, part[index2 + 1:]
                     else:
-                        return part[:index2], sep, part[index2+1:]
+                        return part[:index2], sep, part[index2 + 1:]
         drv = root = ''
         if second == ':' and first in self.drive_letters:
             drv = part[:2]
@@ -280,6 +281,7 @@ class _PosixFlavour(_Flavour):
         sep = self.sep
         accessor = path._accessor
         seen = {}
+
         def _resolve(path, rest):
             if rest.startswith(sep):
                 path = ''
@@ -299,7 +301,8 @@ class _PosixFlavour(_Flavour):
                     if path is not None:
                         # use cached value
                         continue
-                    # The symlink is not resolved, so we must have a symlink loop.
+                    # The symlink is not resolved, so we must have a symlink
+                    # loop.
                     raise RuntimeError("Symlink loop from %r" % newpath)
                 # Resolve the symbolic link
                 try:
@@ -310,9 +313,9 @@ class _PosixFlavour(_Flavour):
                     # Not a symlink
                     path = newpath
                 else:
-                    seen[newpath] = None # not resolved symlink
+                    seen[newpath] = None  # not resolved symlink
                     path = _resolve(path, target)
-                    seen[newpath] = path # resolved symlink
+                    seen[newpath] = path  # resolved symlink
 
             return path
         # NOTE: according to POSIX, getcwd() cannot contain path components
@@ -335,6 +338,7 @@ _posix_flavour = _PosixFlavour()
 
 
 class _Accessor:
+
     """An accessor implements a particular (system-specific or not) way of
     accessing paths on the filesystem."""
 
@@ -385,7 +389,8 @@ class _NormalAccessor(_Accessor):
             symlink = _wrap_binary_strfunc(os.symlink)
         else:
             def symlink(a, b, target_is_directory):
-                raise NotImplementedError("symlink() not available on this system")
+                raise NotImplementedError(
+                    "symlink() not available on this system")
     else:
         # Under POSIX, os.symlink() takes two args
         @staticmethod
@@ -413,6 +418,7 @@ def _cached(func):
         yield func
     except AttributeError:
         cache = {}
+
         def wrapper(*args):
             try:
                 return cache[args]
@@ -425,13 +431,15 @@ def _cached(func):
         finally:
             cache.clear()
 
+
 def _make_selector(pattern_parts):
     pat = pattern_parts[0]
     child_parts = pattern_parts[1:]
     if pat == '**':
         cls = _RecursiveWildcardSelector
     elif '**' in pat:
-        raise ValueError("Invalid pattern: '**' can only be an entire path component")
+        raise ValueError(
+            "Invalid pattern: '**' can only be an entire path component")
     elif _is_wildcard_pattern(pat):
         cls = _WildcardSelector
     else:
@@ -443,6 +451,7 @@ if hasattr(functools, "lru_cache"):
 
 
 class _Selector:
+
     """A selector matches a specific glob pattern part against the children
     of a given path."""
 
@@ -536,6 +545,7 @@ class _RecursiveWildcardSelector(_Selector):
 #
 
 class _PathParents(Sequence):
+
     """This object provides sequence-like access to the logical ancestors
     of a path.  Don't try to construct it yourself."""
     __slots__ = ('_pathcls', '_drv', '_root', '_parts')
@@ -564,6 +574,7 @@ class _PathParents(Sequence):
 
 
 class PurePath(object):
+
     """PurePath represents a filesystem path and offers operations which
     don't imply any actual filesystem I/O.  Depending on your system,
     instantiating a PurePath will return either a PurePosixPath or a
@@ -1072,8 +1083,9 @@ class Path(PurePath):
         the built-in open() function does.
         """
         if sys.version_info >= (3, 3):
-            return io.open(str(self), mode, buffering, encoding, errors, newline,
-                           opener=self._opener)
+            return io.open(
+                str(self), mode, buffering, encoding, errors, newline,
+                opener=self._opener)
         else:
             return io.open(str(self), mode, buffering, encoding, errors, newline)
 
@@ -1312,6 +1324,6 @@ class Path(PurePath):
 class PosixPath(Path, PurePosixPath):
     __slots__ = ()
 
+
 class WindowsPath(Path, PureWindowsPath):
     __slots__ = ()
-
