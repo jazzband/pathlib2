@@ -1,8 +1,13 @@
 History
 -------
 
-Version 2.0 (in development)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 2.0
+^^^^^^^^^^^
+
+- Sync with upstream pathlib from CPython: read_text, write_text,
+  read_bytes, write_bytes, __enter__, __exit__, samefile.
+- Use travis and appveyor for continuous integration.
+- Fixed some bugs in test code.
 
 Version 1.0.1
 ^^^^^^^^^^^^^
