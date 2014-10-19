@@ -1329,16 +1329,16 @@ class _BasePathTest(object):
             self.assertEqual(cm.exception.errno, errno.ENOENT)
 
     def assertFileExists(self, func, *args, **kwargs):
-        exc = (
-            FileExistsError if sys.version_info >= (3, 3)
-            else EnvironmentError)
-        with self.assertRaises(exc) as cm:
-            # Python 2.6 kludge for http://bugs.python.org/issue7853
-            try:
-                func(*args, **kwargs)
-            except:
-                raise
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        if sys.version_info >= (3, 3):
+            self.assertRaises(FileExistsError, func, *args, **kwargs)
+        else:
+            with self.assertRaises(OSError) as cm:
+                # Python 2.6 kludge for http://bugs.python.org/issue7853
+                try:
+                    func(*args, **kwargs)
+                except:
+                    raise
+            self.assertEqual(cm.exception.errno, errno.EEXIST)
 
     def _test_cwd(self, p):
         q = self.cls(os.getcwd())
