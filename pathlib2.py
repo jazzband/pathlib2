@@ -1,3 +1,4 @@
+import ctypes
 import fnmatch
 import functools
 import io
@@ -72,17 +73,6 @@ def _try_except_fileexistserror(try_func, except_func):
                 raise
             else:
                 except_func(exc)
-
-
-try:
-    _samestat = os.path.samestat
-except AttributeError:
-    # backported from Python 3.4
-    def _samestat(s1, s2):
-        print(s1)
-        print(s2)
-        return (s1.st_ino == s2.st_ino and
-                s1.st_dev == s2.st_dev)
 
 
 def _is_wildcard_pattern(pat):
@@ -1051,12 +1041,21 @@ class Path(PurePath):
         """Return whether `other_file` is the same or not as this file.
         (as returned by os.path.samefile(file, other_file)).
         """
-        st = self.stat()
-        try:
-            other_st = other_path.stat()
-        except AttributeError:
-            other_st = os.stat(other_path)
-        return _samestat(st, other_st)
+        if hasattr(os.path, "samestat"):
+            st = self.stat()
+            try:
+                other_st = other_path.stat()
+            except AttributeError:
+                other_st = os.stat(other_path)
+            return os.path.samestat(st, other_st)
+        else:
+            # workaround for Windows
+            # see http://stackoverflow.com/a/6365265/2863746
+            filename1 = six.text_type(self)
+            filename2 = six.text_type(other_path)
+            attrs1 = ctypes.windll.kernel32.GetFileAttributesW(filename1)
+            attrs2 = ctypes.windll.kernel32.GetFileAttributesW(filename2)
+            return attrs1 != -1 and attrs2 != -1 and attrs1 == attrs2
 
     def iterdir(self):
         """Iterate over the files in this directory.  Does not yield any
