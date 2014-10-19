@@ -75,6 +75,56 @@ def _try_except_fileexistserror(try_func, except_func):
                 except_func(exc)
 
 
+def _win32_by_handle_file_information(path):
+    # get file information, needed for samefile on older Python versions
+    from ctypes import POINTER, Structure, WinError
+    from ctypes.wintypes import DWORD, HANDLE, BOOL
+
+    class FILETIME(Structure):
+        _fields_ = [("dwLowDateTime", DWORD),
+                    ("dwHighDateTime", DWORD),
+                    ]
+
+    class BY_HANDLE_FILE_INFORMATION(Structure):
+        _fields_ = [("dwFileAttributes", DWORD),
+                    ("ftCreationTime", FILETIME),
+                    ("ftLastAccessTime", FILETIME),
+                    ("ftLastWriteTime", FILETIME),
+                    ("dwVolumeSerialNumber", DWORD),
+                    ("nFileSizeHigh", DWORD),
+                    ("nFileSizeLow", DWORD),
+                    ("nNumberOfLinks", DWORD),
+                    ("nFileIndexHigh", DWORD),
+                    ("nFileIndexLow", DWORD),
+                    ]
+
+    CreateFile = ctypes.windll.kernel32.CreateFileW
+    CreateFile.argtypes = [ctypes.c_wchar_p, DWORD, DWORD, ctypes.c_void_p,
+                           DWORD, DWORD, HANDLE]
+    CreateFile.restype = HANDLE
+    GetFileInformationByHandle = (
+        ctypes.windll.kernel32.GetFileInformationByHandle)
+    GetFileInformationByHandle.argtypes = [
+        HANDLE, POINTER(BY_HANDLE_FILE_INFORMATION)]
+    GetFileInformationByHandle.restype = BOOL
+    CloseHandle = ctypes.windll.kernel32.CloseHandle
+    CloseHandle.argtypes = [HANDLE]
+    CloseHandle.restype = BOOL
+    GENERIC_READ = 0x80000000
+    FILE_SHARE_READ = 0x00000001
+    OPEN_EXISTING = 3
+    hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ,
+                       None, OPEN_EXISTING, 0, None)
+    if hfile is None:
+        raise WinError()
+    info = BY_HANDLE_FILE_INFORMATION()
+    success = GetFileInformationByHandle(hfile, info)
+    CloseHandle(hfile)
+    if success == 0:
+        raise WinError()
+    return info
+
+
 def _is_wildcard_pattern(pat):
     # Whether this pattern needs actual matching using fnmatch, or can
     # be looked up directly as a file.
@@ -1049,13 +1099,11 @@ class Path(PurePath):
                 other_st = os.stat(other_path)
             return os.path.samestat(st, other_st)
         else:
-            # workaround for Windows
-            # see http://stackoverflow.com/a/6365265/2863746
             filename1 = six.text_type(self)
             filename2 = six.text_type(other_path)
-            attrs1 = ctypes.windll.kernel32.GetFileAttributesW(filename1)
-            attrs2 = ctypes.windll.kernel32.GetFileAttributesW(filename2)
-            return attrs1 != -1 and attrs2 != -1 and attrs1 == attrs2
+            st1 = _win32_by_handle_file_information(filename1)
+            st2 = _win32_by_handle_file_information(filename2)
+            return st1 == st2
 
     def iterdir(self):
         """Iterate over the files in this directory.  Does not yield any
