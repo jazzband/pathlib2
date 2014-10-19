@@ -16,4 +16,4 @@ install:
 build: off
 
 test_script:
-  - "%PYTHON%/Scripts/py.test test_pathlib2.py --full-trace"
+  - "%PYTHON%/Scripts/py.test test_pathlib2.py"
