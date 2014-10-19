@@ -1317,16 +1317,16 @@ class _BasePathTest(object):
                         (path_a, path_b))
 
     def assertFileNotFound(self, func, *args, **kwargs):
-        exc = (
-            FileNotFoundError if sys.version_info >= (3, 3)
-            else EnvironmentError)
-        with self.assertRaises(exc) as cm:
-            # Python 2.6 kludge for http://bugs.python.org/issue7853
-            try:
-                func(*args, **kwargs)
-            except:
-                raise
-        self.assertEqual(cm.exception.errno, errno.ENOENT)
+        if sys.version_info >= (3, 3):
+            self.assertRaises(FileNotFoundError, func, *args, **kwargs)
+        else:
+            with self.assertRaises(OSError) as cm:
+                # Python 2.6 kludge for http://bugs.python.org/issue7853
+                try:
+                    func(*args, **kwargs)
+                except:
+                    raise
+            self.assertEqual(cm.exception.errno, errno.ENOENT)
 
     def assertFileExists(self, func, *args, **kwargs):
         exc = (
