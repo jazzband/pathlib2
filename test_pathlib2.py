@@ -5,6 +5,7 @@ import errno
 import pathlib2 as pathlib
 import pickle
 import six
+import shutil
 import socket
 import stat
 import sys
@@ -1280,7 +1281,7 @@ class _BasePathTest(object):
 
     def setUp(self):
         os.mkdir(BASE)
-        self.addCleanup(support.rmtree, BASE)
+        self.addCleanup(shutil.rmtree, BASE)
         os.mkdir(join('dirA'))
         os.mkdir(join('dirB'))
         os.mkdir(join('dirC'))
@@ -1528,7 +1529,7 @@ class _BasePathTest(object):
         self._check_resolve_relative(p, P(BASE, 'dirB', 'fileB'))
         # Now create absolute symlinks
         d = tempfile.mkdtemp(suffix='-dirD')
-        self.addCleanup(support.rmtree, d)
+        self.addCleanup(shutil.rmtree, d)
         os.symlink(os.path.join(d), join('dirA', 'linkX'))
         os.symlink(join('dirB'), os.path.join(d, 'linkY'))
         p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
