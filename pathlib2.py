@@ -122,8 +122,13 @@ def _win32_get_unique_path_id(path):
         flags = 0
     hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ,
                        None, OPEN_EXISTING, flags, None)
-    if hfile is None:
-        raise WinError()
+    if hfile == 0xffffffff:
+        if sys.version_info >= (3, 3):
+            raise FileNotFoundError(path)
+        else:
+            exc = OSError("file not found: path")
+            exc.errno = ENOENT
+            raise exc
     info = BY_HANDLE_FILE_INFORMATION()
     success = GetFileInformationByHandle(hfile, info)
     CloseHandle(hfile)
