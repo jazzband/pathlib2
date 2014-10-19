@@ -1882,6 +1882,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'dirA').is_char_device())
         self.assertFalse((P / 'non-existing').is_char_device())
 
+    @only_posix
     def test_is_char_device_true(self):
         # Under Unix, /dev/null should generally be a char device
         P = self.cls('/dev/null')
