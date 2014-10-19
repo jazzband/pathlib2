@@ -1103,6 +1103,10 @@ class Path(PurePath):
             filename2 = six.text_type(other_path)
             st1 = _win32_by_handle_file_information(filename1)
             st2 = _win32_by_handle_file_information(filename2)
+            print(filename1)
+            print(st1)
+            print(filename2)
+            print(st2)
             return st1 == st2
 
     def iterdir(self):
