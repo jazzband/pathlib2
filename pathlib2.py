@@ -116,7 +116,7 @@ def _win32_get_unique_path_id(path):
     FILE_SHARE_READ = 0x00000001
     FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
     OPEN_EXISTING = 3
-    if os.path.isdir(filename):
+    if os.path.isdir(path):
         flags = FILE_FLAG_BACKUP_SEMANTICS
     else:
         flags = 0
