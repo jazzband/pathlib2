@@ -75,27 +75,29 @@ def _try_except_fileexistserror(try_func, except_func):
                 except_func(exc)
 
 
-def _win32_by_handle_file_information(path):
+def _win32_get_unique_path_id(path):
     # get file information, needed for samefile on older Python versions
+    # see http://timgolden.me.uk/python/win32_how_do_i/
+    # see_if_two_files_are_the_same_file.html
     from ctypes import POINTER, Structure, WinError
     from ctypes.wintypes import DWORD, HANDLE, BOOL
 
     class FILETIME(Structure):
-        _fields_ = [("dwLowDateTime", DWORD),
-                    ("dwHighDateTime", DWORD),
+        _fields_ = [("datetime_lo", DWORD),
+                    ("datetime_hi", DWORD),
                     ]
 
     class BY_HANDLE_FILE_INFORMATION(Structure):
-        _fields_ = [("dwFileAttributes", DWORD),
-                    ("ftCreationTime", FILETIME),
-                    ("ftLastAccessTime", FILETIME),
-                    ("ftLastWriteTime", FILETIME),
-                    ("dwVolumeSerialNumber", DWORD),
-                    ("nFileSizeHigh", DWORD),
-                    ("nFileSizeLow", DWORD),
-                    ("nNumberOfLinks", DWORD),
-                    ("nFileIndexHigh", DWORD),
-                    ("nFileIndexLow", DWORD),
+        _fields_ = [("attributes", DWORD),
+                    ("created_at", FILETIME),
+                    ("accessed_at", FILETIME),
+                    ("written_at", FILETIME),
+                    ("volume", DWORD),
+                    ("file_hi", DWORD),
+                    ("file_lo", DWORD),
+                    ("n_links", DWORD),
+                    ("index_hi", DWORD),
+                    ("index_lo", DWORD),
                     ]
 
     CreateFile = ctypes.windll.kernel32.CreateFileW
@@ -112,9 +114,14 @@ def _win32_by_handle_file_information(path):
     CloseHandle.restype = BOOL
     GENERIC_READ = 0x80000000
     FILE_SHARE_READ = 0x00000001
+    FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
     OPEN_EXISTING = 3
+    if os.path.isdir(filename):
+        flags = FILE_FLAG_BACKUP_SEMANTICS
+    else:
+        flags = 0
     hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ,
-                       None, OPEN_EXISTING, 0, None)
+                       None, OPEN_EXISTING, flags, None)
     if hfile is None:
         raise WinError()
     info = BY_HANDLE_FILE_INFORMATION()
@@ -122,7 +129,7 @@ def _win32_by_handle_file_information(path):
     CloseHandle(hfile)
     if success == 0:
         raise WinError()
-    return info
+    return info.volume, info.index_hi, info.index_lo
 
 
 def _is_wildcard_pattern(pat):
@@ -1101,8 +1108,8 @@ class Path(PurePath):
         else:
             filename1 = six.text_type(self)
             filename2 = six.text_type(other_path)
-            st1 = _win32_by_handle_file_information(filename1)
-            st2 = _win32_by_handle_file_information(filename2)
+            st1 = _win32_get_unique_path_id(filename1)
+            st2 = _win32_get_unique_path_id(filename2)
             print(filename1)
             print(st1)
             print(filename2)
