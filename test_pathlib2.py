@@ -1405,8 +1405,9 @@ class _BasePathTest(object):
         (p / 'fileA').write_bytes(b'abcdefg')
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
         # check that trying to write str does not truncate the file
-        self.assertRaises(TypeError, (p / 'fileA').write_bytes,
-                          six.u('somestr'))
+        with self.assertRaises(TypeError) as cm:
+            (p / 'fileA').write_bytes(six.u('somestr'))
+        self.assertTrue(str(cm.exception).startswith('data must be'))
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
 
     def test_read_write_text(self):
@@ -1415,7 +1416,9 @@ class _BasePathTest(object):
         self.assertEqual((p / 'fileA').read_text(
             encoding='utf-8', errors='ignore'), six.u('bcdefg'))
         # check that trying to write bytes does not truncate the file
-        self.assertRaises(TypeError, (p / 'fileA').write_text, b'somebytes')
+        with self.assertRaises(TypeError) as cm:
+            (p / 'fileA').write_text(b'somebytes')
+        self.assertTrue(str(cm.exception).startswith('data must be'))
         self.assertEqual((p / 'fileA').read_text(encoding='latin-1'),
                          six.u('\u00e4bcdefg'))
 
