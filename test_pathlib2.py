@@ -2105,7 +2105,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         p7 = P('~fakeuser/Documents')
 
         with support.EnvironmentVarGuard() as env:
-            env.pop('HOME', None)
+            env.unset('HOME')
 
             self.assertEqual(p1.expanduser(), P(userhome) / 'Documents')
             self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
@@ -2115,7 +2115,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
             self.assertEqual(p6.expanduser(), p6)
             self.assertRaises(RuntimeError, p7.expanduser)
 
-            env['HOME'] = '/tmp'
+            env.set('HOME', '/tmp')
             self.assertEqual(p1.expanduser(), P('/tmp/Documents'))
             self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
             self.assertEqual(p3.expanduser(), P(otherhome) / 'Documents')
