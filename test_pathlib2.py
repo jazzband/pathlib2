@@ -1327,7 +1327,7 @@ class _BasePathTest(object):
                     func(*args, **kwargs)
                 except:
                     raise
-        self.assertEqual(cm.exception.errno, errno.ENOENT)
+            self.assertEqual(cm.exception.errno, errno.ENOENT)
 
     def assertFileExists(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
@@ -1340,7 +1340,7 @@ class _BasePathTest(object):
                     func(*args, **kwargs)
                 except:
                     raise
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+            self.assertEqual(cm.exception.errno, errno.EEXIST)
 
     def _test_cwd(self, p):
         q = self.cls(os.getcwd())
