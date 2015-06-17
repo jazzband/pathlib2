@@ -358,6 +358,7 @@ class _WindowsFlavour(_Flavour):
                     userhome = self.join(parts)
         return userhome
 
+
 class _PosixFlavour(_Flavour):
     sep = '/'
     altsep = ''
@@ -1149,6 +1150,7 @@ class Path(PurePath):
         returned by os.path.expanduser('~')).
         """
         return cls(cls()._flavour.gethomedir(None))
+
     def samefile(self, other_path):
         """Return whether `other_file` is the same or not as this file.
         (as returned by os.path.samefile(file, other_file)).
@@ -1544,8 +1546,8 @@ class Path(PurePath):
         """ Return a new path with expanded ~ and ~user constructs
         (as returned by os.path.expanduser)
         """
-        if (not (self._drv or self._root) and
-            self._parts and self._parts[0][:1] == '~'):
+        if (not (self._drv or self._root)
+                and self._parts and self._parts[0][:1] == '~'):
             homedir = self._flavour.gethomedir(self._parts[0][1:])
             return self._from_parts([homedir] + self._parts[1:])
 
