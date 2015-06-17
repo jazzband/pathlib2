@@ -1318,7 +1318,8 @@ class _BasePathTest(object):
 
     def assertFileNotFound(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            self.assertRaises(FileNotFoundError, func, *args, **kwargs)
+            with self.assertRaises(FileNotFoundError) as cm:
+                func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
@@ -1330,7 +1331,8 @@ class _BasePathTest(object):
 
     def assertFileExists(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            self.assertRaises(FileExistsError, func, *args, **kwargs)
+            with self.assertRaises(FileExistsError) as cm:
+                func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
@@ -1350,6 +1352,17 @@ class _BasePathTest(object):
     def test_cwd(self):
         p = self.cls.cwd()
         self._test_cwd(p)
+
+    def _test_home(self, p):
+        q = self.cls(os.path.expanduser('~'))
+        self.assertEqual(p, q)
+        self.assertEqual(str(p), str(q))
+        self.assertIs(type(p), type(q))
+        self.assertTrue(p.is_absolute())
+
+    def test_home(self):
+        p = self.cls.home()
+        self._test_home(p)
 
     def test_samefile(self):
         fileA_path = os.path.join(BASE, 'fileA')
@@ -1376,15 +1389,31 @@ class _BasePathTest(object):
         p = self.cls('')
         self.assertEqual(p.stat(), os.stat('.'))
 
+    def test_expanduser_common(self):
+        P = self.cls
+        p = P('~')
+        self.assertEqual(p.expanduser(), P(os.path.expanduser('~')))
+        p = P('foo')
+        self.assertEqual(p.expanduser(), p)
+        p = P('/~')
+        self.assertEqual(p.expanduser(), p)
+        p = P('../~')
+        self.assertEqual(p.expanduser(), p)
+        p = P(P('').absolute().anchor) / '~'
+        self.assertEqual(p.expanduser(), p)
+
     def test_exists(self):
         P = self.cls
         p = P(BASE)
         self.assertIs(True, p.exists())
         self.assertIs(True, (p / 'dirA').exists())
         self.assertIs(True, (p / 'fileA').exists())
+        self.assertIs(False, (p / 'fileA' / 'bah').exists())
         if not symlink_skip_reason:
             self.assertIs(True, (p / 'linkA').exists())
             self.assertIs(True, (p / 'linkB').exists())
+            self.assertIs(True, (p / 'linkB' / 'fileB').exists())
+            self.assertIs(False, (p / 'linkA' / 'bah').exists())
         self.assertIs(False, (p / 'foo').exists())
         self.assertIs(False, P('/xyzzy').exists())
 
@@ -1809,6 +1838,7 @@ class _BasePathTest(object):
         self.assertTrue((P / 'dirA').is_dir())
         self.assertFalse((P / 'fileA').is_dir())
         self.assertFalse((P / 'non-existing').is_dir())
+        self.assertFalse((P / 'fileA' / 'bah').is_dir())
         if not symlink_skip_reason:
             self.assertFalse((P / 'linkA').is_dir())
             self.assertTrue((P / 'linkB').is_dir())
@@ -1819,6 +1849,7 @@ class _BasePathTest(object):
         self.assertTrue((P / 'fileA').is_file())
         self.assertFalse((P / 'dirA').is_file())
         self.assertFalse((P / 'non-existing').is_file())
+        self.assertFalse((P / 'fileA' / 'bah').is_file())
         if not symlink_skip_reason:
             self.assertTrue((P / 'linkA').is_file())
             self.assertFalse((P / 'linkB').is_file())
@@ -1829,6 +1860,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'fileA').is_symlink())
         self.assertFalse((P / 'dirA').is_symlink())
         self.assertFalse((P / 'non-existing').is_symlink())
+        self.assertFalse((P / 'fileA' / 'bah').is_symlink())
         if not symlink_skip_reason:
             self.assertTrue((P / 'linkA').is_symlink())
             self.assertTrue((P / 'linkB').is_symlink())
@@ -1839,6 +1871,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'fileA').is_fifo())
         self.assertFalse((P / 'dirA').is_fifo())
         self.assertFalse((P / 'non-existing').is_fifo())
+        self.assertFalse((P / 'fileA' / 'bah').is_fifo())
 
     @unittest.skipUnless(hasattr(os, "mkfifo"), "os.mkfifo() required")
     def test_is_fifo_true(self):
@@ -1853,6 +1886,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'fileA').is_socket())
         self.assertFalse((P / 'dirA').is_socket())
         self.assertFalse((P / 'non-existing').is_socket())
+        self.assertFalse((P / 'fileA' / 'bah').is_socket())
 
     @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
     def test_is_socket_true(self):
@@ -1873,12 +1907,14 @@ class _BasePathTest(object):
         self.assertFalse((P / 'fileA').is_block_device())
         self.assertFalse((P / 'dirA').is_block_device())
         self.assertFalse((P / 'non-existing').is_block_device())
+        self.assertFalse((P / 'fileA' / 'bah').is_block_device())
 
     def test_is_char_device_false(self):
         P = self.cls(BASE)
         self.assertFalse((P / 'fileA').is_char_device())
         self.assertFalse((P / 'dirA').is_char_device())
         self.assertFalse((P / 'non-existing').is_char_device())
+        self.assertFalse((P / 'fileA' / 'bah').is_char_device())
 
     @only_posix
     def test_is_char_device_true(self):
@@ -2048,6 +2084,48 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         self.assertEqual(given, expect)
         self.assertEqual(set(p.rglob("FILEd*")), set())
 
+    def test_expanduser(self):
+        P = self.cls
+        support.import_module('pwd')
+        import pwd
+        pwdent = pwd.getpwuid(os.getuid())
+        username = pwdent.pw_name
+        userhome = pwdent.pw_dir.rstrip('/')
+        # find arbitrary different user (if exists)
+        for pwdent in pwd.getpwall():
+            othername = pwdent.pw_name
+            otherhome = pwdent.pw_dir.rstrip('/')
+            if othername != username and otherhome:
+                break
+
+        p1 = P('~/Documents')
+        p2 = P('~' + username + '/Documents')
+        p3 = P('~' + othername + '/Documents')
+        p4 = P('../~' + username + '/Documents')
+        p5 = P('/~' + username + '/Documents')
+        p6 = P('')
+        p7 = P('~fakeuser/Documents')
+
+        with support.EnvironmentVarGuard() as env:
+            env.unset('HOME')
+
+            self.assertEqual(p1.expanduser(), P(userhome) / 'Documents')
+            self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
+            self.assertEqual(p3.expanduser(), P(otherhome) / 'Documents')
+            self.assertEqual(p4.expanduser(), p4)
+            self.assertEqual(p5.expanduser(), p5)
+            self.assertEqual(p6.expanduser(), p6)
+            self.assertRaises(RuntimeError, p7.expanduser)
+
+            env.set('HOME', '/tmp')
+            self.assertEqual(p1.expanduser(), P('/tmp/Documents'))
+            self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
+            self.assertEqual(p3.expanduser(), P(otherhome) / 'Documents')
+            self.assertEqual(p4.expanduser(), p4)
+            self.assertEqual(p5.expanduser(), p5)
+            self.assertEqual(p6.expanduser(), p6)
+            self.assertRaises(RuntimeError, p7.expanduser)
+
 
 @only_nt
 class WindowsPathTest(_BasePathTest, unittest.TestCase):
@@ -2063,6 +2141,61 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
         p = P(BASE, "dirC")
         self.assertEqual(set(p.rglob("FILEd")),
                          set([P(BASE, "dirC/dirD/fileD")]))
+
+    def test_expanduser(self):
+        P = self.cls
+        with support.EnvironmentVarGuard() as env:
+            env.pop('HOME', None)
+            env.pop('USERPROFILE', None)
+            env.pop('HOMEPATH', None)
+            env.pop('HOMEDRIVE', None)
+            env['USERNAME'] = 'alice'
+
+            # test that the path returns unchanged
+            p1 = P('~/My Documents')
+            p2 = P('~alice/My Documents')
+            p3 = P('~bob/My Documents')
+            p4 = P('/~/My Documents')
+            p5 = P('d:~/My Documents')
+            p6 = P('')
+            self.assertRaises(RuntimeError, p1.expanduser)
+            self.assertRaises(RuntimeError, p2.expanduser)
+            self.assertRaises(RuntimeError, p3.expanduser)
+            self.assertEqual(p4.expanduser(), p4)
+            self.assertEqual(p5.expanduser(), p5)
+            self.assertEqual(p6.expanduser(), p6)
+
+            def check():
+                env.pop('USERNAME', None)
+                self.assertEqual(p1.expanduser(),
+                                 P('C:/Users/alice/My Documents'))
+                self.assertRaises(KeyError, p2.expanduser)
+                env['USERNAME'] = 'alice'
+                self.assertEqual(p2.expanduser(),
+                                 P('C:/Users/alice/My Documents'))
+                self.assertEqual(p3.expanduser(),
+                                 P('C:/Users/bob/My Documents'))
+                self.assertEqual(p4.expanduser(), p4)
+                self.assertEqual(p5.expanduser(), p5)
+                self.assertEqual(p6.expanduser(), p6)
+
+            # test the first lookup key in the env vars
+            env['HOME'] = 'C:\\Users\\alice'
+            check()
+
+            # test that HOMEPATH is available instead
+            env.pop('HOME', None)
+            env['HOMEPATH'] = 'C:\\Users\\alice'
+            check()
+
+            env['HOMEDRIVE'] = 'C:\\'
+            env['HOMEPATH'] = 'Users\\alice'
+            check()
+
+            env.pop('HOMEDRIVE', None)
+            env.pop('HOMEPATH', None)
+            env['USERPROFILE'] = 'C:\\Users\\alice'
+            check()
 
 
 def main():
