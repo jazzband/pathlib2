@@ -1,8 +1,11 @@
 History
 -------
 
-Version 2.1 (in development)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 2.0.1
+^^^^^^^^^^^^^
+
+- Fix TypeError exceptions in write_bytes and write_text (contributed
+  by Emanuele Gaifas, see pull request #2).
 
 Version 2.0
 ^^^^^^^^^^^
