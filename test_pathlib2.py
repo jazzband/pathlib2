@@ -1326,7 +1326,7 @@ class _BasePathTest(object):
                     func(*args, **kwargs)
                 except:
                     raise
-            self.assertEqual(cm.exception.errno, errno.ENOENT)
+        self.assertEqual(cm.exception.errno, errno.ENOENT)
 
     def assertFileExists(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
@@ -1338,7 +1338,7 @@ class _BasePathTest(object):
                     func(*args, **kwargs)
                 except:
                     raise
-            self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
 
     def _test_cwd(self, p):
         q = self.cls(os.getcwd())
@@ -1773,9 +1773,7 @@ class _BasePathTest(object):
         st_ctime_first = p.stat().st_ctime
         self.assertTrue(p.exists())
         self.assertTrue(p.is_dir())
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir()
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertFileExists(p.mkdir)
         p.mkdir(exist_ok=True)
         self.assertTrue(p.exists())
         self.assertEqual(p.stat().st_ctime, st_ctime_first)
@@ -1783,16 +1781,12 @@ class _BasePathTest(object):
     def test_mkdir_exist_ok_with_parent(self):
         p = self.cls(BASE, 'dirC')
         self.assertTrue(p.exists())
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir()
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertFileExists(p.mkdir)
         p = p / 'newdirC'
         p.mkdir(parents=True)
         st_ctime_first = p.stat().st_ctime
         self.assertTrue(p.exists())
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir(parents=True)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertFileExists(p.mkdir, parents=True)
         p.mkdir(parents=True, exist_ok=True)
         self.assertTrue(p.exists())
         self.assertEqual(p.stat().st_ctime, st_ctime_first)
@@ -1802,24 +1796,16 @@ class _BasePathTest(object):
         self.assertTrue(p.exists())
         # An exception is raised when the last path component is an existing
         # regular file, regardless of whether exist_ok is true or not.
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir(parents=True)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir(parents=True, exist_ok=True)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertFileExists(p.mkdir, parents=True)
+        self.assertFileExists(p.mkdir, parents=True, exist_ok=True)
 
     def test_mkdir_no_parents_file(self):
         p = self.cls(BASE, 'fileA')
         self.assertTrue(p.exists())
         # An exception is raised when the last path component is an existing
         # regular file, regardless of whether exist_ok is true or not.
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir()
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
-        with self.assertRaises(FileExistsError) as cm:
-            p.mkdir(exist_ok=True)
-        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        self.assertFileExists(p.mkdir)
+        self.assertFileExists(p.mkdir, exist_ok=True)
 
     @with_symlinks
     def test_symlink_to(self):
