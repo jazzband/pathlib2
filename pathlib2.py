@@ -10,7 +10,7 @@ import six
 import sys
 from collections import Sequence
 from contextlib import contextmanager
-from errno import EINVAL, ENOENT, EEXIST
+from errno import EINVAL, ENOENT, ENOTDIR, EEXIST
 from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
@@ -1394,7 +1394,7 @@ class Path(PurePath):
         try:
             self.stat()
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             return False
         return True
@@ -1406,7 +1406,7 @@ class Path(PurePath):
         try:
             return S_ISDIR(self.stat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
@@ -1420,7 +1420,7 @@ class Path(PurePath):
         try:
             return S_ISREG(self.stat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
@@ -1433,7 +1433,7 @@ class Path(PurePath):
         try:
             return S_ISLNK(self.lstat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist
             return False
@@ -1445,7 +1445,7 @@ class Path(PurePath):
         try:
             return S_ISBLK(self.stat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
@@ -1458,7 +1458,7 @@ class Path(PurePath):
         try:
             return S_ISCHR(self.stat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
@@ -1471,7 +1471,7 @@ class Path(PurePath):
         try:
             return S_ISFIFO(self.stat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
@@ -1484,7 +1484,7 @@ class Path(PurePath):
         try:
             return S_ISSOCK(self.stat().st_mode)
         except OSError as e:
-            if e.errno != ENOENT:
+            if e.errno not in (ENOENT, ENOTDIR):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
