@@ -214,7 +214,7 @@ class _WindowsFlavour(_Flavour):
     has_drv = True
     pathmod = ntpath
 
-    is_supported = (nt is not None)
+    is_supported = (os.name == 'nt')
 
     drive_letters = (
         set(chr(x) for x in range(ord('a'), ord('z') + 1)) |
