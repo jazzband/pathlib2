@@ -1318,7 +1318,8 @@ class _BasePathTest(object):
 
     def assertFileNotFound(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            self.assertRaises(FileNotFoundError, func, *args, **kwargs)
+            with self.assertRaises(FileNotFoundError) as cm:
+                func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
@@ -1330,7 +1331,8 @@ class _BasePathTest(object):
 
     def assertFileExists(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            self.assertRaises(FileExistsError, func, *args, **kwargs)
+            with self.assertRaises(FileExistsError) as cm:
+                func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
