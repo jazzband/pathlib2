@@ -1,8 +1,8 @@
 History
 -------
 
-Version 2.1.0 (in development)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 2.1.0
+^^^^^^^^^^^^^
 
 - Sync with upstream pathlib from CPython: gethomedir, home,
   expanduser.
