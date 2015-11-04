@@ -1282,7 +1282,9 @@ class Path(PurePath):
             return io.open(
                 str(self), mode, buffering, encoding, errors, newline,
                 opener=self._opener)
-        else:
+        elif six.PY2:
+            return open(str(self),mode,buffering)
+        else: #python 3.0-3.2
             return io.open(str(self), mode, buffering,
                            encoding, errors, newline)
 
