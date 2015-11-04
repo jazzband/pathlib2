@@ -14,7 +14,8 @@ branches:
     - develop
 install:
   - "pip install -r requirements.txt"
-  - "pip install coveralls pytest-cov"
+  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install coveralls pytest-cov; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then pip install check-manifest flake8; fi"
 script:
