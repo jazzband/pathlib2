@@ -52,7 +52,6 @@ def fs_is_case_insensitive(directory):
 
 support.fs_is_case_insensitive = fs_is_case_insensitive
 
-
 class _BaseFlavourTest(object):
 
     def _check_parse_parts(self, arg, expected):

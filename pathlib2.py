@@ -41,6 +41,8 @@ else:
         supports_symlinks = False
         _getfinalpathname = None
 
+if six.PY2:
+    import codecs
 
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
@@ -1321,8 +1323,12 @@ class Path(PurePath):
             raise TypeError(
                 'data must be %s, not %s' %
                 (six.text_type.__class__.__name__, data.__class__.__name__))
-        with self.open(mode='w', encoding=encoding, errors=errors) as f:
-            return f.write(data)
+        if six.PY2:
+            with codecs.open(str(self),'w',encoding=encoding,errors=errors) as f:
+                return f.write(data)
+        else:
+            with self.open(mode='w', encoding=encoding, errors=errors) as f:
+                return f.write(data)
 
     def touch(self, mode=0o666, exist_ok=True):
         """
