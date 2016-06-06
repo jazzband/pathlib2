@@ -1446,7 +1446,7 @@ class _BasePathTest(object):
             encoding='utf-8', errors='ignore'), six.u('bcdefg'))
         # check that trying to write bytes does not truncate the file
         with self.assertRaises(TypeError) as cm:
-            (p / 'fileA').write_text(b'somebytes')
+            (p / 'fileA').write_text(0)
         self.assertTrue(str(cm.exception).startswith('data must be'))
         self.assertEqual((p / 'fileA').read_text(encoding='latin-1'),
                          six.u('\u00e4bcdefg'))
