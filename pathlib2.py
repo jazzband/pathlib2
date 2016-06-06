@@ -1315,6 +1315,8 @@ class Path(PurePath):
         """
         Open the file in text mode, write to it, and close the file.
         """
+        if isinstance(data,six.string_types):
+            data = unicode(data)
         if not isinstance(data, six.text_type):
             raise TypeError(
                 'data must be %s, not %s' %
