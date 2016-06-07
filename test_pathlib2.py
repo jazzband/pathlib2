@@ -1226,8 +1226,14 @@ class PurePathTest(_BasePurePathTest, unittest.TestCase):
 
 # Make sure any symbolic links in the base test path are resolved
 BASE = os.path.realpath(TESTFN)
-join = lambda *x: os.path.join(BASE, *x)
-rel_join = lambda *x: os.path.join(TESTFN, *x)
+
+
+def rel_join(*x):
+    return os.path.join(TESTFN, *x)
+
+
+def join(*x):
+    return os.path.join(BASE, *x)
 
 
 def symlink_skip_reason():
@@ -1447,7 +1453,7 @@ class _BasePathTest(object):
         # check that trying to write bytes does not truncate the file
         with self.assertRaises(TypeError) as cm:
             if six.PY2:
-                (p / 'fileA').write_text(0)            
+                (p / 'fileA').write_text(0)
             else:
                 (p / 'fileA').write_text(b'somebytes')
         self.assertTrue(str(cm.exception).startswith('data must be'))
