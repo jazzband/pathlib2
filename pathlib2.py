@@ -836,9 +836,8 @@ class PurePath(object):
     def __eq__(self, other):
         if not isinstance(other, PurePath):
             return NotImplemented
-        return (
-            self._cparts == other._cparts
-            and self._flavour is other._flavour)
+        return (self._cparts == other._cparts and
+                self._flavour is other._flavour)
 
     def __ne__(self, other):
         return not self == other
@@ -851,26 +850,26 @@ class PurePath(object):
             return self._hash
 
     def __lt__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+           self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts < other._cparts
 
     def __le__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+           self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts <= other._cparts
 
     def __gt__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+           self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts > other._cparts
 
     def __ge__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+           self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts >= other._cparts
 
@@ -928,8 +927,9 @@ class PurePath(object):
         if not self.name:
             raise ValueError("%r has an empty name" % (self,))
         drv, root, parts = self._flavour.parse_parts((name,))
-        if (not name or name[-1] in [self._flavour.sep, self._flavour.altsep]
-                or drv or root or len(parts) != 1):
+        if (not name or
+           name[-1] in [self._flavour.sep, self._flavour.altsep] or
+           drv or root or len(parts) != 1):
             raise ValueError("Invalid name %r" % (name))
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + [name])
@@ -1315,6 +1315,9 @@ class Path(PurePath):
         """
         Open the file in text mode, write to it, and close the file.
         """
+        if (isinstance(data, six.string_types) and not
+           isinstance(data, six.text_type)):
+            data = six.u(data)  # for Python 2
         if not isinstance(data, six.text_type):
             raise TypeError(
                 'data must be %s, not %s' %
@@ -1550,8 +1553,8 @@ class Path(PurePath):
         """ Return a new path with expanded ~ and ~user constructs
         (as returned by os.path.expanduser)
         """
-        if (not (self._drv or self._root)
-                and self._parts and self._parts[0][:1] == '~'):
+        if (not (self._drv or self._root) and
+           self._parts and self._parts[0][:1] == '~'):
             homedir = self._flavour.gethomedir(self._parts[0][1:])
             return self._from_parts([homedir] + self._parts[1:])
 
