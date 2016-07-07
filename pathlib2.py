@@ -757,7 +757,7 @@ class _PathParents(Sequence):
                                                 self._parts[:-idx - 1])
 
     def __repr__(self):
-        return "<{}.parents>".format(self._pathcls.__name__)
+        return "<{0}.parents>".format(self._pathcls.__name__)
 
 
 class PurePath(object):
@@ -869,7 +869,7 @@ class PurePath(object):
         return os.fsencode(str(self))
 
     def __repr__(self):
-        return "{}({!r})".format(self.__class__.__name__, self.as_posix())
+        return "{0}({1!r})".format(self.__class__.__name__, self.as_posix())
 
     def as_uri(self):
         """Return the path as a 'file' URI."""
@@ -1035,7 +1035,7 @@ class PurePath(object):
         cf = self._flavour.casefold_parts
         if (root or drv) if n == 0 else cf(abs_parts[:n]) != cf(to_abs_parts):
             formatted = self._format_parsed_parts(to_drv, to_root, to_parts)
-            raise ValueError("{!r} does not start with {!r}"
+            raise ValueError("{0!r} does not start with {1!r}"
                              .format(str(self), str(formatted)))
         return self._from_parsed_parts('', root if n == 1 else '',
                                        abs_parts[n:])
@@ -1245,7 +1245,7 @@ class Path(PurePath):
         kind, including directories) matching the given pattern.
         """
         if not pattern:
-            raise ValueError("Unacceptable pattern: {!r}".format(pattern))
+            raise ValueError("Unacceptable pattern: {0!r}".format(pattern))
         pattern = self._flavour.casefold(pattern)
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
