@@ -2160,11 +2160,11 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
     def test_expanduser(self):
         P = self.cls
         with support.EnvironmentVarGuard() as env:
-            env.pop('HOME', None)
-            env.pop('USERPROFILE', None)
-            env.pop('HOMEPATH', None)
-            env.pop('HOMEDRIVE', None)
-            env['USERNAME'] = 'alice'
+            env.unset('HOME')
+            env.unset('USERPROFILE')
+            env.unset('HOMEPATH')
+            env.unset('HOMEDRIVE')
+            env.set('USERNAME', 'alice')
 
             # test that the path returns unchanged
             p1 = P('~/My Documents')
@@ -2181,11 +2181,11 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             self.assertEqual(p6.expanduser(), p6)
 
             def check():
-                env.pop('USERNAME', None)
+                env.unset('USERNAME')
                 self.assertEqual(p1.expanduser(),
                                  P('C:/Users/alice/My Documents'))
                 self.assertRaises(KeyError, p2.expanduser)
-                env['USERNAME'] = 'alice'
+                env.set('USERNAME', 'alice')
                 self.assertEqual(p2.expanduser(),
                                  P('C:/Users/alice/My Documents'))
                 self.assertEqual(p3.expanduser(),
@@ -2195,21 +2195,21 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
                 self.assertEqual(p6.expanduser(), p6)
 
             # test the first lookup key in the env vars
-            env['HOME'] = 'C:\\Users\\alice'
+            env.set('HOME', 'C:\\Users\\alice')
             check()
 
             # test that HOMEPATH is available instead
-            env.pop('HOME', None)
-            env['HOMEPATH'] = 'C:\\Users\\alice'
+            env.unset('HOME')
+            env.set('HOMEPATH', 'C:\\Users\\alice')
             check()
 
-            env['HOMEDRIVE'] = 'C:\\'
-            env['HOMEPATH'] = 'Users\\alice'
+            env.set('HOMEDRIVE', 'C:\\')
+            env.set('HOMEPATH', 'Users\\alice')
             check()
 
-            env.pop('HOMEDRIVE', None)
-            env.pop('HOMEPATH', None)
-            env['USERPROFILE'] = 'C:\\Users\\alice'
+            env.unset('HOMEDRIVE')
+            env.unset('HOMEPATH')
+            env.set('USERPROFILE', 'C:\\Users\\alice')
             check()
 
 
