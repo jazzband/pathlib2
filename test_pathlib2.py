@@ -249,7 +249,7 @@ class _BasePurePathTest(object):
 
     def _check_str_subclass(self, *args):
         # Issue #21127: it should be possible to construct a PurePath object
-        # from an str subclass instance, and it then gets converted to
+        # from a str subclass instance, and it then gets converted to
         # a pure str object.
         class StrSubclass(str):
             pass
@@ -1226,8 +1226,14 @@ class PurePathTest(_BasePurePathTest, unittest.TestCase):
 
 # Make sure any symbolic links in the base test path are resolved
 BASE = os.path.realpath(TESTFN)
-join = lambda *x: os.path.join(BASE, *x)
-rel_join = lambda *x: os.path.join(TESTFN, *x)
+
+
+def join(*x):
+    return os.path.join(BASE, *x)
+
+
+def rel_join(*x):
+    return os.path.join(TESTFN, *x)
 
 
 def symlink_skip_reason():
@@ -2011,6 +2017,11 @@ class PathTest(_BasePathTest, unittest.TestCase):
         else:
             self.assertRaises(NotImplementedError, pathlib.WindowsPath)
 
+    def test_glob_empty_pattern(self):
+        p = self.cls()
+        with self.assertRaisesRegex(ValueError, 'Unacceptable pattern'):
+            list(p.glob(''))
+
 
 @only_posix
 class PosixPathTest(_BasePathTest, unittest.TestCase):
@@ -2090,7 +2101,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         import pwd
         pwdent = pwd.getpwuid(os.getuid())
         username = pwdent.pw_name
-        userhome = pwdent.pw_dir.rstrip('/')
+        userhome = pwdent.pw_dir.rstrip('/') or '/'
         # find arbitrary different user (if exists)
         for pwdent in pwd.getpwall():
             othername = pwdent.pw_name
@@ -2107,7 +2118,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         p7 = P('~fakeuser/Documents')
 
         with support.EnvironmentVarGuard() as env:
-            env.unset('HOME')
+            env.pop('HOME', None)
 
             self.assertEqual(p1.expanduser(), P(userhome) / 'Documents')
             self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
@@ -2117,7 +2128,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
             self.assertEqual(p6.expanduser(), p6)
             self.assertRaises(RuntimeError, p7.expanduser)
 
-            env.set('HOME', '/tmp')
+            env['HOME'] = '/tmp'
             self.assertEqual(p1.expanduser(), P('/tmp/Documents'))
             self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
             self.assertEqual(p3.expanduser(), P(otherhome) / 'Documents')
@@ -2196,10 +2207,6 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             env.pop('HOMEPATH', None)
             env['USERPROFILE'] = 'C:\\Users\\alice'
             check()
-
-
-def main():
-    unittest.main(__name__)
 
 
 if __name__ == "__main__":

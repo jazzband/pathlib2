@@ -78,17 +78,21 @@ def _try_except_fileexistserror(try_func, except_func):
 def _try_except_permissionerror_iter(try_iter, except_iter):
     if sys.version_info >= (3, 3):
         try:
-            for x in try_iter(): yield x
+            for x in try_iter():
+                yield x
         except PermissionError as exc:
-            for x in except_iter(exc): yield x
+            for x in except_iter(exc):
+                yield x
     else:
         try:
-            for x in try_iter(): yield x
+            for x in try_iter():
+                yield x
         except EnvironmentError as exc:
             if exc.errno not in (EPERM, EACCES):
                 raise
             else:
-                for x in except_iter(exc): yield x
+                for x in except_iter(exc):
+                    yield x
 
 
 def _win32_get_unique_path_id(path):
@@ -639,9 +643,11 @@ class _PreciseSelector(_Selector):
                 for p in self.successor._select_from(
                         path, is_dir, exists, listdir):
                     yield p
+
         def except_iter():
             return
             yield
+
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
 
@@ -664,9 +670,11 @@ class _WildcardSelector(_Selector):
                     for p in self.successor._select_from(
                             path, is_dir, exists, listdir):
                         yield p
+
         def except_iter():
             return
             yield
+
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
 
@@ -678,15 +686,18 @@ class _RecursiveWildcardSelector(_Selector):
 
     def _iterate_directories(self, parent_path, is_dir, listdir):
         yield parent_path
+
         def try_iter():
             for name in listdir(parent_path):
                 path = parent_path._make_child_relpath(name)
                 if is_dir(path) and not path.is_symlink():
                     for p in self._iterate_directories(path, is_dir, listdir):
                         yield p
+
         def except_iter():
             return
             yield
+
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
 
@@ -707,9 +718,11 @@ class _RecursiveWildcardSelector(_Selector):
                                 yielded.add(p)
                 finally:
                     yielded.clear()
+
         def except_iter():
             return
             yield
+
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
 
