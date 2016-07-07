@@ -19,6 +19,10 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+# assertRaisesRegex is missing prior to Python 3.2
+if sys.version_info < (3, 2):
+    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+
 try:
     from test import support
 except ImportError:
