@@ -2213,5 +2213,9 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             check()
 
 
+def main():
+    unittest.main(__name__)
+
+
 if __name__ == "__main__":
     unittest.main()
