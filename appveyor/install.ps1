@@ -34,6 +34,7 @@ function main () {
     InstallPip $env:PYTHON
     InstallRequirements $env:PYTHON -r requirements.txt
     InstallPackage $env:PYTHON pytest
+    InstallPackage $env:PYTHON unittest2
 }
 
 main

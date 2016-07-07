@@ -19,6 +19,10 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+# assertRaisesRegex is missing prior to Python 3.2
+if sys.version_info < (3, 2):
+    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+
 try:
     from test import support
 except ImportError:
@@ -249,7 +253,7 @@ class _BasePurePathTest(object):
 
     def _check_str_subclass(self, *args):
         # Issue #21127: it should be possible to construct a PurePath object
-        # from an str subclass instance, and it then gets converted to
+        # from a str subclass instance, and it then gets converted to
         # a pure str object.
         class StrSubclass(str):
             pass
@@ -1226,8 +1230,14 @@ class PurePathTest(_BasePurePathTest, unittest.TestCase):
 
 # Make sure any symbolic links in the base test path are resolved
 BASE = os.path.realpath(TESTFN)
-join = lambda *x: os.path.join(BASE, *x)
-rel_join = lambda *x: os.path.join(TESTFN, *x)
+
+
+def join(*x):
+    return os.path.join(BASE, *x)
+
+
+def rel_join(*x):
+    return os.path.join(TESTFN, *x)
 
 
 def symlink_skip_reason():
@@ -2011,6 +2021,11 @@ class PathTest(_BasePathTest, unittest.TestCase):
         else:
             self.assertRaises(NotImplementedError, pathlib.WindowsPath)
 
+    def test_glob_empty_pattern(self):
+        p = self.cls()
+        with self.assertRaisesRegex(ValueError, 'Unacceptable pattern'):
+            list(p.glob(''))
+
 
 @only_posix
 class PosixPathTest(_BasePathTest, unittest.TestCase):
@@ -2090,7 +2105,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         import pwd
         pwdent = pwd.getpwuid(os.getuid())
         username = pwdent.pw_name
-        userhome = pwdent.pw_dir.rstrip('/')
+        userhome = pwdent.pw_dir.rstrip('/') or '/'
         # find arbitrary different user (if exists)
         for pwdent in pwd.getpwall():
             othername = pwdent.pw_name
@@ -2145,11 +2160,11 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
     def test_expanduser(self):
         P = self.cls
         with support.EnvironmentVarGuard() as env:
-            env.pop('HOME', None)
-            env.pop('USERPROFILE', None)
-            env.pop('HOMEPATH', None)
-            env.pop('HOMEDRIVE', None)
-            env['USERNAME'] = 'alice'
+            env.unset('HOME')
+            env.unset('USERPROFILE')
+            env.unset('HOMEPATH')
+            env.unset('HOMEDRIVE')
+            env.set('USERNAME', 'alice')
 
             # test that the path returns unchanged
             p1 = P('~/My Documents')
@@ -2166,11 +2181,11 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             self.assertEqual(p6.expanduser(), p6)
 
             def check():
-                env.pop('USERNAME', None)
+                env.unset('USERNAME')
                 self.assertEqual(p1.expanduser(),
                                  P('C:/Users/alice/My Documents'))
                 self.assertRaises(KeyError, p2.expanduser)
-                env['USERNAME'] = 'alice'
+                env.set('USERNAME', 'alice')
                 self.assertEqual(p2.expanduser(),
                                  P('C:/Users/alice/My Documents'))
                 self.assertEqual(p3.expanduser(),
@@ -2180,21 +2195,21 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
                 self.assertEqual(p6.expanduser(), p6)
 
             # test the first lookup key in the env vars
-            env['HOME'] = 'C:\\Users\\alice'
+            env.set('HOME', 'C:\\Users\\alice')
             check()
 
             # test that HOMEPATH is available instead
-            env.pop('HOME', None)
-            env['HOMEPATH'] = 'C:\\Users\\alice'
+            env.unset('HOME')
+            env.set('HOMEPATH', 'C:\\Users\\alice')
             check()
 
-            env['HOMEDRIVE'] = 'C:\\'
-            env['HOMEPATH'] = 'Users\\alice'
+            env.set('HOMEDRIVE', 'C:\\')
+            env.set('HOMEPATH', 'Users\\alice')
             check()
 
-            env.pop('HOMEDRIVE', None)
-            env.pop('HOMEPATH', None)
-            env['USERPROFILE'] = 'C:\\Users\\alice'
+            env.unset('HOMEDRIVE')
+            env.unset('HOMEPATH')
+            env.set('USERPROFILE', 'C:\\Users\\alice')
             check()
 
 

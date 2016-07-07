@@ -10,7 +10,7 @@ import six
 import sys
 from collections import Sequence
 from contextlib import contextmanager
-from errno import EINVAL, ENOENT, ENOTDIR, EEXIST
+from errno import EINVAL, ENOENT, ENOTDIR, EEXIST, EPERM, EACCES
 from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
@@ -73,6 +73,26 @@ def _try_except_fileexistserror(try_func, except_func):
                 raise
             else:
                 except_func(exc)
+
+
+def _try_except_permissionerror_iter(try_iter, except_iter):
+    if sys.version_info >= (3, 3):
+        try:
+            for x in try_iter():
+                yield x
+        except PermissionError as exc:
+            for x in except_iter(exc):
+                yield x
+    else:
+        try:
+            for x in try_iter():
+                yield x
+        except EnvironmentError as exc:
+            if exc.errno not in (EPERM, EACCES):
+                raise
+            else:
+                for x in except_iter(exc):
+                    yield x
 
 
 def _win32_get_unique_path_id(path):
@@ -615,13 +635,21 @@ class _PreciseSelector(_Selector):
         _Selector.__init__(self, child_parts)
 
     def _select_from(self, parent_path, is_dir, exists, listdir):
-        if not is_dir(parent_path):
+        def try_iter():
+            if not is_dir(parent_path):
+                return
+            path = parent_path._make_child_relpath(self.name)
+            if exists(path):
+                for p in self.successor._select_from(
+                        path, is_dir, exists, listdir):
+                    yield p
+
+        def except_iter():
             return
-        path = parent_path._make_child_relpath(self.name)
-        if exists(path):
-            for p in self.successor._select_from(
-                    path, is_dir, exists, listdir):
-                yield p
+            yield
+
+        for x in _try_except_permissionerror_iter(try_iter, except_iter):
+            yield x
 
 
 class _WildcardSelector(_Selector):
@@ -631,16 +659,24 @@ class _WildcardSelector(_Selector):
         _Selector.__init__(self, child_parts)
 
     def _select_from(self, parent_path, is_dir, exists, listdir):
-        if not is_dir(parent_path):
+        def try_iter():
+            if not is_dir(parent_path):
+                return
+            cf = parent_path._flavour.casefold
+            for name in listdir(parent_path):
+                casefolded = cf(name)
+                if self.pat.match(casefolded):
+                    path = parent_path._make_child_relpath(name)
+                    for p in self.successor._select_from(
+                            path, is_dir, exists, listdir):
+                        yield p
+
+        def except_iter():
             return
-        cf = parent_path._flavour.casefold
-        for name in listdir(parent_path):
-            casefolded = cf(name)
-            if self.pat.match(casefolded):
-                path = parent_path._make_child_relpath(name)
-                for p in self.successor._select_from(
-                        path, is_dir, exists, listdir):
-                    yield p
+            yield
+
+        for x in _try_except_permissionerror_iter(try_iter, except_iter):
+            yield x
 
 
 class _RecursiveWildcardSelector(_Selector):
@@ -650,28 +686,45 @@ class _RecursiveWildcardSelector(_Selector):
 
     def _iterate_directories(self, parent_path, is_dir, listdir):
         yield parent_path
-        for name in listdir(parent_path):
-            path = parent_path._make_child_relpath(name)
-            if is_dir(path):
-                for p in self._iterate_directories(path, is_dir, listdir):
-                    yield p
+
+        def try_iter():
+            for name in listdir(parent_path):
+                path = parent_path._make_child_relpath(name)
+                if is_dir(path) and not path.is_symlink():
+                    for p in self._iterate_directories(path, is_dir, listdir):
+                        yield p
+
+        def except_iter():
+            return
+            yield
+
+        for x in _try_except_permissionerror_iter(try_iter, except_iter):
+            yield x
 
     def _select_from(self, parent_path, is_dir, exists, listdir):
-        if not is_dir(parent_path):
+        def try_iter():
+            if not is_dir(parent_path):
+                return
+            with _cached(listdir) as listdir2:
+                yielded = set()
+                try:
+                    successor_select = self.successor._select_from
+                    for starting_point in self._iterate_directories(
+                            parent_path, is_dir, listdir2):
+                        for p in successor_select(
+                                starting_point, is_dir, exists, listdir2):
+                            if p not in yielded:
+                                yield p
+                                yielded.add(p)
+                finally:
+                    yielded.clear()
+
+        def except_iter():
             return
-        with _cached(listdir) as listdir:
-            yielded = set()
-            try:
-                successor_select = self.successor._select_from
-                for starting_point in self._iterate_directories(
-                        parent_path, is_dir, listdir):
-                    for p in successor_select(
-                            starting_point, is_dir, exists, listdir):
-                        if p not in yielded:
-                            yield p
-                            yielded.add(p)
-            finally:
-                yielded.clear()
+            yield
+
+        for x in _try_except_permissionerror_iter(try_iter, except_iter):
+            yield x
 
 
 #
@@ -783,7 +836,7 @@ class PurePath(object):
             return cls._flavour.join(parts)
 
     def _init(self):
-        # Overriden in concrete Path
+        # Overridden in concrete Path
         pass
 
     def _make_child(self, args):
@@ -982,7 +1035,7 @@ class PurePath(object):
         cf = self._flavour.casefold_parts
         if (root or drv) if n == 0 else cf(abs_parts[:n]) != cf(to_abs_parts):
             formatted = self._format_parsed_parts(to_drv, to_root, to_parts)
-            raise ValueError("{!r} does not start with {!r}"
+            raise ValueError("{0!r} does not start with {1!r}"
                              .format(str(self), str(formatted)))
         return self._from_parsed_parts('', root if n == 1 else '',
                                        abs_parts[n:])
@@ -1156,8 +1209,8 @@ class Path(PurePath):
         return cls(cls()._flavour.gethomedir(None))
 
     def samefile(self, other_path):
-        """Return whether `other_file` is the same or not as this file.
-        (as returned by os.path.samefile(file, other_file)).
+        """Return whether other_path is the same or not as this file
+        (as returned by os.path.samefile()).
         """
         if hasattr(os.path, "samestat"):
             st = self.stat()
@@ -1191,6 +1244,8 @@ class Path(PurePath):
         """Iterate over this subtree and yield all existing files (of any
         kind, including directories) matching the given pattern.
         """
+        if not pattern:
+            raise ValueError("Unacceptable pattern: {0!r}".format(pattern))
         pattern = self._flavour.casefold(pattern)
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
@@ -1564,3 +1619,9 @@ class PosixPath(Path, PurePosixPath):
 
 class WindowsPath(Path, PureWindowsPath):
     __slots__ = ()
+
+    def owner(self):
+        raise NotImplementedError("Path.owner() is unsupported on this system")
+
+    def group(self):
+        raise NotImplementedError("Path.group() is unsupported on this system")
