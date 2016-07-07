@@ -1,7 +1,7 @@
 pathlib2
 ========
 
-|appveyor| |travis| |coveralls| |downloads| |version| |license|
+|appveyor| |travis| |coveralls|
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
@@ -50,14 +50,3 @@ documentation.
     :target: https://coveralls.io/r/mcmtroffaes/pathlib2?branch=develop
     :alt: coveralls.io
 
-.. |downloads| image:: https://pypip.in/d/pathlib2/badge.png
-    :target: http://pypi.python.org/pypi/pathlib2/
-    :alt: downloads
-
-.. |version| image:: https://pypip.in/v/pathlib2/badge.png
-    :target: http://pypi.python.org/pypi/pathlib2/
-    :alt: latest version
-
-.. |license| image:: https://pypip.in/license/pathlib2/badge.png
-    :target: http://pypi.python.org/pypi/pathlib2/
-    :alt: license
