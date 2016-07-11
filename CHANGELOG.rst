@@ -1,18 +1,19 @@
 History
 -------
 
-Version 2.1.1 (in development)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 2.2.0
+^^^^^^^^^^^^^
+
+- Sync with upstream pathlib from CPython 3.5.2 and 3.6.0: fix various
+  exceptions, empty glob pattern, scandir, __fspath__.
 
 - Support unicode strings to be used to construct paths in Python 2
   (reported by native-api, see issue #13 and pull request #15).
 
-- Sync with upstream pathlib from CPython: scandir, __fspath__.
-
 Version 2.1.0
 ^^^^^^^^^^^^^
 
-- Sync with upstream pathlib from CPython: gethomedir, home,
+- Sync with upstream pathlib from CPython 3.5.0: gethomedir, home,
   expanduser.
 
 Version 2.0.1
