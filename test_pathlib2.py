@@ -56,7 +56,6 @@ def fs_is_case_insensitive(directory):
 
 support.fs_is_case_insensitive = fs_is_case_insensitive
 
-
 class _BaseFlavourTest(object):
 
     def _check_parse_parts(self, arg, expected):
@@ -1430,13 +1429,22 @@ class _BasePathTest(object):
     def test_open_common(self):
         p = self.cls(BASE)
         with (p / 'fileA').open('r') as f:
-            self.assertIsInstance(f, io.TextIOBase)
+            if six.PY2:
+                self.assertIsInstance(f,file)
+            else:
+                self.assertIsInstance(f, io.TextIOBase)
             self.assertEqual(f.read(), "this is file A\n")
         with (p / 'fileA').open('rb') as f:
-            self.assertIsInstance(f, io.BufferedIOBase)
+            if six.PY2:
+                self.assertIsInstance(f,file)
+            else:
+                self.assertIsInstance(f, io.BufferedIOBase)
             self.assertEqual(f.read().strip(), b"this is file A")
         with (p / 'fileA').open('rb', buffering=0) as f:
-            self.assertIsInstance(f, io.RawIOBase)
+            if six.PY2:
+                self.assertIsInstance(f,file)
+            else:
+                self.assertIsInstance(f, io.RawIOBase)
             self.assertEqual(f.read().strip(), b"this is file A")
 
     def test_read_write_bytes(self):
