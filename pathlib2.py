@@ -483,6 +483,7 @@ class _PosixFlavour(_Flavour):
                 raise RuntimeError("Can't determine home directory "
                                    "for %r" % username)
 
+
 _windows_flavour = _WindowsFlavour()
 _posix_flavour = _PosixFlavour()
 
@@ -595,6 +596,7 @@ def _make_selector(pattern_parts):
     else:
         cls = _PreciseSelector
     return cls(pat, child_parts)
+
 
 if hasattr(functools, "lru_cache"):
     _make_selector = functools.lru_cache()(_make_selector)

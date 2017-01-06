@@ -54,6 +54,7 @@ def fs_is_case_insensitive(directory):
     finally:
         os.unlink(base_path)
 
+
 support.fs_is_case_insensitive = fs_is_case_insensitive
 
 
@@ -675,7 +676,6 @@ class _BasePurePathTest(object):
             self.assertEqual(hash(pp), hash(p))
             self.assertEqual(str(pp), str(p))
 
-
     # note: this is a new test not part of upstream
     # test that unicode works on Python 2
     def test_unicode(self):
@@ -1256,6 +1256,7 @@ def symlink_skip_reason():
     else:
         support.unlink(BASE)
     return None
+
 
 symlink_skip_reason = symlink_skip_reason()
 
