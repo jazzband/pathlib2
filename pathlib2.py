@@ -796,6 +796,10 @@ class PurePath(object):
         for a in args:
             if isinstance(a, PurePath):
                 parts += a._parts
+            # next line does isinstance(a, unicode) on Python 2:
+            elif six.PY2 and isinstance(a, six.text_type):
+                # cast to str using filesystem encoding
+                parts.append(a.encode(sys.getfilesystemencoding()))
             elif isinstance(a, basestring):
                 # Force-cast str subclasses to str (issue #21127)
                 parts.append(str(a))
