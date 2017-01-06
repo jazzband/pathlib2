@@ -24,10 +24,6 @@ try:
     intern = intern
 except NameError:
     intern = sys.intern
-try:
-    basestring = basestring
-except NameError:
-    basestring = str
 
 supports_symlinks = True
 try:
@@ -802,7 +798,7 @@ class PurePath(object):
             elif six.PY2 and isinstance(a, six.text_type):
                 # cast to str using filesystem encoding
                 parts.append(a.encode(sys.getfilesystemencoding()))
-            elif isinstance(a, basestring):
+            elif isinstance(a, str):
                 # Force-cast str subclasses to str (issue #21127)
                 parts.append(str(a))
             else:
