@@ -13,6 +13,8 @@ def readfile(filename):
 
 readme = readfile("README.rst")[5:]  # skip title and badges
 requires = readfile("requirements.txt")
+if sys.version_info < (3, 5):
+    requires += ["scandir"]
 version = readfile("VERSION")[0].strip()
 
 setup(

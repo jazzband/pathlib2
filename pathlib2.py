@@ -40,6 +40,10 @@ else:
         supports_symlinks = False
         _getfinalpathname = None
 
+try:
+    from os import scandir as os_scandir
+except ImportError:
+    from scandir import scandir as os_scandir
 
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
@@ -532,8 +536,7 @@ class _NormalAccessor(_Accessor):
 
     listdir = _wrap_strfunc(os.listdir)
 
-    if sys.version_info >= (3, 5):
-        scandir = _wrap_strfunc(os.scandir)
+    scandir = _wrap_strfunc(os_scandir)
 
     chmod = _wrap_strfunc(os.chmod)
 
