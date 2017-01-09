@@ -648,8 +648,7 @@ class _PreciseSelector(_Selector):
             path = parent_path._make_child_relpath(self.name)
             if (is_dir if self.dironly else exists)(path):
                 for p in self.successor._select_from(
-                    path, is_dir, exists, scandir):
-
+                        path, is_dir, exists, scandir):
                     yield p
 
         def except_iter():
@@ -677,8 +676,7 @@ class _WildcardSelector(_Selector):
                     if self.pat.match(casefolded):
                         path = parent_path._make_child_relpath(name)
                         for p in self.successor._select_from(
-                            path, is_dir, exists, scandir):
-
+                                path, is_dir, exists, scandir):
                             yield p
 
         def except_iter():
@@ -718,11 +716,9 @@ class _RecursiveWildcardSelector(_Selector):
             try:
                 successor_select = self.successor._select_from
                 for starting_point in self._iterate_directories(
-                    parent_path, is_dir, scandir):
-
+                        parent_path, is_dir, scandir):
                     for p in successor_select(
-                        starting_point, is_dir, exists, scandir):
-
+                            starting_point, is_dir, exists, scandir):
                         if p not in yielded:
                             yield p
                             yielded.add(p)
@@ -1146,6 +1142,7 @@ class PurePath(object):
             if not fnmatch.fnmatchcase(part, pat):
                 return False
         return True
+
 
 # Can't subclass os.PathLike from PurePath and keep the constructor
 # optimizations in PurePath._parse_args().
