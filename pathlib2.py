@@ -24,10 +24,6 @@ try:
     intern = intern
 except NameError:
     intern = sys.intern
-try:
-    basestring = basestring
-except NameError:
-    basestring = str
 
 supports_symlinks = True
 try:
@@ -483,6 +479,7 @@ class _PosixFlavour(_Flavour):
                 raise RuntimeError("Can't determine home directory "
                                    "for %r" % username)
 
+
 _windows_flavour = _WindowsFlavour()
 _posix_flavour = _PosixFlavour()
 
@@ -595,6 +592,7 @@ def _make_selector(pattern_parts):
     else:
         cls = _PreciseSelector
     return cls(pat, child_parts)
+
 
 if hasattr(functools, "lru_cache"):
     _make_selector = functools.lru_cache()(_make_selector)
@@ -796,7 +794,11 @@ class PurePath(object):
         for a in args:
             if isinstance(a, PurePath):
                 parts += a._parts
-            elif isinstance(a, basestring):
+            # next line does isinstance(a, unicode) on Python 2:
+            elif six.PY2 and isinstance(a, six.text_type):
+                # cast to str using filesystem encoding
+                parts.append(a.encode(sys.getfilesystemencoding()))
+            elif isinstance(a, str):
                 # Force-cast str subclasses to str (issue #21127)
                 parts.append(str(a))
             else:
