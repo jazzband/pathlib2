@@ -1644,7 +1644,7 @@ class _BasePathTest(object):
         q = p / '2'
         self.assertEqual(q.resolve(strict=True), p)
         r = q / '3' / '4'
-        self.assertRaises(FileNotFoundError, r.resolve, strict=True)
+        self.assertFileNotFound(r.resolve, strict=True)
         # Non-strict
         self.assertEqual(r.resolve(strict=False), p / '3')
 
@@ -2091,10 +2091,15 @@ class PathTest(_BasePathTest, unittest.TestCase):
 class PosixPathTest(_BasePathTest, unittest.TestCase):
     cls = pathlib.PosixPath
 
-    def _check_symlink_loop(self, *args, strict=True):
+    def _check_symlink_loop(self, *args):
         path = self.cls(*args)
         with self.assertRaises(RuntimeError):
-            print(path.resolve(strict))
+            print(path.resolve(strict=True))
+
+    def _check_symlink_loop_nonstrict(self, *args):
+        path = self.cls(*args)
+        with self.assertRaises(RuntimeError):
+            print(path.resolve(strict=False))
 
     def test_open_mode(self):
         old_mask = os.umask(0)
@@ -2135,7 +2140,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         os.symlink('linkZ/../linkZ', join('linkZ'))
         self._check_symlink_loop(BASE, 'linkZ')
         # Non-strict
-        self._check_symlink_loop(BASE, 'linkZ', 'foo', strict=False)
+        self._check_symlink_loop_nonstrict(BASE, 'linkZ', 'foo')
         # Loops with absolute symlinks
         os.symlink(join('linkU/inside'), join('linkU'))
         self._check_symlink_loop(BASE, 'linkU')
@@ -2144,7 +2149,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         os.symlink(join('linkW/../linkW'), join('linkW'))
         self._check_symlink_loop(BASE, 'linkW')
         # Non-strict
-        self._check_symlink_loop(BASE, 'linkW', 'foo', strict=False)
+        self._check_symlink_loop_nonstrict(BASE, 'linkW', 'foo')
 
     def test_glob(self):
         P = self.cls
