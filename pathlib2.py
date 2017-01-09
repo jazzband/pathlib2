@@ -796,6 +796,10 @@ class PurePath(object):
             else:
                 if sys.version_info >= (3, 6):
                     a = os.fspath(a)
+                else:
+                    # duck typing for older Python versions
+                    if hasattr(a, "__fspath__"):
+                        a = a.__fspath__()
                 if isinstance(a, str):
                     # Force-cast str subclasses to str (issue #21127)
                     parts.append(str(a))

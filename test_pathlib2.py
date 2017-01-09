@@ -457,7 +457,8 @@ class _BasePurePathTest(object):
         P = self.cls
         p = P('a/b')
         self._check_str(p.__fspath__(), ('a/b',))
-        self._check_str(os.fspath(p), ('a/b',))
+        if sys.version_info >= (3, 6):
+            self._check_str(os.fspath(p), ('a/b',))
 
     def test_equivalences(self):
         for k, tuples in self.equivalences.items():
