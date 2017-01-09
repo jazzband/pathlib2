@@ -1,7 +1,7 @@
 pathlib2
 ========
 
-|appveyor| |travis| |coveralls|
+|appveyor| |travis| |codecov|
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
@@ -46,7 +46,7 @@ documentation.
     :target: https://ci.appveyor.com/project/mcmtroffaes/pathlib2
     :alt: appveyor
 
-.. |coveralls| image:: https://coveralls.io/repos/mcmtroffaes/pathlib2/badge.png?branch=develop
-    :target: https://coveralls.io/r/mcmtroffaes/pathlib2?branch=develop
-    :alt: coveralls.io
+.. |codecov| image:: https://codecov.io/gh/mcmtroffaes/pathlib2/branch/develop/graph/badge.svg
+    :target: https://codecov.io/gh/mcmtroffaes/pathlib2
+    :alt: codecov
 
