@@ -20,7 +20,7 @@ install:
 build: off
 
 test_script:
-  - "%PYTHON%/Scripts/py.test test_pathlib2.py"
+  - "%PYTHON%/Scripts/py.test test_pathlib2.py --cov=pathlib2"
 
 after_test:
-  - bash <(curl -s https://codecov.io/bash)
+  - codecov
