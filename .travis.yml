@@ -11,7 +11,9 @@ python:
   - "pypy"
   - "pypy3"
 matrix:
-  allow_failures: "pypy3"  # segfaults for some reason
+  allow_failures:
+  # pypy3 segfaults for some reason
+  - python: "pypy3"
 branches:
   only:
     - develop
