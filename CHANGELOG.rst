@@ -7,6 +7,8 @@ Version 2.1.1 (in development)
 - Support unicode strings to be used to construct paths in Python 2
   (reported by native-api, see issue #13 and pull request #15).
 
+- Sync with upstream pathlib from CPython: scandir, __fspath__.
+
 Version 2.1.0
 ^^^^^^^^^^^^^
 
