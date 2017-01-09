@@ -21,3 +21,6 @@ build: off
 
 test_script:
   - "%PYTHON%/Scripts/py.test test_pathlib2.py"
+
+after_test:
+  - bash <(curl -s https://codecov.io/bash)

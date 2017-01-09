@@ -14,7 +14,7 @@ branches:
     - develop
 install:
   - "pip install -r requirements.txt"
-  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install coveralls pytest-cov; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install pytest-cov; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then pip install check-manifest flake8; fi"
@@ -28,4 +28,4 @@ script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python -Qnew test_pathlib2.py; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python test_pathlib2_with_py2_unicode_literals.py; fi"
 after_success:
-  - coveralls
+  - bash <(curl -s https://codecov.io/bash)
