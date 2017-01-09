@@ -1,6 +1,7 @@
 language: python
 sudo: false
 python:
+  - "3.6"
   - "3.5"
   - "3.4"
   - "3.3"
@@ -9,6 +10,10 @@ python:
   - "2.6"
   - "pypy"
   - "pypy3"
+matrix:
+  allow_failures:
+  # pypy3 segfaults for some reason
+  - python: "pypy3"
 branches:
   only:
     - develop
@@ -17,10 +22,10 @@ install:
   - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install pytest-cov; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then pip install check-manifest flake8; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install check-manifest flake8; fi"
 script:
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then check-manifest; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then flake8; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then check-manifest; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then flake8; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then py.test test_pathlib2.py --cov=pathlib2; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then py.test test_pathlib2.py; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -Qnew test_pathlib2.py; fi"

@@ -4,6 +4,7 @@
 
 import io
 from setuptools import setup
+import sys
 
 
 def readfile(filename):
@@ -12,7 +13,9 @@ def readfile(filename):
 
 
 readme = readfile("README.rst")[5:]  # skip title and badges
-requires = readfile("requirements.txt")
+requires = ["six"]
+if sys.version_info < (3, 5):
+    requires += ["scandir"]
 version = readfile("VERSION")[0].strip()
 
 setup(
@@ -38,6 +41,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
