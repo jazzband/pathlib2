@@ -248,9 +248,11 @@ class _BasePurePathTest(object):
         P = self.cls
         p = P('a')
         self.assertIsInstance(p, P)
+
         class PathLike:
             def __fspath__(self):
                 return "a/b/c"
+
         P('a', 'b', 'c')
         P('/a', 'b', 'c')
         P('a/b/c')
@@ -1567,7 +1569,6 @@ class _BasePathTest(object):
         self.assertEqual(set(p.glob("dirA/../file*")),
                          set([P(BASE, "dirA/../fileA")]))
         self.assertEqual(set(p.glob("../xyzzy")), set())
-
 
     def _check_resolve(self, p, expected, strict=True):
         q = p.resolve(strict)

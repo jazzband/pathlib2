@@ -325,7 +325,9 @@ class _WindowsFlavour(_Flavour):
                         if previous_s is None:
                             return s
                         else:
-                            return s + os.path.sep + os.path.basename(previous_s)
+                            return (
+                                s + os.path.sep +
+                                os.path.basename(previous_s))
         # Means fallback on absolute
         return None
 
@@ -645,7 +647,9 @@ class _PreciseSelector(_Selector):
         def try_iter():
             path = parent_path._make_child_relpath(self.name)
             if (is_dir if self.dironly else exists)(path):
-                for p in self.successor._select_from(path, is_dir, exists, scandir):
+                for p in self.successor._select_from(
+                    path, is_dir, exists, scandir):
+
                     yield p
 
         def except_iter():
@@ -672,7 +676,9 @@ class _WildcardSelector(_Selector):
                     casefolded = cf(name)
                     if self.pat.match(casefolded):
                         path = parent_path._make_child_relpath(name)
-                        for p in self.successor._select_from(path, is_dir, exists, scandir):
+                        for p in self.successor._select_from(
+                            path, is_dir, exists, scandir):
+
                             yield p
 
         def except_iter():
@@ -711,8 +717,12 @@ class _RecursiveWildcardSelector(_Selector):
             yielded = set()
             try:
                 successor_select = self.successor._select_from
-                for starting_point in self._iterate_directories(parent_path, is_dir, scandir):
-                    for p in successor_select(starting_point, is_dir, exists, scandir):
+                for starting_point in self._iterate_directories(
+                    parent_path, is_dir, scandir):
+
+                    for p in successor_select(
+                        starting_point, is_dir, exists, scandir):
+
                         if p not in yielded:
                             yield p
                             yielded.add(p)
@@ -806,14 +816,15 @@ class PurePath(object):
                 if isinstance(a, str):
                     # Force-cast str subclasses to str (issue #21127)
                     parts.append(str(a))
-                elif six.PY2 and isinstance(a, unicode):
+                # also handle unicode for PY2 (six.text_type = unicode)
+                elif six.PY2 and isinstance(a, six.text_type):
                     # cast to str using filesystem encoding
                     parts.append(a.encode(sys.getfilesystemencoding()))
                 else:
                     raise TypeError(
                         "argument should be a str object or an os.PathLike "
                         "object returning str, not %r"
-                    % type(a))
+                        % type(a))
         return cls._flavour.parse_parts(parts)
 
     @classmethod
