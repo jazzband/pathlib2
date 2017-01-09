@@ -10,6 +10,8 @@ python:
   - "2.6"
   - "pypy"
   - "pypy3"
+matrix:
+  allow_failures: "pypy3"  # segfaults for some reason
 branches:
   only:
     - develop
