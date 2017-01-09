@@ -1,3 +1,6 @@
+# Copyright (c) 2014 Matthias C. M. Troffaes
+# Copyright (c) 2012-2014 Antoine Pitrou and contributors
+# Distributed under the terms of the MIT License.
 
 import __future__
 import os
