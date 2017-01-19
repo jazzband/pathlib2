@@ -5,7 +5,7 @@ Version 2.2.1
 ^^^^^^^^^^^^^
 
 - Fix conditional scandir dependency in wheel (reported by AvdN, see
-  issue #13 and pull request #21).
+  issue #20 and pull request #21).
 
 Version 2.2.0
 ^^^^^^^^^^^^^
