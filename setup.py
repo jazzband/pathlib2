@@ -4,7 +4,6 @@
 
 import io
 from setuptools import setup
-import sys
 
 
 def readfile(filename):
@@ -13,9 +12,6 @@ def readfile(filename):
 
 
 readme = readfile("README.rst")[5:]  # skip title and badges
-requires = ["six"]
-if sys.version_info < (3, 5):
-    requires += ["scandir"]
 version = readfile("VERSION")[0].strip()
 
 setup(
@@ -47,5 +43,8 @@ setup(
         ],
     download_url='https://pypi.python.org/pypi/pathlib2/',
     url='https://pypi.python.org/pypi/pathlib2/',
-    install_requires=requires,
+    install_requires=['six'],
+    extras_require={
+        ':python_version<"3.5"': ['scandir'],
+        },
 )

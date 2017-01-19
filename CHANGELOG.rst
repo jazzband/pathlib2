@@ -4,6 +4,9 @@ History
 Version 2.2.1 (in development)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- Fix conditional scandir dependency in wheel (reported by AvdN, see
+  issue #13 and pull request #21).
+
 Version 2.2.0
 ^^^^^^^^^^^^^
 
