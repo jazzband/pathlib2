@@ -4,7 +4,6 @@
 
 import io
 from setuptools import setup
-import sys
 
 
 def readfile(filename):
