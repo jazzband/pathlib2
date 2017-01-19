@@ -1,6 +1,9 @@
 History
 -------
 
+Version 2.2.2 (in development)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Version 2.2.1
 ^^^^^^^^^^^^^
 
