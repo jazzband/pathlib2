@@ -651,7 +651,7 @@ class _PreciseSelector(_Selector):
                         path, is_dir, exists, scandir):
                     yield p
 
-        def except_iter():
+        def except_iter(exc):
             return
             yield
 
@@ -679,7 +679,7 @@ class _WildcardSelector(_Selector):
                                 path, is_dir, exists, scandir):
                             yield p
 
-        def except_iter():
+        def except_iter(exc):
             return
             yield
 
@@ -703,7 +703,7 @@ class _RecursiveWildcardSelector(_Selector):
                     for p in self._iterate_directories(path, is_dir, scandir):
                         yield p
 
-        def except_iter():
+        def except_iter(exc):
             return
             yield
 
@@ -725,7 +725,7 @@ class _RecursiveWildcardSelector(_Selector):
             finally:
                 yielded.clear()
 
-        def except_iter():
+        def except_iter(exc):
             return
             yield
 
