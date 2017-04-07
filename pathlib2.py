@@ -1389,7 +1389,7 @@ class Path(PurePath):
         if not isinstance(data, six.binary_type):
             raise TypeError(
                 'data must be %s, not %s' %
-                (six.binary_type.__class__.__name__, data.__class__.__name__))
+                (six.binary_type.__name__, data.__class__.__name__))
         with self.open(mode='wb') as f:
             return f.write(data)
 
@@ -1400,7 +1400,7 @@ class Path(PurePath):
         if not isinstance(data, six.text_type):
             raise TypeError(
                 'data must be %s, not %s' %
-                (six.text_type.__class__.__name__, data.__class__.__name__))
+                (six.text_type.__name__, data.__class__.__name__))
         with self.open(mode='w', encoding=encoding, errors=errors) as f:
             return f.write(data)
 
