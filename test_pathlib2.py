@@ -36,6 +36,15 @@ if sys.version_info < (3, 3):
 else:
     from unittest import mock
 
+# support.can_symlink is missing prior to Python 3
+if PY2:
+    def support_can_symlink():
+        return pathlib.supports_symlinks
+    support_skip_unless_symlink = unittest.skipIf(not pathlib.supports_symlinks, "symlinks not supported on this platform")
+else:
+    support_can_symlink = support.can_symlink
+    support_skip_unless_symlink = support.skip_unless_symlink
+
 # assertRaisesRegex is missing prior to Python 3.2
 if sys.version_info < (3, 2):
     unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
@@ -1333,7 +1342,7 @@ class _BasePathTest(object):
             f.write(b"this is file C\n")
         with open(join('dirC', 'dirD', 'fileD'), 'wb') as f:
             f.write(b"this is file D\n")
-        if support.can_symlink():
+        if support_can_symlink():
             # Relative symlinks
             os.symlink('fileA', join('linkA'))
             os.symlink('non-existing', join('brokenLink'))
@@ -1448,7 +1457,7 @@ class _BasePathTest(object):
         self.assertIs(True, (p / 'dirA').exists())
         self.assertIs(True, (p / 'fileA').exists())
         self.assertIs(False, (p / 'fileA' / 'bah').exists())
-        if support.can_symlink():
+        if support_can_symlink():
             self.assertIs(True, (p / 'linkA').exists())
             self.assertIs(True, (p / 'linkB').exists())
             self.assertIs(True, (p / 'linkB' / 'fileB').exists())
@@ -1496,11 +1505,11 @@ class _BasePathTest(object):
         it = p.iterdir()
         paths = set(it)
         expected = ['dirA', 'dirB', 'dirC', 'fileA']
-        if support.can_symlink():
+        if support_can_symlink():
             expected += ['linkA', 'linkB', 'brokenLink']
         self.assertEqual(paths, set(P(BASE, q) for q in expected))
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_iterdir_symlink(self):
         # __iter__ on a symlink to a directory
         P = self.cls
@@ -1533,16 +1542,16 @@ class _BasePathTest(object):
         _check(it, ["fileA"])
         _check(p.glob("fileB"), [])
         _check(p.glob("dir*/file*"), ["dirB/fileB", "dirC/fileC"])
-        if not support.can_symlink():
+        if not support_can_symlink():
             _check(p.glob("*A"), ['dirA', 'fileA'])
         else:
             _check(p.glob("*A"), ['dirA', 'fileA', 'linkA'])
-        if not support.can_symlink():
+        if not support_can_symlink():
             _check(p.glob("*B/*"), ['dirB/fileB'])
         else:
             _check(p.glob("*B/*"), ['dirB/fileB', 'dirB/linkD',
                                     'linkB/fileB', 'linkB/linkD'])
-        if not support.can_symlink():
+        if not support_can_symlink():
             _check(p.glob("*/fileB"), ['dirB/fileB'])
         else:
             _check(p.glob("*/fileB"), ['dirB/fileB', 'linkB/fileB'])
@@ -1581,7 +1590,7 @@ class _BasePathTest(object):
     # this can be used to check both relative and absolute resolutions
     _check_resolve_relative = _check_resolve_absolute = _check_resolve
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_resolve_common(self):
         P = self.cls
         p = P(BASE, 'foo')
@@ -1643,7 +1652,7 @@ class _BasePathTest(object):
             self._check_resolve_relative(
                 p, P(BASE, 'foo', 'in', 'spam'), False)
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_resolve_dot(self):
         # See https://bitbucket.org/pitrou/pathlib/issue/9/
         # pathresolve-fails-on-complex-symlinks
@@ -1731,7 +1740,7 @@ class _BasePathTest(object):
                 _try_func, _exc_func, _else_func)
             self.assertTrue(p.exists())
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_lstat(self):
         p = self.cls(BASE) / 'linkA'
         st = p.stat()
@@ -1929,7 +1938,7 @@ class _BasePathTest(object):
         self.assertFileExists(p.mkdir)
         self.assertFileExists(p.mkdir, exist_ok=True)
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_symlink_to(self):
         P = self.cls(BASE)
         target = P / 'fileA'
@@ -1959,7 +1968,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'fileA').is_dir())
         self.assertFalse((P / 'non-existing').is_dir())
         self.assertFalse((P / 'fileA' / 'bah').is_dir())
-        if support.can_symlink():
+        if support_can_symlink():
             self.assertFalse((P / 'linkA').is_dir())
             self.assertTrue((P / 'linkB').is_dir())
             self.assertFalse((P / 'brokenLink').is_dir())
@@ -1970,7 +1979,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'dirA').is_file())
         self.assertFalse((P / 'non-existing').is_file())
         self.assertFalse((P / 'fileA' / 'bah').is_file())
-        if support.can_symlink():
+        if support_can_symlink():
             self.assertTrue((P / 'linkA').is_file())
             self.assertFalse((P / 'linkB').is_file())
             self.assertFalse((P / 'brokenLink').is_file())
@@ -1981,7 +1990,7 @@ class _BasePathTest(object):
         self.assertFalse((P / 'dirA').is_symlink())
         self.assertFalse((P / 'non-existing').is_symlink())
         self.assertFalse((P / 'fileA' / 'bah').is_symlink())
-        if support.can_symlink():
+        if support_can_symlink():
             self.assertTrue((P / 'linkA').is_symlink())
             self.assertTrue((P / 'linkB').is_symlink())
             self.assertTrue((P / 'brokenLink').is_symlink())
@@ -2104,15 +2113,15 @@ class _BasePathTest(object):
         finally:
             os.chdir(old_path)
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_complex_symlinks_absolute(self):
         self._check_complex_symlinks(BASE)
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_complex_symlinks_relative(self):
         self._check_complex_symlinks('.')
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_complex_symlinks_relative_dot_dot(self):
         self._check_complex_symlinks(os.path.join('dirA', '..'))
 
@@ -2181,7 +2190,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         st = os.stat(join('masked_new_file'))
         self.assertEqual(stat.S_IMODE(st.st_mode), 0o750)
 
-    @support.skip_unless_symlink
+    @support_skip_unless_symlink
     def test_resolve_loop(self):
         # Loops with relative symlinks
         os.symlink('linkX/inside', join('linkX'))
