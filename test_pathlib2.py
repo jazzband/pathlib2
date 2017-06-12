@@ -1726,7 +1726,8 @@ class _BasePathTest(object):
             def _else_func():
                 self.assertNotIn(str(p12), concurrently_created)
 
-            pathlib._try_except_fileexistserror(_try_func, _exc_func, _else_func)
+            pathlib._try_except_fileexistserror(
+                _try_func, _exc_func, _else_func)
             self.assertTrue(p.exists())
 
     @with_symlinks
