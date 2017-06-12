@@ -1444,27 +1444,26 @@ class Path(PurePath):
         os.close(fd)
 
     def mkdir(self, mode=0o777, parents=False, exist_ok=False):
-
-        def helper(exc):
-            if not exist_ok or not self.is_dir():
-                raise exc
-
+        """
+        Create a new directory at this given path.
+        """
         if self._closed:
             self._raise_closed()
-        if not parents:
-            _try_except_fileexistserror(
-                lambda: self._accessor.mkdir(self, mode),
-                helper)
-        else:
-            try:
-                _try_except_fileexistserror(
-                    lambda: self._accessor.mkdir(self, mode),
-                    helper)
-            except OSError as e:
-                if e.errno != ENOENT:
-                    raise
-                self.parent.mkdir(parents=True)
-                self._accessor.mkdir(self, mode)
+
+        def _try_func():
+            self._accessor.mkdir(self, mode)
+
+        def _exc_func(exc):
+            if not parents or self.parent == self:
+                raise exc
+            self.parent.mkdir(parents=True, exist_ok=True)
+            self.mkdir(mode, parents=False, exist_ok=exist_ok)
+
+        try:
+            _try_except_filenotfounderror(_try_func, _exc_func)
+        except OSError:
+            if not exist_ok or not self.is_dir():
+                raise
 
     def chmod(self, mode):
         """
