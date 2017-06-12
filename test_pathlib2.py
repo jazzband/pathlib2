@@ -1611,7 +1611,7 @@ class _BasePathTest(object):
                   'linkA',
                   'linkB',
                   ])
-        self.assertEqual(given, {p / x for x in expect})
+        self.assertEqual(given, set([p / x for x in expect]))
 
     def test_glob_dotdot(self):
         # ".." is not special in globs
