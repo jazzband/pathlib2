@@ -2,7 +2,11 @@
 # Copyright (c) 2012-2014 Antoine Pitrou and contributors
 # Distributed under the terms of the MIT License.
 
-import collections.abc
+if sys.version_info > (3, 2):
+    import collections.abc as collections_abc
+else:
+    import collections as collections_abc
+
 import io
 import os
 import errno
@@ -1533,7 +1537,7 @@ class _BasePathTest(object):
         P = self.cls
         p = P(BASE)
         it = p.glob("fileA")
-        self.assertIsInstance(it, collections.abc.Iterator)
+        self.assertIsInstance(it, collections_abc.Iterator)
         _check(it, ["fileA"])
         _check(p.glob("fileB"), [])
         _check(p.glob("dir*/file*"), ["dirB/fileB", "dirC/fileC"])
@@ -1557,7 +1561,7 @@ class _BasePathTest(object):
         P = self.cls
         p = P(BASE)
         it = p.rglob("fileA")
-        self.assertIsInstance(it, collections.abc.Iterator)
+        self.assertIsInstance(it, collections_abc.Iterator)
         # XXX cannot test because of symlink loops in the test setup
         # _check(it, ["fileA"])
         # _check(p.rglob("fileB"), ["dirB/fileB"])
