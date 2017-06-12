@@ -29,16 +29,15 @@ except NameError:
     intern = sys.intern
 
 supports_symlinks = True
-try:
+if os.name == 'nt':
     import nt
-except ImportError:
-    nt = None
-else:
     if sys.getwindowsversion()[:2] >= (6, 0) and sys.version_info >= (3, 2):
         from nt import _getfinalpathname
     else:
         supports_symlinks = False
         _getfinalpathname = None
+else:
+    nt = None
 
 try:
     from os import scandir as os_scandir
@@ -62,17 +61,39 @@ def _py2_fsencode(parts):
             else part for part in parts]
 
 
-def _try_except_fileexistserror(try_func, except_func):
+def _try_except_fileexistserror(try_func, except_func, else_func=None):
     if sys.version_info >= (3, 3):
         try:
             try_func()
         except FileExistsError as exc:
             except_func(exc)
+        else:
+            if else_func is not None:
+                else_func()
     else:
         try:
             try_func()
         except EnvironmentError as exc:
             if exc.errno != EEXIST:
+                raise
+            else:
+                except_func(exc)
+        else:
+            if else_func is not None:
+                else_func()
+
+
+def _try_except_filenotfounderror(try_func, except_func):
+    if sys.version_info >= (3, 3):
+        try:
+            try_func()
+        except FileNotFoundError as exc:
+            except_func(exc)
+    else:
+        try:
+            try_func()
+        except EnvironmentError as exc:
+            if exc.errno != ENOENT:
                 raise
             else:
                 except_func(exc)
@@ -243,10 +264,7 @@ class _WindowsFlavour(_Flavour):
 
     is_supported = (os.name == 'nt')
 
-    drive_letters = (
-        set(chr(x) for x in range(ord('a'), ord('z') + 1)) |
-        set(chr(x) for x in range(ord('A'), ord('Z') + 1))
-    )
+    drive_letters = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
     ext_namespace_prefix = '\\\\?\\'
 
     reserved_names = (
@@ -315,19 +333,19 @@ class _WindowsFlavour(_Flavour):
             if strict:
                 return self._ext_to_normal(_getfinalpathname(s))
             else:
+                # End of the path after the first one not found
+                tail_parts = []
                 while True:
                     try:
                         s = self._ext_to_normal(_getfinalpathname(s))
                     except FileNotFoundError:
                         previous_s = s
-                        s = os.path.abspath(os.path.join(s, os.pardir))
+                        s, tail = os.path.split(s)
+                        tail_parts.append(tail)
+                        if previous_s == s:
+                            return path
                     else:
-                        if previous_s is None:
-                            return s
-                        else:
-                            return (
-                                s + os.path.sep +
-                                os.path.basename(previous_s))
+                        return os.path.join(s, *reversed(tail_parts))
         # Means fallback on absolute
         return None
 
@@ -463,12 +481,10 @@ class _PosixFlavour(_Flavour):
                 try:
                     target = accessor.readlink(newpath)
                 except OSError as e:
-                    if e.errno != EINVAL:
-                        if strict:
-                            raise
-                        else:
-                            return newpath
-                    # Not a symlink
+                    if e.errno != EINVAL and strict:
+                        raise
+                    # Not a symlink, or non-strict mode. We just leave the path
+                    # untouched.
                     path = newpath
                 else:
                     seen[newpath] = None  # not resolved symlink
@@ -1428,27 +1444,26 @@ class Path(PurePath):
         os.close(fd)
 
     def mkdir(self, mode=0o777, parents=False, exist_ok=False):
-
-        def helper(exc):
-            if not exist_ok or not self.is_dir():
-                raise exc
-
+        """
+        Create a new directory at this given path.
+        """
         if self._closed:
             self._raise_closed()
-        if not parents:
-            _try_except_fileexistserror(
-                lambda: self._accessor.mkdir(self, mode),
-                helper)
-        else:
-            try:
-                _try_except_fileexistserror(
-                    lambda: self._accessor.mkdir(self, mode),
-                    helper)
-            except OSError as e:
-                if e.errno != ENOENT:
-                    raise
-                self.parent.mkdir(parents=True)
-                self._accessor.mkdir(self, mode)
+
+        def _try_func():
+            self._accessor.mkdir(self, mode)
+
+        def _exc_func(exc):
+            if not parents or self.parent == self:
+                raise exc
+            self.parent.mkdir(parents=True, exist_ok=True)
+            self.mkdir(mode, parents=False, exist_ok=exist_ok)
+
+        try:
+            _try_except_filenotfounderror(_try_func, _exc_func)
+        except OSError:
+            if not exist_ok or not self.is_dir():
+                raise
 
     def chmod(self, mode):
         """
