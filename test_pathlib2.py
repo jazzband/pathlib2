@@ -58,17 +58,16 @@ try:
 except ImportError:
     grp = pwd = None
 
-
 # support.can_symlink is missing prior to Python 3
 if six.PY2:
-    def support_can_symlink():
-        return pathlib.supports_symlinks
+    support_can_symlink = lambda: pathlib.supports_symlinks
     support_skip_unless_symlink = unittest.skipIf(
         not pathlib.supports_symlinks,
         "symlinks not supported on this platform")
 else:
     support_can_symlink = support.can_symlink
     support_skip_unless_symlink = support.skip_unless_symlink
+
 
 # Backported from 3.4
 def fs_is_case_insensitive(directory):
