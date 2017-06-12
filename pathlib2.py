@@ -62,12 +62,15 @@ def _py2_fsencode(parts):
             else part for part in parts]
 
 
-def _try_except_fileexistserror(try_func, except_func):
+def _try_except_fileexistserror(try_func, except_func, else_func=None):
     if sys.version_info >= (3, 3):
         try:
             try_func()
         except FileExistsError as exc:
             except_func(exc)
+        else:
+            if else_func is not None:
+                else_func()
     else:
         try:
             try_func()
@@ -76,6 +79,9 @@ def _try_except_fileexistserror(try_func, except_func):
                 raise
             else:
                 except_func(exc)
+        else:
+            if else_func is not None:
+                else_func()
 
 
 def _try_except_filenotfounderror(try_func, except_func):
