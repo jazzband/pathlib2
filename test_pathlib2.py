@@ -1623,7 +1623,8 @@ class _BasePathTest(object):
         else:
             # In Posix, if linkY points to dirB, 'dirA/linkY/..'
             # resolves to 'dirB/..' first before resolving to parent of dirB.
-            self._check_resolve_relative(p, P(BASE, 'foo', 'in', 'spam'), False)
+            self._check_resolve_relative(
+                p, P(BASE, 'foo', 'in', 'spam'), False)
         # Now create absolute symlinks
         d = tempfile.mkdtemp(suffix='-dirD')
         self.addCleanup(shutil.rmtree, d)
@@ -1643,7 +1644,8 @@ class _BasePathTest(object):
         else:
             # In Posix, if linkY points to dirB, 'dirA/linkY/..'
             # resolves to 'dirB/..' first before resolving to parent of dirB.
-            self._check_resolve_relative(p, P(BASE, 'foo', 'in', 'spam'), False)
+            self._check_resolve_relative(
+                p, P(BASE, 'foo', 'in', 'spam'), False)
 
     @with_symlinks
     def test_resolve_dot(self):

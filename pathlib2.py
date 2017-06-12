@@ -337,7 +337,8 @@ class _WindowsFlavour(_Flavour):
             if strict:
                 return self._ext_to_normal(_getfinalpathname(s))
             else:
-                tail_parts = []  # End of the path after the first one not found
+                # End of the path after the first one not found
+                tail_parts = []
                 while True:
                     try:
                         s = self._ext_to_normal(_getfinalpathname(s))
