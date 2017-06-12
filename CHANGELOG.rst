@@ -1,11 +1,10 @@
 History
 -------
 
-Version 2.2.2 (in development)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 2.3.0
+^^^^^^^^^^^^^
 
-- Sync with upstream pathlib from CPython 3.6.1 (bpo-25803, bpo-29694,
-  bpo-30177).
+- Sync with upstream pathlib from CPython 3.6.1 (7d1017d).
 
 Version 2.2.1
 ^^^^^^^^^^^^^
