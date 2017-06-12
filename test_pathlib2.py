@@ -51,6 +51,12 @@ else:
 
 TESTFN = support.TESTFN
 
+# work around broken support.rmtree on Python 3.3 on Windows
+if (os.name == 'nt'
+        and sys.version_info >= (3, 0) and sys.version_info < (3, 4)):
+    import shutil
+    support.rmtree = shutil.rmtree
+
 try:
     import grp
     import pwd
