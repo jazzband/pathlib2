@@ -1601,7 +1601,8 @@ class _BasePathTest(object):
         P = self.cls
         p = P(BASE)
         given = set(p.rglob('*'))
-        expect = {'brokenLink',
+        expect = set([
+                  'brokenLink',
                   'dirA', 'dirA/linkC',
                   'dirB', 'dirB/fileB', 'dirB/linkD',
                   'dirC', 'dirC/dirD', 'dirC/dirD/fileD', 'dirC/fileC',
@@ -1609,7 +1610,7 @@ class _BasePathTest(object):
                   'fileA',
                   'linkA',
                   'linkB',
-                  }
+                  ])
         self.assertEqual(given, {p / x for x in expect})
 
     def test_glob_dotdot(self):
