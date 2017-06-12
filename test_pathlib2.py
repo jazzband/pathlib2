@@ -44,7 +44,12 @@ try:
     from test import support
 except ImportError:
     from test import test_support as support
-android_not_root = support.android_not_root
+
+if sys.version_info >= (3, 6):
+    android_not_root = support.android_not_root
+else:
+    android_not_root = False
+
 TESTFN = support.TESTFN
 
 try:
