@@ -4,6 +4,8 @@ History
 Version 2.2.2 (in development)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- Sync with upstream pathlib from CPython 3.6.1 (bpo-29694).
+
 Version 2.2.1
 ^^^^^^^^^^^^^
 
