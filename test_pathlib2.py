@@ -1715,13 +1715,18 @@ class _BasePathTest(object):
             pattern = [bool(pattern_num & (1 << n)) for n in range(5)]
             concurrently_created = set()
             p12 = p / 'dir1' / 'dir2'
-            try:
+
+            def _try_func():
                 with mock.patch("pathlib2._normal_accessor.mkdir", my_mkdir):
                     p12.mkdir(parents=True, exist_ok=False)
-            except FileExistsError:
+
+            def _exc_func(exc):
                 self.assertIn(str(p12), concurrently_created)
-            else:
+
+            def _else_func():
                 self.assertNotIn(str(p12), concurrently_created)
+
+            pathlib._try_except_fileexistserror(_try_func, _exc_func, _else_func)
             self.assertTrue(p.exists())
 
     @with_symlinks
