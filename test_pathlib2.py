@@ -2,12 +2,6 @@
 # Copyright (c) 2012-2014 Antoine Pitrou and contributors
 # Distributed under the terms of the MIT License.
 
-import sys
-
-if sys.version_info > (3, 2):
-    import collections.abc as collections_abc
-else:
-    import collections as collections_abc
 
 import io
 import os
@@ -18,7 +12,13 @@ import six
 import shutil
 import socket
 import stat
+import sys
 import tempfile
+
+if sys.version_info >= (3, 3):
+    import collections.abc as collections_abc
+else:
+    import collections as collections_abc
 
 if sys.version_info < (2, 7):
     try:
