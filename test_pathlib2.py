@@ -1907,6 +1907,11 @@ class _BasePathTest(object):
         self.assertTrue(p.exists())
         self.assertEqual(p.stat().st_ctime, st_ctime_first)
 
+    def test_mkdir_exist_ok_root(self):
+        # Issue #25803: A drive root could raise PermissionError on Windows
+        self.cls('/').resolve().mkdir(exist_ok=True)
+        self.cls('/').resolve().mkdir(parents=True, exist_ok=True)
+
     def test_mkdir_with_child_file(self):
         p = self.cls(BASE, 'dirB', 'fileB')
         self.assertTrue(p.exists())
