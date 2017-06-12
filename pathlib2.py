@@ -78,6 +78,22 @@ def _try_except_fileexistserror(try_func, except_func):
                 except_func(exc)
 
 
+def _try_except_filenotfounderror(try_func, except_func):
+    if sys.version_info >= (3, 3):
+        try:
+            try_func()
+        except FileNotFoundError as exc:
+            except_func(exc)
+    else:
+        try:
+            try_func()
+        except EnvironmentError as exc:
+            if exc.errno != ENOENT:
+                raise
+            else:
+                except_func(exc)
+
+
 def _try_except_permissionerror_iter(try_iter, except_iter):
     if sys.version_info >= (3, 3):
         try:
