@@ -37,7 +37,7 @@ else:
     from unittest import mock
 
 # support.can_symlink is missing prior to Python 3
-if PY2:
+if six.PY2:
     def support_can_symlink():
         return pathlib.supports_symlinks
     support_skip_unless_symlink = unittest.skipIf(
