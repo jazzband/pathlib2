@@ -60,7 +60,10 @@ except ImportError:
 
 # support.can_symlink is missing prior to Python 3
 if six.PY2:
-    support_can_symlink = lambda: pathlib.supports_symlinks
+
+    def support_can_symlink():
+        return pathlib.supports_symlinks
+
     support_skip_unless_symlink = unittest.skipIf(
         not pathlib.supports_symlinks,
         "symlinks not supported on this platform")
