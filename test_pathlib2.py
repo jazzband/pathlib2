@@ -1582,7 +1582,7 @@ class _BasePathTest(object):
         _check(it, ["fileA"])
         _check(p.rglob("fileB"), ["dirB/fileB"])
         _check(p.rglob("*/fileA"), [])
-        if not support.can_symlink():
+        if not support_can_symlink():
             _check(p.rglob("*/fileB"), ["dirB/fileB"])
         else:
             _check(p.rglob("*/fileB"), ["dirB/fileB", "dirB/linkD/fileB",
