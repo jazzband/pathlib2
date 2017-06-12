@@ -475,8 +475,6 @@ class _BasePurePathTest(object):
         p = P('a/b')
         parts = p.parts
         self.assertEqual(parts, ('a', 'b'))
-        for part in parts:
-            self.assertIsInstance(part, str)
         # The object gets reused
         self.assertIs(parts, p.parts)
         # When the path is absolute, the anchor is a separate part
@@ -1308,33 +1306,49 @@ class PosixPathAsPureTest(PurePosixPathTest):
 class WindowsPathAsPureTest(PureWindowsPathTest):
     cls = pathlib.WindowsPath
 
+    def test_owner(self):
+        P = self.cls
+        with self.assertRaises(NotImplementedError):
+            P('c:/').owner()
+
+    def test_group(self):
+        P = self.cls
+        with self.assertRaises(NotImplementedError):
+            P('c:/').group()
+
 
 class _BasePathTest(object):
-
     """Tests for the FS-accessing functionalities of the Path classes."""
 
     # (BASE)
     #  |
-    #  |-- dirA/
-    #       |-- linkC -> "../dirB"
-    #  |-- dirB/
-    #  |    |-- fileB
-    #       |-- linkD -> "../dirB"
-    #  |-- dirC/
-    #  |    |-- fileC
-    #  |    |-- fileD
+    #  |-- brokenLink -> non-existing
+    #  |-- dirA
+    #  |   `-- linkC -> ../dirB
+    #  |-- dirB
+    #  |   |-- fileB
+    #  |   `-- linkD -> ../dirB
+    #  |-- dirC
+    #  |   |-- dirD
+    #  |   |   `-- fileD
+    #  |   `-- fileC
+    #  |-- dirE  # No permissions
     #  |-- fileA
-    #  |-- linkA -> "fileA"
-    #  |-- linkB -> "dirB"
+    #  |-- linkA -> fileA
+    #  `-- linkB -> dirB
     #
 
     def setUp(self):
+        def cleanup():
+            os.chmod(join('dirE'), 0o777)
+            support.rmtree(BASE)
+        self.addCleanup(cleanup)
         os.mkdir(BASE)
-        self.addCleanup(shutil.rmtree, BASE)
         os.mkdir(join('dirA'))
         os.mkdir(join('dirB'))
         os.mkdir(join('dirC'))
         os.mkdir(join('dirC', 'dirD'))
+        os.mkdir(join('dirE'))
         with open(join('fileA'), 'wb') as f:
             f.write(b"this is file A\n")
         with open(join('dirB', 'fileB'), 'wb') as f:
@@ -1343,13 +1357,14 @@ class _BasePathTest(object):
             f.write(b"this is file C\n")
         with open(join('dirC', 'dirD', 'fileD'), 'wb') as f:
             f.write(b"this is file D\n")
+        os.chmod(join('dirE'), 0)
         if support_can_symlink():
             # Relative symlinks
             os.symlink('fileA', join('linkA'))
             os.symlink('non-existing', join('brokenLink'))
             self.dirlink('dirB', join('linkB'))
             self.dirlink(os.path.join('..', 'dirB'), join('dirA', 'linkC'))
-            # This one goes upwards but doesn't create a loop
+            # This one goes upwards, creating a loop
             self.dirlink(os.path.join('..', 'dirB'), join('dirB', 'linkD'))
 
     if os.name == 'nt':
@@ -1505,7 +1520,7 @@ class _BasePathTest(object):
         p = P(BASE)
         it = p.iterdir()
         paths = set(it)
-        expected = ['dirA', 'dirB', 'dirC', 'fileA']
+        expected = ['dirA', 'dirB', 'dirC', 'dirE', 'fileA']
         if support_can_symlink():
             expected += ['linkA', 'linkB', 'brokenLink']
         self.assertEqual(paths, set(P(BASE, q) for q in expected))
@@ -1564,16 +1579,36 @@ class _BasePathTest(object):
         p = P(BASE)
         it = p.rglob("fileA")
         self.assertIsInstance(it, collections_abc.Iterator)
-        # XXX cannot test because of symlink loops in the test setup
-        # _check(it, ["fileA"])
-        # _check(p.rglob("fileB"), ["dirB/fileB"])
-        # _check(p.rglob("*/fileA"), [""])
-        # _check(p.rglob("*/fileB"), ["dirB/fileB"])
-        # _check(p.rglob("file*"), ["fileA", "dirB/fileB"])
-        # No symlink loops here
+        _check(it, ["fileA"])
+        _check(p.rglob("fileB"), ["dirB/fileB"])
+        _check(p.rglob("*/fileA"), [])
+        if not support.can_symlink():
+            _check(p.rglob("*/fileB"), ["dirB/fileB"])
+        else:
+            _check(p.rglob("*/fileB"), ["dirB/fileB", "dirB/linkD/fileB",
+                                        "linkB/fileB", "dirA/linkC/fileB"])
+        _check(p.rglob("file*"), ["fileA", "dirB/fileB",
+                                  "dirC/fileC", "dirC/dirD/fileD"])
         p = P(BASE, "dirC")
         _check(p.rglob("file*"), ["dirC/fileC", "dirC/dirD/fileD"])
         _check(p.rglob("*/*"), ["dirC/dirD/fileD"])
+
+    @support_skip_unless_symlink
+    def test_rglob_symlink_loop(self):
+        # Don't get fooled by symlink loops (Issue #26012)
+        P = self.cls
+        p = P(BASE)
+        given = set(p.rglob('*'))
+        expect = {'brokenLink',
+                  'dirA', 'dirA/linkC',
+                  'dirB', 'dirB/fileB', 'dirB/linkD',
+                  'dirC', 'dirC/dirD', 'dirC/dirD/fileD', 'dirC/fileC',
+                  'dirE',
+                  'fileA',
+                  'linkA',
+                  'linkB',
+                  }
+        self.assertEqual(given, {p / x for x in expect})
 
     def test_glob_dotdot(self):
         # ".." is not special in globs
@@ -1633,7 +1668,7 @@ class _BasePathTest(object):
                 p, P(BASE, 'foo', 'in', 'spam'), False)
         # Now create absolute symlinks
         d = tempfile.mkdtemp(suffix='-dirD')
-        self.addCleanup(shutil.rmtree, d)
+        self.addCleanup(support.rmtree, d)
         os.symlink(os.path.join(d), join('dirA', 'linkX'))
         os.symlink(join('dirB'), os.path.join(d, 'linkY'))
         p = P(BASE, 'dirA', 'linkX', 'linkY', 'fileB')
@@ -1705,41 +1740,6 @@ class _BasePathTest(object):
         p.chmod(st.st_mode ^ 0o222)
         self.addCleanup(p.chmod, st.st_mode)
         self.assertNotEqual(p.stat(), st)
-
-    def test_mkdir_concurrent_parent_creation(self):
-        for pattern_num in range(32):
-            p = self.cls(BASE, 'dirCPC%d' % pattern_num)
-            self.assertFalse(p.exists())
-
-            def my_mkdir(path, mode=0o777):
-                path = str(path)
-                # Emulate another process that would create the directory
-                # just before we try to create it ourselves.  We do it
-                # in all possible pattern combinations, assuming that this
-                # function is called at most 5 times (dirCPC/dir1/dir2,
-                # dirCPC/dir1, dirCPC, dirCPC/dir1, dirCPC/dir1/dir2).
-                if pattern.pop():
-                    os.mkdir(path, mode)      # from another process
-                    concurrently_created.add(path)
-                os.mkdir(path, mode)          # our real call
-
-            pattern = [bool(pattern_num & (1 << n)) for n in range(5)]
-            concurrently_created = set()
-            p12 = p / 'dir1' / 'dir2'
-
-            def _try_func():
-                with mock.patch("pathlib2._normal_accessor.mkdir", my_mkdir):
-                    p12.mkdir(parents=True, exist_ok=False)
-
-            def _exc_func(exc):
-                self.assertIn(str(p12), concurrently_created)
-
-            def _else_func():
-                self.assertNotIn(str(p12), concurrently_created)
-
-            pathlib._try_except_fileexistserror(
-                _try_func, _exc_func, _else_func)
-            self.assertTrue(p.exists())
 
     @support_skip_unless_symlink
     def test_lstat(self):
@@ -1868,20 +1868,13 @@ class _BasePathTest(object):
         p = self.cls(BASE, 'newdirB', 'newdirC')
         self.assertFalse(p.exists())
         with self.assertRaises(OSError) as cm:
-            # Python 2.6 kludge for http://bugs.python.org/issue7853
-            try:
-                p.mkdir()
-            except:
-                raise
+            p.mkdir()
         self.assertEqual(cm.exception.errno, errno.ENOENT)
         p.mkdir(parents=True)
         self.assertTrue(p.exists())
         self.assertTrue(p.is_dir())
         with self.assertRaises(OSError) as cm:
-            try:
-                p.mkdir(parents=True)
-            except:
-                raise
+            p.mkdir(parents=True)
         self.assertEqual(cm.exception.errno, errno.EEXIST)
         # test `mode` arg
         mode = stat.S_IMODE(p.stat().st_mode)  # default mode
@@ -1949,6 +1942,41 @@ class _BasePathTest(object):
         # regular file, regardless of whether exist_ok is true or not.
         self.assertFileExists(p.mkdir)
         self.assertFileExists(p.mkdir, exist_ok=True)
+
+    def test_mkdir_concurrent_parent_creation(self):
+        for pattern_num in range(32):
+            p = self.cls(BASE, 'dirCPC%d' % pattern_num)
+            self.assertFalse(p.exists())
+
+            def my_mkdir(path, mode=0o777):
+                path = str(path)
+                # Emulate another process that would create the directory
+                # just before we try to create it ourselves.  We do it
+                # in all possible pattern combinations, assuming that this
+                # function is called at most 5 times (dirCPC/dir1/dir2,
+                # dirCPC/dir1, dirCPC, dirCPC/dir1, dirCPC/dir1/dir2).
+                if pattern.pop():
+                    os.mkdir(path, mode)      # from another process
+                    concurrently_created.add(path)
+                os.mkdir(path, mode)          # our real call
+
+            pattern = [bool(pattern_num & (1 << n)) for n in range(5)]
+            concurrently_created = set()
+            p12 = p / 'dir1' / 'dir2'
+
+            def _try_func():
+                with mock.patch("pathlib2._normal_accessor.mkdir", my_mkdir):
+                    p12.mkdir(parents=True, exist_ok=False)
+
+            def _exc_func(exc):
+                self.assertIn(str(p12), concurrently_created)
+
+            def _else_func():
+                self.assertNotIn(str(p12), concurrently_created)
+
+            pathlib._try_except_fileexistserror(
+                _try_func, _exc_func, _else_func)
+            self.assertTrue(p.exists())
 
     @support_skip_unless_symlink
     def test_symlink_to(self):
@@ -2239,6 +2267,8 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         self.assertEqual(given, expect)
         self.assertEqual(set(p.rglob("FILEd*")), set())
 
+    @unittest.skipUnless(hasattr(pwd, 'getpwall'),
+                         'pwd module does not expose getpwall()')
     def test_expanduser(self):
         P = self.cls
         support.import_module('pwd')
