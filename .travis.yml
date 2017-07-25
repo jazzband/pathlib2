@@ -10,6 +10,9 @@ python:
   - "2.6"
   - "pypy"
   - "pypy3"
+env:
+  - LC_ALL="en_US.utf-8"
+  - LC_ALL="en_US.ascii"
 matrix:
   allow_failures:
   # pypy3 segfaults for some reason
@@ -18,6 +21,7 @@ branches:
   only:
     - develop
 install:
+  - "python -c \"import sys; print(sys.getfilesystemencoding())\""
   - "pip install -r requirements.txt"
   - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install pytest-cov; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
