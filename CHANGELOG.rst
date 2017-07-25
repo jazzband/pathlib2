@@ -7,6 +7,9 @@ Version 2.3.1 (in development)
 - Fix tests for systems where filesystem encoding only supports ascii
   (reported by yurivict, fixed with help of honnibal, see issue #30).
 
+- Use modern setuptools syntax for specifying conditional scandir
+  dependency (see issue #31).
+
 Version 2.3.0
 ^^^^^^^^^^^^^
 
