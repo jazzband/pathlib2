@@ -22,7 +22,7 @@ install:
 build: off
 
 test_script:
-  - "%PYTHON%/Scripts/py.test test_pathlib2.py --cov=pathlib2"
+  - "%PYTHON%/Scripts/py.test tests/test_pathlib2.py --cov=pathlib2"
 
 after_test:
   - "SET PATH=%PYTHON%/Scripts;%PATH%"
