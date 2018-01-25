@@ -6,7 +6,7 @@
 import io
 import os
 import errno
-import pathlib2 as pathlib
+from .context import pathlib2 as pathlib
 import pickle
 import six
 import socket

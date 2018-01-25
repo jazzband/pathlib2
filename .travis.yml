@@ -30,8 +30,9 @@ install:
 script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then check-manifest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then flake8; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then py.test test_pathlib2.py --cov=pathlib2; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then py.test test_pathlib2.py; fi"
+  - cd tests
+  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pytest test_pathlib2.py --cov=pathlib2; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pytest test_pathlib2.py; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -Qnew test_pathlib2.py; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python test_pathlib2_with_py2_unicode_literals.py; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python -Qnew test_pathlib2.py; fi"
