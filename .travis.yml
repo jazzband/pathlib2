@@ -14,7 +14,8 @@ env:
   - LC_ALL="en_US.ascii"
 matrix:
   allow_failures:
-  # pypy3 segfaults for some reason
+  # pypy occasionally has some bugs
+  - python: "pypy"
   - python: "pypy3"
 branches:
   only:
