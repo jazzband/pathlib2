@@ -44,10 +44,7 @@ try:
 except ImportError:
     from test import test_support as support
 
-if sys.version_info >= (3, 6):
-    android_not_root = support.android_not_root
-else:
-    android_not_root = False
+android_not_root = getattr(support, "android_not_root", False)
 
 TESTFN = support.TESTFN
 
