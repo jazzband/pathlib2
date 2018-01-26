@@ -1,5 +1,6 @@
 
-# arranged according to the documentation here https://docs.python.org/2/library/os.html
+# arranged according to the documentation here
+# https://docs.python.org/2/library/os.html
 OS_FNS_TAKING_PATHS = {
     # Files and Directories
     'access',
@@ -43,7 +44,8 @@ OS_FNS_TAKING_PATHS = {
     'startfile'
 }
 
-# arranged according to the documentation here https://docs.python.org/2/library/os.path.html
+# arranged according to the documentation here
+# https://docs.python.org/2/library/os.path.html
 OS_PATH_FNS_TAKING_PATHS = {
     'abspath',
     'basename',

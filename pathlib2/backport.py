@@ -18,8 +18,10 @@ from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
 
-from pathlib2.utils import _py2_fsencode, _try_except_filenotfounderror, _try_except_permissionerror_iter, \
-    _win32_get_unique_path_id
+from pathlib2.utils import (
+    _py2_fsencode, _try_except_filenotfounderror,
+    _try_except_permissionerror_iter, _win32_get_unique_path_id
+)
 
 try:
     from urllib import quote as urlquote_from_bytes
@@ -804,8 +806,8 @@ class PurePath(object):
         if not isinstance(other, PurePath):
             return NotImplemented
         return (
-            self._cparts == other._cparts
-            and self._flavour is other._flavour)
+            self._cparts == other._cparts and self._flavour is other._flavour
+        )
 
     def __ne__(self, other):
         return not self == other
@@ -818,26 +820,26 @@ class PurePath(object):
             return self._hash
 
     def __lt__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+                self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts < other._cparts
 
     def __le__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+                self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts <= other._cparts
 
     def __gt__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+                self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts > other._cparts
 
     def __ge__(self, other):
-        if (not isinstance(other, PurePath)
-                or self._flavour is not other._flavour):
+        if (not isinstance(other, PurePath) or
+                self._flavour is not other._flavour):
             return NotImplemented
         return self._cparts >= other._cparts
 
@@ -895,8 +897,8 @@ class PurePath(object):
         if not self.name:
             raise ValueError("%r has an empty name" % (self,))
         drv, root, parts = self._flavour.parse_parts((name,))
-        if (not name or name[-1] in [self._flavour.sep, self._flavour.altsep]
-                or drv or root or len(parts) != 1):
+        if (not name or drv or root or len(parts) != 1 or
+                name[-1] in [self._flavour.sep, self._flavour.altsep]):
             raise ValueError("Invalid name %r" % (name))
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + [name])
@@ -1524,8 +1526,8 @@ class Path(PurePath):
         """ Return a new path with expanded ~ and ~user constructs
         (as returned by os.path.expanduser)
         """
-        if (not (self._drv or self._root)
-                and self._parts and self._parts[0][:1] == '~'):
+        if (not (self._drv or self._root) and
+                self._parts and self._parts[0][:1] == '~'):
             homedir = self._flavour.gethomedir(self._parts[0][1:])
             return self._from_parts([homedir] + self._parts[1:])
 

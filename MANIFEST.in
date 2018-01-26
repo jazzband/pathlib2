@@ -1,6 +1,6 @@
 include setup.py
 recursive-include pathlib2 *.py
-prune tests *.py
+prune tests
 include *.rst
 include VERSION
 exclude requirements.txt

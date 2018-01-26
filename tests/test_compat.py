@@ -20,7 +20,9 @@ DEEP_FILE_COMPONENTS = ('path', 'to', FILE_NAME)
 
 @pytest.fixture
 def tmp_dir(request):
-    path = str(tempfile.mkdtemp(suffix='{}.{}'.format(request.module.__name__, request.function.__name__)))
+    path = str(tempfile.mkdtemp(suffix='{}.{}'.format(
+            request.module.__name__, request.function.__name__
+        )))
     assert len(std_os.listdir(path)) == 0
     yield path
     shutil.rmtree(path, True)
@@ -39,7 +41,8 @@ def tmp_file(tmp_dir):
         (std_os.path, compat_os.path)
 ))
 def test_module_replacement(std_mod, compat_mod):
-    """Tests whether the shims are applied as appropriate (i.e. only in < py3.6)"""
+    """Tests whether the shims are applied as appropriate
+    (i.e. only in < py3.6)"""
     assert (std_mod != compat_mod) == (sys.version_info < (3, 6))
 
 

@@ -18,13 +18,17 @@ def _path_to_string(arg):
 
 def path_compat(fn):
     """
-    Decorate the given function `fn`, returning a function which parses its arguments to convert any instances of
-    PurePath into strings before passing them to the wrapped function.
+    Decorate the given function `fn`, returning a function which parses its
+    arguments to convert any instances of PurePath into strings before passing
+    them to the wrapped function.
     """
     @wraps(fn)
     def wrapper(*args, **kwargs):
         stringified_args = tuple(_path_to_string(arg) for arg in args)
-        stringified_kwargs = {key: _path_to_string(value) for key, value in six.iteritems(kwargs)}
+        stringified_kwargs = {
+            key: _path_to_string(value)
+            for key, value in six.iteritems(kwargs)
+        }
 
         return fn(*stringified_args, **stringified_kwargs)
 

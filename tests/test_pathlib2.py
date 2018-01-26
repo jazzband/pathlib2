@@ -16,8 +16,8 @@ import tempfile
 import pathlib2 as pathlib
 
 from .context import (
-    collections_abc, unittest, mock, support, android_not_root, TESTFN, grp, pwd, support_can_symlink,
-    support_skip_unless_symlink
+    collections_abc, unittest, mock, support, android_not_root, TESTFN, grp,
+    pwd, support_can_symlink, support_skip_unless_symlink
 )
 
 
@@ -1323,7 +1323,7 @@ class _BasePathTest(object):
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
                 try:
                     func(*args, **kwargs)
-                except:
+                except Exception:
                     raise
             self.assertEqual(cm.exception.errno, errno.ENOENT)
 
@@ -1336,7 +1336,7 @@ class _BasePathTest(object):
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
                 try:
                     func(*args, **kwargs)
-                except:
+                except Exception:
                     raise
             self.assertEqual(cm.exception.errno, errno.EEXIST)
 
@@ -1435,7 +1435,8 @@ class _BasePathTest(object):
         with self.assertRaises(TypeError) as cm:
             (p / 'fileA').write_bytes(six.u('somestr'))
         msg = str(cm.exception)
-        self.assertTrue(msg.startswith('data must be') or msg.startswith('memoryview: a bytes-like object'))
+        self.assertTrue(msg.startswith('data must be') or
+                        msg.startswith('memoryview: a bytes-like object'))
         self.assertEqual((p / 'fileA').read_bytes(), b'abcdefg')
 
     def test_read_write_text(self):
@@ -1476,7 +1477,7 @@ class _BasePathTest(object):
             # Python 2.6 kludge for http://bugs.python.org/issue7853
             try:
                 next(p.iterdir())
-            except:
+            except Exception:
                 raise
         # ENOENT or EINVAL under Windows, ENOTDIR otherwise
         # (see issue #12802)
@@ -1795,7 +1796,7 @@ class _BasePathTest(object):
             # Python 2.6 kludge for http://bugs.python.org/issue7853
             try:
                 p.mkdir()
-            except:
+            except Exception:
                 raise
         self.assertEqual(cm.exception.errno, errno.EEXIST)
 

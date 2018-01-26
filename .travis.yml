@@ -17,10 +17,11 @@ install:
   - python -c "import sys; print(sys.getfilesystemencoding())"
   - pip install --upgrade setuptools
   - pip install -r requirements.txt
-  - pip install flake8 check-manifest tox-travis
+  - pip install tox-travis
 script:
   - check-manifest
-  - flake8
+  # ignore defaults, plus F821 (undefined names), F401 (unused imports), E402 (imports not at top of file)
+  - flake8 --ignore=E121,E123,E126,E226,E24,E704,F821,F401,E402 --statistics --exit-zero
   - tox
 after_success:
   - bash <(curl -s https://codecov.io/bash)

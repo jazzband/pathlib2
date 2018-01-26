@@ -41,8 +41,7 @@ android_not_root = getattr(support, "android_not_root", False)
 TESTFN = support.TESTFN
 
 # work around broken support.rmtree on Python 3.3 on Windows
-if (os.name == 'nt'
-        and sys.version_info >= (3, 0) and sys.version_info < (3, 4)):
+if os.name == 'nt' and (3, 0) <= sys.version_info < (3, 4):
     import shutil
     support.rmtree = shutil.rmtree
 
