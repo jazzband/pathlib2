@@ -36,6 +36,7 @@ function main () {
     InstallPackage $env:PYTHON pytest-cov
     InstallPackage $env:PYTHON unittest2
     InstallPackage $env:PYTHON codecov
+    InstallPackage $env:PYTHON .
 }
 
 main

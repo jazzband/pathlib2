@@ -27,6 +27,7 @@ install:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install check-manifest flake8; fi"
+  - "pip install ."
 script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then check-manifest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then flake8; fi"
