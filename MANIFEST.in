@@ -1,10 +1,12 @@
-include *.py
+include setup.py
 recursive-include pathlib2 *.py
-recursive-include tests *.py
+prune tests *.py
 include *.rst
 include VERSION
-include requirements.txt
+exclude requirements.txt
 exclude .travis.yml
 exclude appveyor.yml
 exclude codecov.yml
 prune appveyor
+include Makefile
+exclude tox.ini
