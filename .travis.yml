@@ -4,39 +4,23 @@ python:
   - "3.6"
   - "3.5"
   - "3.4"
-  - "3.3"
-  - "3.2"
   - "2.7"
-  - "2.6"
   - "pypy"
   - "pypy3"
 env:
   - LC_ALL="en_US.utf-8"
   - LC_ALL="en_US.ascii"
-matrix:
-  allow_failures:
-  # pypy3 segfaults for some reason
-  - python: "pypy3"
 branches:
   only:
     - develop
 install:
-  - "python -c \"import sys; print(sys.getfilesystemencoding())\""
-  - "pip install --upgrade setuptools"
-  - "pip install -r requirements.txt"
-  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install pytest-cov; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then pip install unittest2; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install check-manifest flake8; fi"
+  - python -c "import sys; print(sys.getfilesystemencoding())"
+  - pip install --upgrade setuptools
+  - pip install -r requirements.txt
 script:
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then check-manifest; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then flake8; fi"
-  - cd tests
-  - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pytest test_pathlib2.py --cov=pathlib2; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pytest test_pathlib2.py; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python -Qnew test_pathlib2.py; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then python test_pathlib2_with_py2_unicode_literals.py; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python -Qnew test_pathlib2.py; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then python test_pathlib2_with_py2_unicode_literals.py; fi"
+  - check-manifest
+  - flake8
+  - pytest
+  - python tests/test_pathlib2_with_py2_unicode_literals.py
 after_success:
   - bash <(curl -s https://codecov.io/bash)
