@@ -13,8 +13,9 @@ import stat
 import sys
 import tempfile
 
+import pathlib2 as pathlib
+
 from .context import (
-    pathlib2 as pathlib,
     collections_abc, unittest, mock, support, android_not_root, TESTFN, grp, pwd, support_can_symlink,
     support_skip_unless_symlink
 )

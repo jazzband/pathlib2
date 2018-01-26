@@ -5,15 +5,14 @@ import tempfile
 
 import pytest
 
-from .context import pathlib2 as pathlib
-compat_open = pathlib.compat.open
-
-std_open = open
-
-P = pathlib.Path
+import pathlib2 as pathlib
 
 compat_os = pathlib.compat.os
 
+compat_open = pathlib.compat.open
+std_open = open
+
+P = pathlib.Path
 
 FILE_NAME = 'my.file'
 DEEP_FILE_COMPONENTS = ('path', 'to', FILE_NAME)

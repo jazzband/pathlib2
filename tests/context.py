@@ -4,10 +4,7 @@ import six
 import tempfile
 import errno
 
-sys.path.insert(0, os.path.abspath('..'))
-
 import pathlib2
-
 
 if sys.version_info >= (3, 3):
     import collections.abc as collections_abc

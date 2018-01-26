@@ -17,10 +17,10 @@ install:
   - python -c "import sys; print(sys.getfilesystemencoding())"
   - pip install --upgrade setuptools
   - pip install -r requirements.txt
+  - pip install tox-travis
 script:
   - check-manifest
   - flake8
-  - pytest
-  - python tests/test_pathlib2_with_py2_unicode_literals.py
+  - tox
 after_success:
   - bash <(curl -s https://codecov.io/bash)
