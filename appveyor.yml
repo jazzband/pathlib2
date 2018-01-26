@@ -1,11 +1,7 @@
 environment:
 
   matrix:
-    - PYTHON: "C:\\Python26"
-
     - PYTHON: "C:\\Python27"
-
-    - PYTHON: "C:\\Python33"
 
     - PYTHON: "C:\\Python34"
 
@@ -22,7 +18,7 @@ install:
 build: off
 
 test_script:
-  - "%PYTHON%/Scripts/py.test tests/test_pathlib2.py --cov=pathlib2"
+  - "%PYTHON%/Scripts/pytest tests --cov=pathlib2"
 
 after_test:
   - "SET PATH=%PYTHON%/Scripts;%PATH%"
