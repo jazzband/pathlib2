@@ -22,6 +22,7 @@ branches:
     - develop
 install:
   - "python -c \"import sys; print(sys.getfilesystemencoding())\""
+  - "pip install --upgrade setuptools"
   - "pip install -r requirements.txt"
   - "if [[ $TRAVIS_PYTHON_VERSION != '3.2' ]]; then pip install pytest-cov; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]]; then pip install pytest; fi"
