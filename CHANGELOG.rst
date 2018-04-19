@@ -1,6 +1,11 @@
 History
 -------
 
+Version 2.3.2
+^^^^^^^^^^^^^
+
+- Hotfix for broken setup.py.
+
 Version 2.3.1
 ^^^^^^^^^^^^^
 
