@@ -19,6 +19,8 @@ function InstallPip ($python_home) {
         Write-Host "Upgrading pip..."
         & $python_path -m pip install --upgrade pip
     }
+    Write-Host "Upgrading setuptools..."
+    & $python_path -m pip install --upgrade setuptools
 }
 
 function InstallPackage ($python_home, $pkg) {
