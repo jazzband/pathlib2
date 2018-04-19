@@ -1,8 +1,8 @@
 History
 -------
 
-Version 2.3.1 (in development)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Version 2.3.1
+^^^^^^^^^^^^^
 
 - Fix tests for systems where filesystem encoding only supports ascii
   (reported by yurivict, fixed with help of honnibal, see issue #30).
@@ -11,11 +11,13 @@ Version 2.3.1 (in development)
   dependency (see issue #31).
 
 - Remove legacy use of support module from old pathlib module (see
-  issue #39).
+  issue #39). This fixes the tests for Python 3.6.
 
-- Drop the "from __future__ import unicode_literals" test as it
-  introduced subtle bugs in the tests, and maintaining a separate test
-  module for it seems not worth the effort.
+- Drop the "from __future__ import unicode_literals" and -Qnew tests
+  as it introduced subtle bugs in the tests, and maintaining separate
+  test modules for these legacy features seems not worth the effort.
+
+- Drop Python 3.2 support, as scandir no longer supports it.
 
 Version 2.3.0
 ^^^^^^^^^^^^^
