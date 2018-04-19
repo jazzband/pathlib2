@@ -2,7 +2,6 @@ include *.py
 recursive-include pathlib2 *.py
 recursive-include tests *.py
 include *.rst
-include *.sh
 include VERSION
 include requirements.txt
 exclude .travis.yml
