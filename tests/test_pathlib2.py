@@ -44,10 +44,7 @@ try:
 except ImportError:
     from test import test_support as support
 
-if sys.version_info >= (3, 6):
-    android_not_root = support.android_not_root
-else:
-    android_not_root = False
+android_not_root = getattr(support, "android_not_root", False)
 
 TESTFN = support.TESTFN
 
@@ -1401,7 +1398,7 @@ class _BasePathTest(object):
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
                 try:
                     func(*args, **kwargs)
-                except:
+                except:  # noqa: E722
                     raise
             self.assertEqual(cm.exception.errno, errno.ENOENT)
 
@@ -1414,7 +1411,7 @@ class _BasePathTest(object):
                 # Python 2.6 kludge for http://bugs.python.org/issue7853
                 try:
                     func(*args, **kwargs)
-                except:
+                except:  # noqa: E722
                     raise
             self.assertEqual(cm.exception.errno, errno.EEXIST)
 
@@ -1553,7 +1550,7 @@ class _BasePathTest(object):
             # Python 2.6 kludge for http://bugs.python.org/issue7853
             try:
                 next(p.iterdir())
-            except:
+            except:  # noqa: E722s
                 raise
         # ENOENT or EINVAL under Windows, ENOTDIR otherwise
         # (see issue #12802)
@@ -1872,7 +1869,7 @@ class _BasePathTest(object):
             # Python 2.6 kludge for http://bugs.python.org/issue7853
             try:
                 p.mkdir()
-            except:
+            except:  # noqa: E722
                 raise
         self.assertEqual(cm.exception.errno, errno.EEXIST)
 
