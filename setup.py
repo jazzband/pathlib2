@@ -3,7 +3,7 @@
 # Distributed under the terms of the MIT License.
 
 import io
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def readfile(filename):
@@ -17,7 +17,7 @@ version = readfile("VERSION")[0].strip()
 setup(
     name='pathlib2',
     version=version,
-    py_modules=['pathlib2'],
+    packages=find_packages(),
     license='MIT',
     description='Object-oriented filesystem paths',
     long_description="\n".join(readme[2:]),
