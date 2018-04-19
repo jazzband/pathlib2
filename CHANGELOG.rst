@@ -10,6 +10,13 @@ Version 2.3.1 (in development)
 - Use modern setuptools syntax for specifying conditional scandir
   dependency (see issue #31).
 
+- Remove legacy use of support module from old pathlib module (see
+  issue #39).
+
+- Drop the "from __future__ import unicode_literals" test as it
+  introduced subtle bugs in the tests, and maintaining a separate test
+  module for it seems not worth the effort.
+
 Version 2.3.0
 ^^^^^^^^^^^^^
 

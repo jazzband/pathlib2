@@ -32,8 +32,6 @@ install:
 script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then check-manifest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then flake8; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then ./make_test_unicode_literals.sh; fi"
-  - "if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then ./make_test_unicode_literals.sh; fi"
   - cd tests
   - "pytest . --cov=pathlib2"
 after_success:
