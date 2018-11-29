@@ -9,6 +9,8 @@ Version 2.3.3
 
 - Drop Python 3.3 support, as scandir no longer supports it.
 
+- Add Python 3.7 support.
+
 Version 2.3.2
 ^^^^^^^^^^^^^
 
