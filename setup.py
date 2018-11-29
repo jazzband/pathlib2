@@ -42,8 +42,8 @@ setup(
         ],
     download_url='https://pypi.python.org/pypi/pathlib2/',
     url='https://pypi.python.org/pypi/pathlib2/',
-    install_requires=[
-        'six',
-        'scandir;python_version<"3.5"',
-        ],
+    install_requires=['six'],
+    extras_require={
+        ':python_version<"3.5"': ['scandir'],
+        },
 )
