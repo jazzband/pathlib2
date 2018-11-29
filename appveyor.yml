@@ -9,6 +9,8 @@ environment:
 
     - PYTHON: "C:\\Python36"
 
+    - PYTHON: "C:\\Python37"
+
 init:
   - "%PYTHON%/python --version"
 
