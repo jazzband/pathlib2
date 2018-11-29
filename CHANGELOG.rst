@@ -1,6 +1,14 @@
 History
 -------
 
+Version 2.3.3
+^^^^^^^^^^^^^
+
+- Bring back old deprecated dependency syntax to ensure compatibility
+  with older systems (see issue #46).
+
+- Drop Python 3.3 support, as scandir no longer supports it.
+
 Version 2.3.2
 ^^^^^^^^^^^^^
 
