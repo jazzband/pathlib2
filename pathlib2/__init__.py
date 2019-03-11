@@ -1758,4 +1758,5 @@ class WindowsPath(Path, PureWindowsPath):
         raise NotImplementedError("Path.group() is unsupported on this system")
 
     def is_mount(self):
-        raise NotImplementedError("Path.is_mount() is unsupported on this system")
+        raise NotImplementedError(
+            "Path.is_mount() is unsupported on this system")
