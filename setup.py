@@ -40,8 +40,7 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
-    download_url='https://pypi.python.org/pypi/pathlib2/',
-    url='https://pypi.python.org/pypi/pathlib2/',
+    url='https://github.com/mcmtroffaes/pathlib2',
     install_requires=['six'],
     extras_require={
         ':python_version<"3.5"': ['scandir'],
