@@ -13,9 +13,9 @@ import re
 import six
 import sys
 from collections import Sequence
-from errno import EINVAL, ENOENT, ENOTDIR, EEXIST, EPERM, EACCES
+from errno import EINVAL, ENOENT, ENOTDIR, EBADF
+from errno import EEXIST, EPERM, EACCES
 from operator import attrgetter
-
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
 try:
@@ -53,6 +53,18 @@ __all__ = [
 #
 # Internals
 #
+
+# EBADF - guard agains macOS `stat` throwing EBADF
+_IGNORED_ERROS = (ENOENT, ENOTDIR, EBADF)
+
+_IGNORED_WINERRORS = (
+    21,  # ERROR_NOT_READY - drive exists but is not accessible
+)
+
+
+def _ignore_error(exception):
+    return (getattr(exception, 'errno', None) in _IGNORED_ERROS or
+            getattr(exception, 'winerror', None) in _IGNORED_WINERRORS)
 
 
 def _py2_fsencode(parts):
@@ -715,7 +727,13 @@ class _RecursiveWildcardSelector(_Selector):
         def try_iter():
             entries = list(scandir(parent_path))
             for entry in entries:
-                if entry.is_dir() and not entry.is_symlink():
+                entry_is_dir = False
+                try:
+                    entry_is_dir = entry.is_dir()
+                except OSError as e:
+                    if not _ignore_error(e):
+                        raise
+                if entry_is_dir and not entry.is_symlink():
                     path = parent_path._make_child_relpath(entry.name)
                     for p in self._iterate_directories(path, is_dir, scandir):
                         yield p
@@ -1026,8 +1044,9 @@ class PurePath(object):
                                        self._parts[:-1] + [name])
 
     def with_suffix(self, suffix):
-        """Return a new path with the file suffix changed (or added, if
-        none).
+        """Return a new path with the file suffix changed.  If the path
+        has no suffix, add given suffix.  If the given suffix is an empty
+        string, remove the suffix from the path.
         """
         # XXX if suffix is None, should the current suffix be removed?
         f = self._flavour
@@ -1173,6 +1192,11 @@ class PurePosixPath(PurePath):
 
 
 class PureWindowsPath(PurePath):
+    """PurePath subclass for Windows systems.
+
+    On a Windows system, instantiating a PurePath should return this object.
+    However, you can also instantiate it directly on any system.
+    """
     _flavour = _windows_flavour
     __slots__ = ()
 
@@ -1181,6 +1205,14 @@ class PureWindowsPath(PurePath):
 
 
 class Path(PurePath):
+    """PurePath subclass that can make system calls.
+
+    Path represents a filesystem path but unlike PurePath, also offers
+    methods to do system calls on path objects. Depending on your system,
+    instantiating a Path will return either a PosixPath or a WindowsPath
+    object. You can also instantiate a PosixPath or WindowsPath directly,
+    but cannot instantiate a WindowsPath on a POSIX system or vice versa.
+    """
     __slots__ = (
         '_accessor',
         '_closed',
@@ -1286,7 +1318,7 @@ class Path(PurePath):
 
     def glob(self, pattern):
         """Iterate over this subtree and yield all existing files (of any
-        kind, including directories) matching the given pattern.
+        kind, including directories) matching the given relative pattern.
         """
         if not pattern:
             raise ValueError("Unacceptable pattern: {0!r}".format(pattern))
@@ -1300,7 +1332,8 @@ class Path(PurePath):
 
     def rglob(self, pattern):
         """Recursively yield all existing files (of any kind, including
-        directories) matching the given pattern, anywhere in this subtree.
+        directories) matching the given relative pattern, anywhere in
+        this subtree.
         """
         pattern = self._flavour.casefold(pattern)
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
@@ -1463,6 +1496,8 @@ class Path(PurePath):
         try:
             _try_except_filenotfounderror(_try_func, _exc_func)
         except OSError:
+            # Cannot rely on checking for EEXIST, since the operating system
+            # could give priority to other errors like EACCES or EROFS
             if not exist_ok or not self.is_dir():
                 raise
 
@@ -1548,8 +1583,11 @@ class Path(PurePath):
         try:
             self.stat()
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
         return True
 
@@ -1560,10 +1598,13 @@ class Path(PurePath):
         try:
             return S_ISDIR(self.stat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
 
     def is_file(self):
@@ -1574,11 +1615,35 @@ class Path(PurePath):
         try:
             return S_ISREG(self.stat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
             return False
+        except ValueError:
+            # Non-encodable path
+            return False
+
+    def is_mount(self):
+        """
+        Check if this path is a POSIX mount point
+        """
+        # Need to exist and be a dir
+        if not self.exists() or not self.is_dir():
+            return False
+
+        parent = Path(self.parent)
+        try:
+            parent_dev = parent.stat().st_dev
+        except OSError:
+            return False
+
+        dev = self.stat().st_dev
+        if dev != parent_dev:
+            return True
+        ino = self.stat().st_ino
+        parent_ino = parent.stat().st_ino
+        return ino == parent_ino
 
     def is_symlink(self):
         """
@@ -1587,9 +1652,12 @@ class Path(PurePath):
         try:
             return S_ISLNK(self.lstat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
 
     def is_block_device(self):
@@ -1599,10 +1667,13 @@ class Path(PurePath):
         try:
             return S_ISBLK(self.stat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
 
     def is_char_device(self):
@@ -1612,10 +1683,13 @@ class Path(PurePath):
         try:
             return S_ISCHR(self.stat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
 
     def is_fifo(self):
@@ -1625,10 +1699,13 @@ class Path(PurePath):
         try:
             return S_ISFIFO(self.stat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
 
     def is_socket(self):
@@ -1638,10 +1715,13 @@ class Path(PurePath):
         try:
             return S_ISSOCK(self.stat().st_mode)
         except OSError as e:
-            if e.errno not in (ENOENT, ENOTDIR):
+            if not _ignore_error(e):
                 raise
             # Path doesn't exist or is a broken symlink
             # (see https://bitbucket.org/pitrou/pathlib/issue/12/)
+            return False
+        except ValueError:
+            # Non-encodable path
             return False
 
     def expanduser(self):
@@ -1657,10 +1737,18 @@ class Path(PurePath):
 
 
 class PosixPath(Path, PurePosixPath):
+    """Path subclass for non-Windows systems.
+
+    On a POSIX system, instantiating a Path should return this object.
+    """
     __slots__ = ()
 
 
 class WindowsPath(Path, PureWindowsPath):
+    """Path subclass for Windows systems.
+
+    On a Windows system, instantiating a Path should return this object.
+    """
     __slots__ = ()
 
     def owner(self):
@@ -1668,3 +1756,7 @@ class WindowsPath(Path, PureWindowsPath):
 
     def group(self):
         raise NotImplementedError("Path.group() is unsupported on this system")
+
+    def is_mount(self):
+        raise NotImplementedError(
+            "Path.is_mount() is unsupported on this system")
