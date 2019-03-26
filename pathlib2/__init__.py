@@ -12,12 +12,18 @@ import posixpath
 import re
 import six
 import sys
-from collections import Sequence
+
 from errno import EINVAL, ENOENT, ENOTDIR, EBADF
 from errno import EEXIST, EPERM, EACCES
 from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
+
+if sys.version_info >= (3, 3):
+    from collections.abc import Sequence
+else:
+    from collections import Sequence
+
 try:
     from urllib import quote as urlquote_from_bytes
 except ImportError:
