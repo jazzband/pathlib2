@@ -108,9 +108,25 @@ def _try_except_filenotfounderror(try_func, except_func):
             try_func()
         except FileNotFoundError as exc:
             except_func(exc)
+    elif os.name != 'nt':
+        try:
+            try_func()
+        except EnvironmentError as exc:
+            if exc.errno != ENOENT:
+                raise
+            else:
+                except_func(exc)
     else:
         try:
             try_func()
+        except WindowsError as exc:
+            # errno contains winerror
+            # 2 = file not found
+            # 3 = path not found
+            if exc.errno not in (2, 3):
+                raise
+            else:
+                except_func(exc)
         except EnvironmentError as exc:
             if exc.errno != ENOENT:
                 raise
@@ -354,17 +370,22 @@ class _WindowsFlavour(_Flavour):
             else:
                 # End of the path after the first one not found
                 tail_parts = []
+                def _try_func():
+                    self._ext_to_normal(_getfinalpathname(s))
+                def _except_func():
+                    result[0] = "except"
                 while True:
-                    try:
+                    result = [""]
+                    _try_except_filenotfounderror(_try_func, _except_func)
+                    if result[0] != "except":
                         s = self._ext_to_normal(_getfinalpathname(s))
-                    except FileNotFoundError:
+                        return os.path.join(s, *reversed(tail_parts))
+                    else:
                         previous_s = s
                         s, tail = os.path.split(s)
                         tail_parts.append(tail)
                         if previous_s == s:
                             return path
-                    else:
-                        return os.path.join(s, *reversed(tail_parts))
         # Means fallback on absolute
         return None
 
