@@ -370,10 +370,13 @@ class _WindowsFlavour(_Flavour):
             else:
                 # End of the path after the first one not found
                 tail_parts = []
+
                 def _try_func():
                     self._ext_to_normal(_getfinalpathname(s))
+
                 def _except_func():
                     result[0] = "except"
+
                 while True:
                     result = [""]
                     _try_except_filenotfounderror(_try_func, _except_func)
