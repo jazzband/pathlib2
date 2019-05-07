@@ -372,23 +372,25 @@ class _WindowsFlavour(_Flavour):
                 tail_parts = []
 
                 def _try_func():
-                    self._ext_to_normal(_getfinalpathname(s))
+                    result[1] = self._ext_to_normal(_getfinalpathname(s))
+                    # if there was no exception, set flag to 0
+                    result[0] = 0
 
-                def _except_func(exc):
-                    result[0] = "except"
+                def _exc_func(exc):
+                    pass
 
                 while True:
-                    result = [""]
-                    _try_except_filenotfounderror(_try_func, _except_func)
-                    if result[0] != "except":
-                        s = self._ext_to_normal(_getfinalpathname(s))
-                        return os.path.join(s, *reversed(tail_parts))
-                    else:
+                    result = [1, None]
+                    _try_except_filenotfounderror(_try_func, _exc_func)
+                    if result[0] == 1:  # file not found exception raised
                         previous_s = s
                         s, tail = os.path.split(s)
                         tail_parts.append(tail)
                         if previous_s == s:
                             return path
+                    else:
+                        s = result[1]
+                        return os.path.join(s, *reversed(tail_parts))
         # Means fallback on absolute
         return None
 
