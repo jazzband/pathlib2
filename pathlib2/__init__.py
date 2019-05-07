@@ -374,7 +374,7 @@ class _WindowsFlavour(_Flavour):
                 def _try_func():
                     self._ext_to_normal(_getfinalpathname(s))
 
-                def _except_func():
+                def _except_func(exc):
                     result[0] = "except"
 
                 while True:
