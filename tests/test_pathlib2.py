@@ -2393,6 +2393,11 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             check()
 
 
+# extra test to ensure coverage of issue #54
+def test_resolve_extra():
+    pathlib.Path("~/does_not_exist").resolve()
+
+
 def main():
     unittest.main(__name__)
 
