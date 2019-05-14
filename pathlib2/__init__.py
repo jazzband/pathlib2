@@ -108,9 +108,25 @@ def _try_except_filenotfounderror(try_func, except_func):
             try_func()
         except FileNotFoundError as exc:
             except_func(exc)
+    elif os.name != 'nt':
+        try:
+            try_func()
+        except EnvironmentError as exc:
+            if exc.errno != ENOENT:
+                raise
+            else:
+                except_func(exc)
     else:
         try:
             try_func()
+        except WindowsError as exc:
+            # errno contains winerror
+            # 2 = file not found
+            # 3 = path not found
+            if exc.errno not in (2, 3):
+                raise
+            else:
+                except_func(exc)
         except EnvironmentError as exc:
             if exc.errno != ENOENT:
                 raise
@@ -354,16 +370,26 @@ class _WindowsFlavour(_Flavour):
             else:
                 # End of the path after the first one not found
                 tail_parts = []
+
+                def _try_func():
+                    result[0] = self._ext_to_normal(_getfinalpathname(s))
+                    # if there was no exception, set flag to 0
+                    result[1] = 0
+
+                def _exc_func(exc):
+                    pass
+
                 while True:
-                    try:
-                        s = self._ext_to_normal(_getfinalpathname(s))
-                    except FileNotFoundError:
+                    result = [None, 1]
+                    _try_except_filenotfounderror(_try_func, _exc_func)
+                    if result[1] == 1:  # file not found exception raised
                         previous_s = s
                         s, tail = os.path.split(s)
                         tail_parts.append(tail)
                         if previous_s == s:
                             return path
                     else:
+                        s = result[0]
                         return os.path.join(s, *reversed(tail_parts))
         # Means fallback on absolute
         return None
@@ -1378,9 +1404,20 @@ class Path(PurePath):
         s = self._flavour.resolve(self, strict=strict)
         if s is None:
             # No symlink resolution => for consistency, raise an error if
-            # the path doesn't exist or is forbidden
-            self.stat()
+            # the path is forbidden
+            # but not raise error if file does not exist (see issue #54).
+
+            def _try_func():
+                self.stat()
+
+            def _exc_func(exc):
+                pass
+
+            _try_except_filenotfounderror(_try_func, _exc_func)
             s = str(self.absolute())
+        else:
+            # ensure s is a string (normpath requires this on older python)
+            s = str(s)
         # Now we have no symlinks in the path, it's safe to normalize it.
         normed = self._flavour.pathmod.normpath(s)
         obj = self._from_parts((normed,), init=False)
