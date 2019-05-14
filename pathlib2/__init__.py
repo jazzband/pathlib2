@@ -1404,8 +1404,16 @@ class Path(PurePath):
         s = self._flavour.resolve(self, strict=strict)
         if s is None:
             # No symlink resolution => for consistency, raise an error if
-            # the path doesn't exist or is forbidden
-            self.stat()
+            # the path is forbidden
+            # but not raise error if file does not exist (see issue #54).
+
+            def _try_func():
+                self.stat()
+
+            def _exc_func():
+                pass
+
+            _try_except_filenotfounderror(_try_func, _exc_func)
             s = str(self.absolute())
         else:
             # ensure s is a string (normpath requires this on older python)
