@@ -1407,6 +1407,9 @@ class Path(PurePath):
             # the path doesn't exist or is forbidden
             self.stat()
             s = str(self.absolute())
+        else:
+            # ensure s is a string (normpath requires this on older python)
+            s = str(s)
         # Now we have no symlinks in the path, it's safe to normalize it.
         normed = self._flavour.pathmod.normpath(s)
         obj = self._from_parts((normed,), init=False)
