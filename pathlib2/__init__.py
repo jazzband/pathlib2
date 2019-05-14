@@ -1410,7 +1410,7 @@ class Path(PurePath):
             def _try_func():
                 self.stat()
 
-            def _exc_func():
+            def _exc_func(exc):
                 pass
 
             _try_except_filenotfounderror(_try_func, _exc_func)
