@@ -2401,6 +2401,7 @@ def test_resolve_extra():
 # extra test to ensure coverage of issue #56
 def test_unicode_mbcs():
     test = u'\u0442\u0435\u0441\u0442'  # "test" in russian in utf-8
+    print(repr(test.encode(sys.getfilesystemencoding(), "strict")))
     open(test, 'w').close()
     p = pathlib.Path(test)
     print(repr(p))
