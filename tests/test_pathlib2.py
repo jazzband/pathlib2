@@ -2398,6 +2398,16 @@ def test_resolve_extra():
     pathlib.Path("~/does_not_exist").resolve()
 
 
+# extra test to ensure coverage of issue #56
+def test_unicode_mbcs():
+    test = u'\u0442\u0435\u0441\u0442'  # "test" in russian in utf-8
+    open(test, 'w').close()
+    p = pathlib.Path(test)
+    print(repr(p))
+    assert(os.path.exists(test))
+    assert(p.exists())
+
+
 def main():
     unittest.main(__name__)
 
