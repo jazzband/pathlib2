@@ -42,6 +42,6 @@ script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.7' ]]; then check-manifest; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.7' ]]; then flake8; fi"
   - cd tests
-  - "pytest --cov-report=xml --cov=pathlib2 tests/"
+  - "pytest --cov-report=xml --cov=pathlib2 ."
 after_success:
   - bash <(curl -s https://codecov.io/bash)
