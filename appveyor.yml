@@ -24,5 +24,7 @@ test_script:
 
 after_test:
   - "SET PATH=%PYTHON%/Scripts;%PATH%"
+  - ps: "ls ."
+  - ps: "ls tests/"
   - "codecov"
 
