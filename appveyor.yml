@@ -24,8 +24,6 @@ test_script:
 
 after_test:
   - "SET PATH=%PYTHON%/Scripts;%PATH%"
-  - ps: "ls ."
-  - ps: "ls tests/"
   - ps: |
       $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
       Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
