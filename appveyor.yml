@@ -20,9 +20,8 @@ install:
 build: off
 
 test_script:
-  - pushd tests
+  - cd tests
   - "%PYTHON%/Scripts/py.test --cov-report=xml --cov=pathlib2 ."
-  - popd
 
 after_test:
   - "SET PATH=%PYTHON%/Scripts;%PATH%"
