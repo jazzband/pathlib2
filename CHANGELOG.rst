@@ -4,6 +4,13 @@ History
 Version 2.3.4
 ^^^^^^^^^^^^^
 
+- Do not raise windows error when calling resolve on a non-existing
+  path in Python 2.7, to match behaviour on Python 3.x (see issue #54).
+
+- Use the new collections.abc when possible (see issue #53).
+
+- Sync with upstream pathlib (see issues #47 and #51).
+
 Version 2.3.3
 ^^^^^^^^^^^^^
 
