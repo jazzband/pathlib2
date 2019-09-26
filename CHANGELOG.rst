@@ -4,6 +4,9 @@ History
 Version 2.3.5
 ^^^^^^^^^^^^^
 
+- Fall back to ascii when getfilesystemencoding returns None (see
+  issue #59).
+
 Version 2.3.4
 ^^^^^^^^^^^^^
 
