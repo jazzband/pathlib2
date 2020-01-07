@@ -22,6 +22,26 @@ matrix:
       dist: xenial
     - python: "pypy3"
       dist: xenial
+    - arch: arm64
+      python: "3.7"
+      dist: xenial
+      env: LC_ALL="en_US.utf-8"
+    - arch: arm64
+      python: "3.7"
+      dist: xenial
+      env: LC_ALL="en_US.ascii"
+    - arch: arm64
+      python: "3.6"
+      dist: xenial
+    - arch: arm64
+      python: "3.5"
+      dist: xenial
+    - arch: arm64
+      python: "3.4"
+      dist: xenial
+    - arch: arm64
+      python: "2.7"
+      dist: xenial
   allow_failures:
   # pypy occasionally has some bugs
   - python: "pypy"
