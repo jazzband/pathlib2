@@ -1077,7 +1077,7 @@ class PurePath(object):
                 or drv or root or len(parts) != 1):
             raise ValueError("Invalid name %r" % (name))
         return self._from_parsed_parts(self._drv, self._root,
-                                       self._parts[:-1] + [name])
+                                       self._parts[:-1] + parts[-1:])
 
     def with_suffix(self, suffix):
         """Return a new path with the file suffix changed.  If the path
@@ -1090,6 +1090,11 @@ class PurePath(object):
             raise ValueError("Invalid suffix %r" % (suffix))
         if suffix and not suffix.startswith('.') or suffix == '.':
             raise ValueError("Invalid suffix %r" % (suffix))
+
+        if six.PY2 and not isinstance(suffix, str) and isinstance(suffix, six.text_type):
+            # see _parse_args() above
+            suffix = suffix.encode(sys.getfilesystemencoding() or "ascii")
+
         name = self.name
         if not name:
             raise ValueError("%r has an empty name" % (self,))
