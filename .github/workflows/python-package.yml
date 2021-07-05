@@ -29,7 +29,7 @@ jobs:
         python -m pip install .
     - name: Install dependencies (Python 2.7)
       run: python -m pip install mock
-      if: ${{ matrix.python-version }} == '2.7'
+      if: matrix.python-version == '2.7'
     - name: Check manifest
       run: check-manifest
     - name: Lint with flake8
