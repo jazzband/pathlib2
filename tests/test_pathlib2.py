@@ -656,6 +656,10 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, P('a/b').with_name, 'c/')
         self.assertRaises(ValueError, P('a/b').with_name, 'c/d')
 
+    def test_with_name_common_unicode(self):
+        P = self.cls
+        self.assertEqual(P('a/b').with_name(six.u('\u00e4.xml')), P('a/\u00e4.xml'))
+
     def test_with_suffix_common(self):
         P = self.cls
         self.assertEqual(P('a/b').with_suffix('.gz'), P('a/b.gz'))
