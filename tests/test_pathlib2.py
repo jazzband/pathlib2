@@ -46,6 +46,13 @@ except ImportError:
 
 android_not_root = getattr(support, "android_not_root", False)
 
+try:
+    six.u('\u00e4').decode(sys.getfilesystemencoding() or "ascii")
+except UnicodeEncodeError:
+    fs_ascii_encoding_only = True
+else:
+    fs_ascii_encoding_only = False
+
 TESTFN = support.TESTFN
 
 # work around broken support.rmtree on Python 3.3 on Windows
@@ -656,6 +663,7 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, P('a/b').with_name, 'c/')
         self.assertRaises(ValueError, P('a/b').with_name, 'c/d')
 
+    @unittest.skipIf(fs_ascii_encoding_only, "filesystem only supports ascii")
     def test_with_name_common_unicode(self):
         P = self.cls
         self.assertEqual(P('a/b').with_name(six.u('d.xml')), P('a/d.xml'))
@@ -685,6 +693,7 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, P('a/b').with_suffix, './.d')
         self.assertRaises(ValueError, P('a/b').with_suffix, '.d/.')
 
+    @unittest.skipIf(fs_ascii_encoding_only, "filesystem only supports ascii")
     def test_with_suffix_common_unicode(self):
         P = self.cls
         self.assertEqual(P('a/b').with_suffix(six.u('.gz')), P('a/b.gz'))
