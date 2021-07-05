@@ -1,7 +1,7 @@
 pathlib2
 ========
 
-|appveyor| |travis| |codecov|
+|appveyor| |codecov|
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
@@ -53,10 +53,6 @@ which is obviously completely useless.
 Therefore, on Windows with Python 2.7, until this problem is fixed upstream,
 unfortunately you cannot rely on pathlib2 to support the full unicode range for filenames.
 See `issue #56 <https://github.com/mcmtroffaes/pathlib2/issues/56>`_ for more details.
-
-.. |travis| image:: https://travis-ci.org/mcmtroffaes/pathlib2.png?branch=develop
-    :target: https://travis-ci.org/mcmtroffaes/pathlib2
-    :alt: travis-ci
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/baddx3rpet2wyi2c?svg=true
     :target: https://ci.appveyor.com/project/mcmtroffaes/pathlib2
