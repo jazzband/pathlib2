@@ -36,8 +36,10 @@ function InstallRequirements ($python_home, $reqs) {
 function main () {
     InstallPip $env:PYTHON
     InstallRequirements $env:PYTHON -r requirements.txt
-    InstallPackage $env:PYTHON pytest-cov
+    InstallPackage $env:PYTHON pytest
     InstallPackage $env:PYTHON unittest2
+    InstallPackage $env:PYTHON coverage
+    InstallPackage $env:PYTHON codecov
     InstallPackage $env:PYTHON .
 }
 
