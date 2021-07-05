@@ -37,14 +37,22 @@ else:
 
 # assertRaisesRegex is missing prior to Python 3.2
 if sys.version_info < (3, 2):
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+    unittest.TestCase.assertRaisesRegex = \
+        unittest.TestCase.assertRaisesRegexp  # type: ignore
 
 try:
-    from test import support
+    from test import support  # type: ignore
 except ImportError:
-    from test import test_support as support
+    from test import test_support as support  # type: ignore
 
 android_not_root = getattr(support, "android_not_root", False)
+
+try:
+    six.u('\u00e4').encode(sys.getfilesystemencoding() or "ascii")
+except UnicodeEncodeError:
+    fs_ascii_encoding_only = True
+else:
+    fs_ascii_encoding_only = False
 
 TESTFN = support.TESTFN
 
@@ -58,7 +66,7 @@ try:
     import grp
     import pwd
 except ImportError:
-    grp = pwd = None
+    grp = pwd = None  # type: ignore
 
 # support.can_symlink is missing prior to Python 3
 if six.PY2:
@@ -656,6 +664,13 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, P('a/b').with_name, 'c/')
         self.assertRaises(ValueError, P('a/b').with_name, 'c/d')
 
+    @unittest.skipIf(fs_ascii_encoding_only, "filesystem only supports ascii")
+    def test_with_name_common_unicode(self):
+        P = self.cls
+        self.assertEqual(P('a/b').with_name(six.u('d.xml')), P('a/d.xml'))
+        self.assertEqual(
+             P('a/b').with_name(six.u('\u00e4.xml')), P(six.u('a/\u00e4.xml')))
+
     def test_with_suffix_common(self):
         P = self.cls
         self.assertEqual(P('a/b').with_suffix('.gz'), P('a/b.gz'))
@@ -678,6 +693,13 @@ class _BasePurePathTest(object):
         self.assertRaises(ValueError, P('a/b').with_suffix, '.c/.d')
         self.assertRaises(ValueError, P('a/b').with_suffix, './.d')
         self.assertRaises(ValueError, P('a/b').with_suffix, '.d/.')
+
+    @unittest.skipIf(fs_ascii_encoding_only, "filesystem only supports ascii")
+    def test_with_suffix_common_unicode(self):
+        P = self.cls
+        self.assertEqual(P('a/b').with_suffix(six.u('.gz')), P('a/b.gz'))
+        self.assertEqual(
+            P('a/b').with_suffix(six.u('.\u00e4')), P(six.u('a/b.\u00e4')))
 
     def test_relative_to_common(self):
         P = self.cls
@@ -760,7 +782,7 @@ class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
 
     @with_fsencode
     def test_as_uri_non_ascii(self):
-        from urllib.parse import quote_from_bytes
+        from urllib.parse import quote_from_bytes  # type: ignore
         P = self.cls
         try:
             os.fsencode('\xe9')
@@ -1391,7 +1413,7 @@ class _BasePathTest(object):
 
     def assertFileNotFound(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            with self.assertRaises(FileNotFoundError) as cm:
+            with self.assertRaises(FileNotFoundError) as cm:  # noqa: F821
                 func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
@@ -1404,7 +1426,7 @@ class _BasePathTest(object):
 
     def assertFileExists(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            with self.assertRaises(FileExistsError) as cm:
+            with self.assertRaises(FileExistsError) as cm:  # noqa: F821
                 func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
