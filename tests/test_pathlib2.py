@@ -37,7 +37,8 @@ else:
 
 # assertRaisesRegex is missing prior to Python 3.2
 if sys.version_info < (3, 2):
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp  # type: ignore
+    unittest.TestCase.assertRaisesRegex = \
+        unittest.TestCase.assertRaisesRegexp  # type: ignore
 
 try:
     from test import support  # type: ignore
@@ -65,7 +66,7 @@ try:
     import grp
     import pwd
 except ImportError:
-    grp = pwd = None  #  type: ignore
+    grp = pwd = None  # type: ignore
 
 # support.can_symlink is missing prior to Python 3
 if six.PY2:
@@ -1412,7 +1413,7 @@ class _BasePathTest(object):
 
     def assertFileNotFound(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            with self.assertRaises(FileNotFoundError) as cm:
+            with self.assertRaises(FileNotFoundError) as cm:  # noqa: F821
                 func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:
@@ -1425,7 +1426,7 @@ class _BasePathTest(object):
 
     def assertFileExists(self, func, *args, **kwargs):
         if sys.version_info >= (3, 3):
-            with self.assertRaises(FileExistsError) as cm:
+            with self.assertRaises(FileExistsError) as cm:  # noqa: F821
                 func(*args, **kwargs)
         else:
             with self.assertRaises(OSError) as cm:

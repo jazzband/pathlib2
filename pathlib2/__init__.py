@@ -27,7 +27,8 @@ except ImportError:
 try:
     from urllib import quote as urlquote_from_bytes  # type: ignore
 except ImportError:
-    from urllib.parse import quote_from_bytes as urlquote_from_bytes # type: ignore
+    from urllib.parse \
+        import quote_from_bytes as urlquote_from_bytes  # type: ignore
 
 
 try:
@@ -38,7 +39,8 @@ except NameError:
 supports_symlinks = True
 if os.name == 'nt':
     import nt  # type: ignore
-    if sys.getwindowsversion().major >= 6 and sys.version_info >= (3, 2):  # type: ignore
+    if sys.getwindowsversion().major >= 6 \
+            and sys.version_info >= (3, 2):  # type: ignore
         from nt import _getfinalpathname
     else:
         supports_symlinks = False
@@ -47,7 +49,7 @@ else:
     nt = None
 
 try:
-    from os import scandir as os_scandir  #  type: ignore
+    from os import scandir as os_scandir  # type: ignore
 except ImportError:
     from scandir import scandir as os_scandir  # type: ignore
 
@@ -84,7 +86,7 @@ def _try_except_fileexistserror(try_func, except_func, else_func=None):
     if sys.version_info >= (3, 3):
         try:
             try_func()
-        except FileExistsError as exc:
+        except FileExistsError as exc:  # noqa: F821
             except_func(exc)
         else:
             if else_func is not None:
@@ -106,7 +108,7 @@ def _try_except_filenotfounderror(try_func, except_func):
     if sys.version_info >= (3, 3):
         try:
             try_func()
-        except FileNotFoundError as exc:
+        except FileNotFoundError as exc:  # noqa: F821
             except_func(exc)
     elif os.name != 'nt':
         try:
@@ -139,7 +141,7 @@ def _try_except_permissionerror_iter(try_iter, except_iter):
         try:
             for x in try_iter():
                 yield x
-        except PermissionError as exc:
+        except PermissionError as exc:  # noqa: F821
             for x in except_iter(exc):
                 yield x
     else:
@@ -203,7 +205,7 @@ def _win32_get_unique_path_id(path):
                        None, OPEN_EXISTING, flags, None)
     if hfile == 0xffffffff:
         if sys.version_info >= (3, 3):
-            raise FileNotFoundError(path)
+            raise FileNotFoundError(path)  # noqa: F821
         else:
             exc = OSError("file not found: path")
             exc.errno = ENOENT
