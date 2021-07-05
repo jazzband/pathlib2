@@ -25,20 +25,20 @@ except ImportError:
     from collections import Sequence
 
 try:
-    from urllib import quote as urlquote_from_bytes
+    from urllib import quote as urlquote_from_bytes  # type: ignore
 except ImportError:
     from urllib.parse import quote_from_bytes as urlquote_from_bytes # type: ignore
 
 
 try:
-    intern = intern
+    intern = intern  # type: ignore
 except NameError:
     intern = sys.intern  # type: ignore
 
 supports_symlinks = True
 if os.name == 'nt':
     import nt  # type: ignore
-    if sys.getwindowsversion().major >= 6 and sys.version_info >= (3, 2):
+    if sys.getwindowsversion().major >= 6 and sys.version_info >= (3, 2):  # type: ignore
         from nt import _getfinalpathname
     else:
         supports_symlinks = False
