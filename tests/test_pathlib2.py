@@ -658,7 +658,8 @@ class _BasePurePathTest(object):
 
     def test_with_name_common_unicode(self):
         P = self.cls
-        self.assertEqual(P('a/b').with_name(six.u('d.xml')), P(six.u('a/d.xml')))
+        self.assertEqual(P('a/b').with_name(
+            six.u('d.xml')), P(six.u('a/d.xml')))
 
     def test_with_suffix_common(self):
         P = self.cls
@@ -685,7 +686,8 @@ class _BasePurePathTest(object):
 
     def test_with_suffix_common_unicode(self):
         P = self.cls
-        self.assertEqual(P('a/b').with_suffix(six.u('.gz')), P(six.u('a/b.gz')))
+        self.assertEqual(P('a/b').with_suffix(
+            six.u('.gz')), P(six.u('a/b.gz')))
 
     def test_relative_to_common(self):
         P = self.cls
