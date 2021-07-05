@@ -1091,7 +1091,8 @@ class PurePath(object):
         if suffix and not suffix.startswith('.') or suffix == '.':
             raise ValueError("Invalid suffix %r" % (suffix))
 
-        if six.PY2 and not isinstance(suffix, str) and isinstance(suffix, six.text_type):
+        if (six.PY2 and not isinstance(suffix, str)
+                and isinstance(suffix, six.text_type)):
             # see _parse_args() above
             suffix = suffix.encode(sys.getfilesystemencoding() or "ascii")
 
