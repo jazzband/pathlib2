@@ -5,7 +5,7 @@ pathlib2
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
-**As of January 1 2020, this repository will no longer receive any further updates, as Python 2 is no longer supported.**
+**As of January 1 2020, this repository will no longer receive any further feature updates, as Python 2 is no longer supported.**
 
 The `old pathlib <https://bitbucket.org/pitrou/pathlib>`_
 module on bitbucket is in bugfix-only mode.
