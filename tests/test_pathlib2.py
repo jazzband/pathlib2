@@ -47,7 +47,7 @@ except ImportError:
 android_not_root = getattr(support, "android_not_root", False)
 
 try:
-    six.u('\u00e4').decode(sys.getfilesystemencoding() or "ascii")
+    six.u('\u00e4').encode(sys.getfilesystemencoding() or "ascii")
 except UnicodeEncodeError:
     fs_ascii_encoding_only = True
 else:
