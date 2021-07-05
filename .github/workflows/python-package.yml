@@ -1,0 +1,40 @@
+name: Python package
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['ubuntu-latest']
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
+        lc-all: ['en_US.utf-8', 'en_US.ascii']
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install flake8 check-manifest pytest codecov coverage
+        pip install .
+    - name: Check manifest
+      run: |
+        check-manifest
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source
+        flake8 . --count --exit-zero --max-complexity=10
+    - name: Test with pytest
+      run: |
+        LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
+        codecov
