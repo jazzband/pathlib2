@@ -76,8 +76,8 @@ def _ignore_error(exception):
 def _py2_fsencode(parts):
     # py2 => minimal unicode support
     assert six.PY2
-    return [part.encode('ascii') if isinstance(part, six.text_type)
-            else part for part in parts]
+    return [part.encode(sys.getfilesystemencoding() or 'ascii')
+            if isinstance(part, six.text_type) else part for part in parts]
 
 
 def _try_except_fileexistserror(try_func, except_func, else_func=None):
