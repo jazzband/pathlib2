@@ -624,6 +624,7 @@ class _NormalAccessor(_Accessor):
         if supports_symlinks:
             symlink = _wrap_binary_strfunc(os.symlink)
         else:
+            @staticmethod
             def symlink(a, b, target_is_directory):
                 raise NotImplementedError(
                     "symlink() not available on this system")
