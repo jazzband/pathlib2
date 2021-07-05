@@ -38,6 +38,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10
     - name: Test with pytest
       run: |
-        LC_ALL=${{ matrix.lc-all}} python -c \"import sys; print(sys.getfilesystemencoding())\"
+        LC_ALL=${{ matrix.lc-all}} python -c "import sys; print(sys.getfilesystemencoding())"
         LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
         codecov
