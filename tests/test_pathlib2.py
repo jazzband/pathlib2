@@ -37,12 +37,12 @@ else:
 
 # assertRaisesRegex is missing prior to Python 3.2
 if sys.version_info < (3, 2):
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
+    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp  # type: ignore
 
 try:
-    from test import support
+    from test import support  # type: ignore
 except ImportError:
-    from test import test_support as support
+    from test import test_support as support  # type: ignore
 
 android_not_root = getattr(support, "android_not_root", False)
 
@@ -65,7 +65,7 @@ try:
     import grp
     import pwd
 except ImportError:
-    grp = pwd = None
+    grp = pwd = None  #  type: ignore
 
 # support.can_symlink is missing prior to Python 3
 if six.PY2:
@@ -781,7 +781,7 @@ class PurePosixPathTest(_BasePurePathTest, unittest.TestCase):
 
     @with_fsencode
     def test_as_uri_non_ascii(self):
-        from urllib.parse import quote_from_bytes
+        from urllib.parse import quote_from_bytes  # type: ignore
         P = self.cls
         try:
             os.fsencode('\xe9')

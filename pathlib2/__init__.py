@@ -20,25 +20,25 @@ from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
 
 try:
-    from collections.abc import Sequence
+    from collections.abc import Sequence  # type: ignore
 except ImportError:
     from collections import Sequence
 
 try:
     from urllib import quote as urlquote_from_bytes
 except ImportError:
-    from urllib.parse import quote_from_bytes as urlquote_from_bytes
+    from urllib.parse import quote_from_bytes as urlquote_from_bytes # type: ignore
 
 
 try:
     intern = intern
 except NameError:
-    intern = sys.intern
+    intern = sys.intern  # type: ignore
 
 supports_symlinks = True
 if os.name == 'nt':
-    import nt
-    if sys.getwindowsversion()[:2] >= (6, 0) and sys.version_info >= (3, 2):
+    import nt  # type: ignore
+    if sys.getwindowsversion().major >= 6 and sys.version_info >= (3, 2):
         from nt import _getfinalpathname
     else:
         supports_symlinks = False
@@ -47,9 +47,9 @@ else:
     nt = None
 
 try:
-    from os import scandir as os_scandir
+    from os import scandir as os_scandir  #  type: ignore
 except ImportError:
-    from scandir import scandir as os_scandir
+    from scandir import scandir as os_scandir  # type: ignore
 
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
@@ -577,19 +577,21 @@ class _Accessor:
     accessing paths on the filesystem."""
 
 
+def _wrap_strfunc(strfunc):
+    @functools.wraps(strfunc)
+    def wrapped(pathobj, *args):
+        return strfunc(str(pathobj), *args)
+    return staticmethod(wrapped)
+
+
+def _wrap_binary_strfunc(strfunc):
+    @functools.wraps(strfunc)
+    def wrapped(pathobjA, pathobjB, *args):
+        return strfunc(str(pathobjA), str(pathobjB), *args)
+    return staticmethod(wrapped)
+
+
 class _NormalAccessor(_Accessor):
-
-    def _wrap_strfunc(strfunc):
-        @functools.wraps(strfunc)
-        def wrapped(pathobj, *args):
-            return strfunc(str(pathobj), *args)
-        return staticmethod(wrapped)
-
-    def _wrap_binary_strfunc(strfunc):
-        @functools.wraps(strfunc)
-        def wrapped(pathobjA, pathobjB, *args):
-            return strfunc(str(pathobjA), str(pathobjB), *args)
-        return staticmethod(wrapped)
 
     stat = _wrap_strfunc(os.stat)
 
@@ -664,7 +666,7 @@ def _make_selector(pattern_parts):
 
 
 if hasattr(functools, "lru_cache"):
-    _make_selector = functools.lru_cache()(_make_selector)
+    _make_selector = functools.lru_cache()(_make_selector)  # type: ignore
 
 
 class _Selector:
