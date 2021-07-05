@@ -26,15 +26,18 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8 check-manifest pytest codecov coverage
-        pip install .
+        python -m pip install .
+    - name: Install dependencies (Python 2.7)
+      run: python -m pip install mock
+      if: ${{ matrix.python-version }} == '2.7'
     - name: Check manifest
-      run: |
-        check-manifest
+      run: check-manifest
     - name: Lint with flake8
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source
         flake8 . --count --exit-zero --max-complexity=10
     - name: Test with pytest
       run: |
+        LC_ALL=${{ matrix.lc-all}} python -c \"import sys; print(sys.getfilesystemencoding())\"
         LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
         codecov
