@@ -4,6 +4,8 @@ recursive-include tests *.py
 include *.rst
 include VERSION
 include requirements.txt
+include mypy.ini
+include pytest.ini
 exclude .travis.yml
 exclude appveyor.yml
 exclude codecov.yml
