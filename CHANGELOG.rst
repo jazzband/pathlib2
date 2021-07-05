@@ -4,6 +4,19 @@ History
 Version 2.3.6
 ^^^^^^^^^^^^^
 
+- Fix minor unicode bugs in with_name and with_suffix. Many thanks to
+  ppentchev for reporting and for providing a fix.
+
+- Fix a few minor bugs.
+
+- Allow unicode file paths on systems that support it
+  (note: unicode file paths will not work on Windows
+  due a broken filesystem encoder on Windows on Python 2).
+
+- Remove travis and add github actions for regression testing.
+
+- Fix mypy warnings.
+
 Version 2.3.5
 ^^^^^^^^^^^^^
 
