@@ -43,7 +43,8 @@ if os.name == 'nt':
     import nt  # type: ignore
     if sys.getwindowsversion().major >= 6 \
             and sys.version_info >= (3, 2):  # type: ignore
-        from nt import _getfinalpathname
+        from nt import _getfinalpathname as _gfpn
+        _getfinalpathname = _gfpn  # type: Optional[Callable[[str], str]]
     else:
         supports_symlinks = False
         _getfinalpathname = None
@@ -452,6 +453,7 @@ class _WindowsFlavour(_Flavour):
         return None
 
     def _split_extended_path(self, s, ext_prefix=ext_namespace_prefix):
+        # type: (str, str) -> Tuple[str, str]
         prefix = ''
         if s.startswith(ext_prefix):
             prefix = s[:4]
@@ -462,6 +464,7 @@ class _WindowsFlavour(_Flavour):
         return prefix, s
 
     def _ext_to_normal(self, s):
+        # type: (str) -> str
         # Turn back an extended path into a normal DOS-like path
         return self._split_extended_path(s)[1]
 
@@ -934,7 +937,7 @@ class PurePath(object):
     @classmethod
     def _parse_args(
             cls,  # type: Type[_P]
-            args,  # type: Tuple[Union[Text, PurePath], ...]
+            args,  # type: Sequence[Union[Text, PurePath]]
             ):
         # type: (...) -> Tuple[str, str, Sequence[str]]
         # This is useful when you don't want to create an instance, just
@@ -965,7 +968,7 @@ class PurePath(object):
 
     @classmethod
     def _from_parts(cls, args, init=True):
-        # type: (Type[_P], Tuple[Union[Text, PurePath], ...], bool) -> _P
+        # type: (Type[_P], Sequence[Union[Text, PurePath]], bool) -> _P
         # We need to call _parse_args on the instance, so as to get the
         # right flavour.
         self = object.__new__(cls)
