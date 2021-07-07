@@ -242,6 +242,14 @@ class _Flavour(object):
     def __init__(self):
         self.join = self.sep.join
 
+    def casefold(self, s):
+        # type: (str) -> str
+        raise NotImplementedError
+
+    def casefold_parts(self, parts):
+        # type: (List[str]) -> List[str]
+        raise NotImplementedError
+
     def splitroot(self, part, sep=sep):
         # type: (str, str) -> Tuple[str, str, str]
         raise NotImplementedError
@@ -287,6 +295,7 @@ class _Flavour(object):
         return drv, root, parsed
 
     def join_parsed_parts(self, drv, root, parts, drv2, root2, parts2):
+        # type: (str, str, List[str], str, str, List[str]) -> Tuple[str, str, List[str]]
         """
         Join the two paths represented by the respective
         (drive, root, parts) tuples.  Return a new (drive, root, parts) tuple.
