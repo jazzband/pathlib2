@@ -323,7 +323,7 @@ class _WindowsFlavour(_Flavour):
     def splitroot(self, part, sep=sep):
         first = part[0:1]
         second = part[1:2]
-        if (second == sep and first == sep):
+        if second == sep and first == sep:
             # XXX extended paths should also disable the collapsing of "."
             # components (according to MSDN docs).
             prefix, part = self._split_extended_path(part)
@@ -332,7 +332,7 @@ class _WindowsFlavour(_Flavour):
         else:
             prefix = ''
         third = part[2:3]
-        if (second == sep and first == sep and third != sep):
+        if second == sep and first == sep and third != sep:
             # is a UNC path:
             # vvvvvvvvvvvvvvvvvvvvv root
             # \\machine\mountpoint\directory\etc\...
