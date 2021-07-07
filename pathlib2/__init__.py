@@ -245,6 +245,7 @@ def _win32_get_unique_path_id(path):
 
 
 def _is_wildcard_pattern(pat):
+    # type: (Text) -> bool
     # Whether this pattern needs actual matching using fnmatch, or can
     # be looked up directly as a file.
     return "*" in pat or "?" in pat or "[" in pat
