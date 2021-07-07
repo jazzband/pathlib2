@@ -237,9 +237,14 @@ class _Flavour(object):
 
     sep = None  # type: str
     altsep = None  # type: str
+    is_supported = False  # type: bool
 
     def __init__(self):
         self.join = self.sep.join
+
+    def splitroot(self, part, sep=sep):
+        # type: (str, str) -> Tuple[str, str, str]
+        raise NotImplementedError
 
     def parse_parts(self, parts):
         # type: (Sequence[Text]) -> Tuple[str, str, List[str]]
