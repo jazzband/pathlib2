@@ -71,6 +71,7 @@ _IGNORED_WINERRORS = (
 
 
 def _ignore_error(exception):
+    # type: (BaseException) -> bool
     return (getattr(exception, 'errno', None) in _IGNORED_ERROS or
             getattr(exception, 'winerror', None) in _IGNORED_WINERRORS)
 
@@ -88,7 +89,12 @@ def _py2_fsencode(part):
         return part
 
 
-def _try_except_fileexistserror(try_func, except_func, else_func=None):
+def _try_except_fileexistserror(
+        try_func,  # type: Callable[[], None]
+        except_func,  # type: Callable[[BaseException], None]
+        else_func=None,  # type: Callable[[], None]
+        ):
+    # type: (...) -> None
     if sys.version_info >= (3, 3):
         try:
             try_func()
@@ -295,8 +301,16 @@ class _Flavour(object):
         parsed.reverse()
         return drv, root, parsed
 
-    def join_parsed_parts(self, drv, root, parts, drv2, root2, parts2):
-        # type: (str, str, List[str], str, str, List[str]) -> Tuple[str, str, List[str]]
+    def join_parsed_parts(
+            self,
+            drv,  # type: str
+            root,  # type: str
+            parts,  # type: List[str]
+            drv2,  # type: str
+            root2,  # type: str
+            parts2,  # type: List[str]
+            ):
+        # type: (...) -> Tuple[str, str, List[str]]
         """
         Join the two paths represented by the respective
         (drive, root, parts) tuples.  Return a new (drive, root, parts) tuple.
@@ -904,8 +918,11 @@ class PurePath(object):
         return self.__class__, tuple(self._parts)
 
     @classmethod
-    def _parse_args(cls, args):
-        # type: (Type[_P], Tuple[Union[Text, PurePath], ...]) -> Tuple[str, str, Sequence[str]]
+    def _parse_args(
+            cls,  # type: Type[_P]
+            args,  # type: Tuple[Union[Text, PurePath], ...]
+            ):
+        # type: (...) -> Tuple[str, str, Sequence[str]]
         # This is useful when you don't want to create an instance, just
         # canonicalize some constructor arguments.
         parts = []  # type: List[str]
