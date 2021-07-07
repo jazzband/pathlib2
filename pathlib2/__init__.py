@@ -10,7 +10,9 @@ import ntpath
 import os
 import posixpath
 import re
-from typing import TypeVar, Type, Union, Text, Tuple, List, Any, Callable
+from typing import (
+    TypeVar, Type, Union, Text, Tuple, List, Any, Callable, Iterable
+)
 
 import six
 import sys
@@ -116,7 +118,11 @@ def _try_except_fileexistserror(
                 else_func()
 
 
-def _try_except_filenotfounderror(try_func, except_func):
+def _try_except_filenotfounderror(
+        try_func,  # type: Callable[[], None]
+        except_func,  # type: Callable[[BaseException], None]
+        ):
+    # type: (...) -> None
     if sys.version_info >= (3, 3):
         try:
             try_func()
@@ -148,7 +154,14 @@ def _try_except_filenotfounderror(try_func, except_func):
                 except_func(exc)
 
 
-def _try_except_permissionerror_iter(try_iter, except_iter):
+_T = TypeVar("_T")
+
+
+def _try_except_permissionerror_iter(
+        try_iter,  # type: Callable[[], Iterable[_T]]
+        except_iter,  # type: Callable[[BaseException], Iterable[_T]]
+        ):
+    # type: (...) -> Iterable[_T]
     if sys.version_info >= (3, 3):
         try:
             for x in try_iter():
