@@ -13,9 +13,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ['ubuntu-latest']
+        platform: ['ubuntu-latest', 'windows-latest']
         python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
         lc-all: ['en_US.utf-8', 'en_US.ascii']
+        exclude:
+          - platform: windows-latest
+            lc-all: en_US.ascii
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -37,7 +40,9 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source
         flake8 . --count --exit-zero --max-complexity=10
     - name: Test with pytest
+      env:
+        LC_ALL: ${{ matrix.lc-all}}
       run: |
-        LC_ALL=${{ matrix.lc-all}} python -c "import sys; print(sys.getfilesystemencoding())"
-        LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
+        python -c "import sys; print(sys.getfilesystemencoding())"
+        coverage run -m pytest
         codecov
