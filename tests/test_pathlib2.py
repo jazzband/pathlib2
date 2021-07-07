@@ -47,12 +47,8 @@ except ImportError:
 
 android_not_root = getattr(support, "android_not_root", False)
 
-try:
-    six.u('\u00e4').encode(sys.getfilesystemencoding() or "ascii")
-except UnicodeEncodeError:
-    fs_ascii_encoding_only = True
-else:
-    fs_ascii_encoding_only = False
+fs_ascii_encoding_only = six.unichr(0x0100).encode(
+    sys.getfilesystemencoding(), "replace") == b"?"
 
 TESTFN = support.TESTFN
 
@@ -750,10 +746,7 @@ class _BasePurePathTest(object):
 
     # note: this is a new test not part of upstream
     # test that unicode works on Python 2
-    @unittest.skipIf(
-        six.unichr(0x0100).encode(
-            sys.getfilesystemencoding(), "replace") == b"?",
-        "file system encoding only supports ascii")
+    @unittest.skipIf(fs_ascii_encoding_only, "filesystem only supports ascii")
     def test_unicode(self):
         self.cls(six.unichr(0x0100))
 
