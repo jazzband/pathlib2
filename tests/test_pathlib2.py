@@ -37,8 +37,9 @@ else:
 
 # assertRaisesRegex is missing prior to Python 3.2
 if sys.version_info < (3, 2):
-    unittest.TestCase.assertRaisesRegex = \
-        unittest.TestCase.assertRaisesRegexp  # type: ignore
+    unittest.TestCase.assertRaisesRegex = (  # type: ignore
+        unittest.TestCase.assertRaisesRegexp
+    )
 
 try:
     from test import support  # type: ignore
