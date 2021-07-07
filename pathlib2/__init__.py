@@ -388,13 +388,12 @@ class _WindowsFlavour(_Flavour):
         s = str(path)
         if not s:
             return os.getcwd()
-        previous_s = None
         if _getfinalpathname is not None:
             if strict:
                 return self._ext_to_normal(_getfinalpathname(s))
             else:
                 # End of the path after the first one not found
-                tail_parts = []
+                tail_parts = []  # type: List[str]
 
                 def _try_func():
                     result[0] = self._ext_to_normal(_getfinalpathname(s))
@@ -405,11 +404,11 @@ class _WindowsFlavour(_Flavour):
                     pass
 
                 while True:
-                    result = [None, 1]
+                    result = ['', 1]
                     _try_except_filenotfounderror(_try_func, _exc_func)
                     if result[1] == 1:  # file not found exception raised
                         previous_s = s
-                        s, tail = os.path.split(s)
+                        s, tail = os.path.split(s)  # type: str
                         tail_parts.append(tail)
                         if previous_s == s:
                             return path
