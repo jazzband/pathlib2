@@ -10,7 +10,7 @@ import ntpath
 import os
 import posixpath
 import re
-from typing import TypeVar, Type, Union, Text, Tuple, List
+from typing import TypeVar, Type, Union, Text, Tuple, List, Any
 
 import six
 import sys
@@ -74,12 +74,17 @@ def _ignore_error(exception):
             getattr(exception, 'winerror', None) in _IGNORED_WINERRORS)
 
 
-def _py2_fsencode(parts):
-    # type: (List[Text]) -> List[str]
-    # py2 => minimal unicode support
-    assert six.PY2
-    return [part.encode(sys.getfilesystemencoding() or 'ascii')
-            if isinstance(part, six.text_type) else part for part in parts]
+def _py2_fsencode(part):
+    # type: (Text) -> str
+    if six.PY2 and isinstance(part, six.text_type):
+        # py2 => minimal unicode support
+        # note: in rare circumstances, on Python < 3.2,
+        # getfilesystemencoding can return None, in that
+        # case fall back to ascii
+        return part.encode(sys.getfilesystemencoding() or 'ascii')
+    else:
+        assert isinstance(part, str)
+        return part
 
 
 def _try_except_fileexistserror(try_func, except_func, else_func=None):
@@ -236,14 +241,13 @@ class _Flavour(object):
         self.join = self.sep.join
 
     def parse_parts(self, parts):
-        # type: (List[Text]) -> Tuple[str, str, List[str]]
-        if six.PY2:
-            parts = _py2_fsencode(parts)
+        # type: (Sequence[Text]) -> Tuple[str, str, List[str]]
+        parts2 = list(map(_py2_fsencode, parts))  # type: List[str]
         parsed = []  # type: List[str]
         sep = self.sep
         altsep = self.altsep
         drv = root = ''
-        it = reversed(parts)
+        it = reversed(parts2)
         for part in it:
             if not part:
                 continue
@@ -876,19 +880,17 @@ class PurePath(object):
         new PurePath object.
         """
         if cls is PurePath:
-            cls2 = PureWindowsPath if os.name == 'nt' else PurePosixPath
-            return cls2._from_parts(args)
-        else:
-            return cls._from_parts(args)
+            cls = PureWindowsPath if os.name == 'nt' else PurePosixPath
+        return cls._from_parts(args)
 
     def __reduce__(self):
         # Using the parts tuple helps share interned path parts
         # when pickling related paths.
-        return (self.__class__, tuple(self._parts))
+        return self.__class__, tuple(self._parts)
 
     @classmethod
     def _parse_args(cls, args):
-        # type: (Type[_P], Tuple[Union[Text, PurePath], ...]) -> Tuple[str, str, List[str]]
+        # type: (Type[_P], Tuple[Union[Text, PurePath], ...]) -> Tuple[str, str, Sequence[str]]
         # This is useful when you don't want to create an instance, just
         # canonicalize some constructor arguments.
         parts = []  # type: List[str]
@@ -900,19 +902,14 @@ class PurePath(object):
                     a = os.fspath(a)
                 else:
                     # duck typing for older Python versions
-                    if hasattr(a, "__fspath__"):
-                        a = a.__fspath__()
+                    a = getattr(a, "__fspath__", lambda: a)()
                 if isinstance(a, str):
                     # Force-cast str subclasses to str (issue #21127)
                     parts.append(str(a))
                 # also handle unicode for PY2 (six.text_type = unicode)
                 elif six.PY2 and isinstance(a, six.text_type):
                     # cast to str using filesystem encoding
-                    # note: in rare circumstances, on Python < 3.2,
-                    # getfilesystemencoding can return None, in that
-                    # case fall back to ascii
-                    parts.append(a.encode(
-                        sys.getfilesystemencoding() or "ascii"))
+                    parts.append(_py2_fsencode(a))
                 else:
                     raise TypeError(
                         "argument should be a str object or an os.PathLike "
@@ -1098,17 +1095,19 @@ class PurePath(object):
             return name
 
     def with_name(self, name):
+        # type: (Text) -> _P
         """Return a new path with the file name changed."""
         if not self.name:
             raise ValueError("%r has an empty name" % (self,))
         drv, root, parts = self._flavour.parse_parts((name,))
         if (not name or name[-1] in [self._flavour.sep, self._flavour.altsep]
                 or drv or root or len(parts) != 1):
-            raise ValueError("Invalid name %r" % (name))
+            raise ValueError("Invalid name %r" % name)
         return self._from_parsed_parts(self._drv, self._root,
                                        self._parts[:-1] + parts[-1:])
 
     def with_suffix(self, suffix):
+        # type: (Text) -> _P
         """Return a new path with the file suffix changed.  If the path
         has no suffix, add given suffix.  If the given suffix is an empty
         string, remove the suffix from the path.
@@ -1116,14 +1115,11 @@ class PurePath(object):
         # XXX if suffix is None, should the current suffix be removed?
         f = self._flavour
         if f.sep in suffix or f.altsep and f.altsep in suffix:
-            raise ValueError("Invalid suffix %r" % (suffix))
+            raise ValueError("Invalid suffix %r" % suffix)
         if suffix and not suffix.startswith('.') or suffix == '.':
-            raise ValueError("Invalid suffix %r" % (suffix))
+            raise ValueError("Invalid suffix %r" % suffix)
 
-        if (six.PY2 and not isinstance(suffix, str)
-                and isinstance(suffix, six.text_type)):
-            # see _parse_args() above
-            suffix = suffix.encode(sys.getfilesystemencoding() or "ascii")
+        suffix = _py2_fsencode(suffix)
 
         name = self.name
         if not name:
@@ -1290,6 +1286,7 @@ class Path(PurePath):
     )
 
     def __new__(cls, *args, **kwargs):
+        # type: (Type[_P], *Union[Text, PurePath], **Any) -> _P
         if cls is Path:
             cls = WindowsPath if os.name == 'nt' else PosixPath
         self = cls._from_parts(args, init=False)
