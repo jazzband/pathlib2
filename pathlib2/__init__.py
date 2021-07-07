@@ -873,7 +873,7 @@ class PurePath(object):
         self._hash = hash_
 
     def __new__(cls, *args):
-        # type: (Type[_P], *Union[Text, PurePath]) -> _P
+        # type: (Type[PurePath], *Union[Text, PurePath]) -> PurePath
         """Construct a PurePath from one or several strings and or existing
         PurePath objects.  The strings and path objects are combined so as
         to yield a canonicalized path, which is incorporated into the
@@ -1286,7 +1286,7 @@ class Path(PurePath):
     )
 
     def __new__(cls, *args, **kwargs):
-        # type: (Type[_P], *Union[Text, PurePath], **Any) -> _P
+        # type: (Type[Path], *Union[Text, PurePath], **Any) -> Path
         if cls is Path:
             cls = WindowsPath if os.name == 'nt' else PosixPath
         self = cls._from_parts(args, init=False)
