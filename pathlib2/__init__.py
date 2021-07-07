@@ -162,6 +162,7 @@ def _try_except_permissionerror_iter(try_iter, except_iter):
 
 
 def _win32_get_unique_path_id(path):
+    # type: (Text) -> Tuple[int, int, int]
     # get file information, needed for samefile on older Python versions
     # see http://timgolden.me.uk/python/win32_how_do_i/
     # see_if_two_files_are_the_same_file.html
@@ -933,6 +934,7 @@ class PurePath(object):
 
     @classmethod
     def _from_parsed_parts(cls, drv, root, parts, init=True):
+        # type: (str, str, Sequence[str], bool) -> _P
         self = object.__new__(cls)
         self._drv = drv
         self._root = root
