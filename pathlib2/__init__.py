@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2017 Matthias C. M. Troffaes
+# Copyright (c) 2014-2021 Matthias C. M. Troffaes
 # Copyright (c) 2012-2014 Antoine Pitrou and contributors
 # Distributed under the terms of the MIT License.
 
@@ -19,10 +19,7 @@ from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
 
-try:
-    from collections.abc import Sequence  # type: ignore
-except ImportError:
-    from collections import Sequence
+from six.moves.collections_abc import Sequence
 
 try:
     from urllib import quote as urlquote_from_bytes  # type: ignore
