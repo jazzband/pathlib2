@@ -773,8 +773,7 @@ class _PreciseSelector(_Selector):
                     yield p
 
         def except_iter(exc):
-            return
-            yield
+            return iter([])
 
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
@@ -801,8 +800,7 @@ class _WildcardSelector(_Selector):
                             yield p
 
         def except_iter(exc):
-            return
-            yield
+            return iter([])
 
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
@@ -831,8 +829,7 @@ class _RecursiveWildcardSelector(_Selector):
                         yield p
 
         def except_iter(exc):
-            return
-            yield
+            return iter([])
 
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
@@ -853,8 +850,7 @@ class _RecursiveWildcardSelector(_Selector):
                 yielded.clear()
 
         def except_iter(exc):
-            return
-            yield
+            return iter([])
 
         for x in _try_except_permissionerror_iter(try_iter, except_iter):
             yield x
