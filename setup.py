@@ -43,6 +43,6 @@ setup(
     url='https://github.com/mcmtroffaes/pathlib2',
     install_requires=['six'],
     extras_require={
-        ':python_version<"3.5"': ['scandir'],
+        ':python_version<"3.5"': ['scandir', 'typing'],
         },
 )

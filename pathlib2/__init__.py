@@ -10,6 +10,8 @@ import ntpath
 import os
 import posixpath
 import re
+from typing import TypeVar, Type, Union, Text, Tuple, List
+
 import six
 import sys
 
@@ -73,6 +75,7 @@ def _ignore_error(exception):
 
 
 def _py2_fsencode(parts):
+    # type: (List[Text]) -> List[str]
     # py2 => minimal unicode support
     assert six.PY2
     return [part.encode(sys.getfilesystemencoding() or 'ascii')
@@ -226,13 +229,17 @@ class _Flavour(object):
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
 
+    sep = None  # type: str
+    altsep = None  # type: str
+
     def __init__(self):
         self.join = self.sep.join
 
     def parse_parts(self, parts):
+        # type: (List[Text]) -> Tuple[str, str, List[str]]
         if six.PY2:
             parts = _py2_fsencode(parts)
-        parsed = []
+        parsed = []  # type: List[str]
         sep = self.sep
         altsep = self.altsep
         drv = root = ''
@@ -255,12 +262,12 @@ class _Flavour(object):
                     # If no drive is present, try to find one in the previous
                     # parts. This makes the result of parsing e.g.
                     # ("C:", "/", "a") reasonably intuitive.
-                    for part in it:
-                        if not part:
+                    for part2 in it:
+                        if not part2:
                             continue
                         if altsep:
-                            part = part.replace(altsep, sep)
-                        drv = self.splitroot(part)[0]
+                            part2 = part2.replace(altsep, sep)
+                        drv = self.splitroot(part2)[0]
                         if drv:
                             break
                 break
@@ -835,6 +842,9 @@ class _PathParents(Sequence):
         return "<{0}.parents>".format(self._pathcls.__name__)
 
 
+_P = TypeVar("_P", bound="PurePath")
+
+
 class PurePath(object):
 
     """PurePath represents a filesystem path and offers operations which
@@ -848,15 +858,28 @@ class PurePath(object):
         '_str', '_hash', '_pparts', '_cached_cparts',
     )
 
+    _flavour = None  # type: _Flavour
+
+    def __type_hints__(self, drv, root, parts, str_, hash_):
+        # type: (str, str, List[str], str, int) -> None
+        self._drv = drv
+        self._root = root
+        self._parts = parts
+        self._str = str_
+        self._hash = hash_
+
     def __new__(cls, *args):
+        # type: (Type[_P], *Union[Text, PurePath]) -> _P
         """Construct a PurePath from one or several strings and or existing
         PurePath objects.  The strings and path objects are combined so as
         to yield a canonicalized path, which is incorporated into the
         new PurePath object.
         """
         if cls is PurePath:
-            cls = PureWindowsPath if os.name == 'nt' else PurePosixPath
-        return cls._from_parts(args)
+            cls2 = PureWindowsPath if os.name == 'nt' else PurePosixPath
+            return cls2._from_parts(args)
+        else:
+            return cls._from_parts(args)
 
     def __reduce__(self):
         # Using the parts tuple helps share interned path parts
@@ -865,9 +888,10 @@ class PurePath(object):
 
     @classmethod
     def _parse_args(cls, args):
+        # type: (Type[_P], Tuple[Union[Text, PurePath], ...]) -> Tuple[str, str, List[str]]
         # This is useful when you don't want to create an instance, just
         # canonicalize some constructor arguments.
-        parts = []
+        parts = []  # type: List[str]
         for a in args:
             if isinstance(a, PurePath):
                 parts += a._parts
@@ -898,6 +922,7 @@ class PurePath(object):
 
     @classmethod
     def _from_parts(cls, args, init=True):
+        # type: (Type[_P], Tuple[Union[Text, PurePath], ...], bool) -> _P
         # We need to call _parse_args on the instance, so as to get the
         # right flavour.
         self = object.__new__(cls)
@@ -937,6 +962,7 @@ class PurePath(object):
         return self._from_parsed_parts(drv, root, parts)
 
     def __str__(self):
+        # type: () -> str
         """Return the string representation of the path, suitable for
         passing to system calls."""
         try:
@@ -991,6 +1017,7 @@ class PurePath(object):
         return not self == other
 
     def __hash__(self):
+        # type: () -> int
         try:
             return self._hash
         except AttributeError:
