@@ -939,7 +939,7 @@ class PurePath(object):
             cls,  # type: Type[_P]
             args,  # type: Sequence[Union[Text, PurePath]]
             ):
-        # type: (...) -> Tuple[str, str, Sequence[str]]
+        # type: (...) -> Tuple[str, str, List[str]]
         # This is useful when you don't want to create an instance, just
         # canonicalize some constructor arguments.
         parts = []  # type: List[str]
@@ -982,7 +982,7 @@ class PurePath(object):
 
     @classmethod
     def _from_parsed_parts(cls, drv, root, parts, init=True):
-        # type: (str, str, Sequence[str], bool) -> _P
+        # type: (str, str, List[str], bool) -> _P
         self = object.__new__(cls)
         self._drv = drv
         self._root = root
@@ -993,6 +993,7 @@ class PurePath(object):
 
     @classmethod
     def _format_parsed_parts(cls, drv, root, parts):
+        # type: (str, str, List[str]) -> str
         if drv or root:
             return drv + root + cls._flavour.join(parts[1:])
         else:
@@ -1003,6 +1004,7 @@ class PurePath(object):
         pass
 
     def _make_child(self, args):
+        # type: (Sequence[Union[Text, PurePath]]) -> str
         drv, root, parts = self._parse_args(args)
         drv, root, parts = self._flavour.join_parsed_parts(
             self._drv, self._root, self._parts, drv, root, parts)
