@@ -11,7 +11,7 @@ import os
 import posixpath
 import re
 from typing import (
-    TypeVar, Type, Union, Text, Tuple, List, Any, Callable, Iterable
+    TypeVar, Type, Union, Text, Tuple, List, Any, Callable, Iterable, Optional
 )
 
 import six
@@ -269,6 +269,10 @@ class _Flavour(object):
 
     def casefold_parts(self, parts):
         # type: (List[str]) -> List[str]
+        raise NotImplementedError
+
+    def gethomedir(self, username):
+        # type: (Optional[Text]) -> Text
         raise NotImplementedError
 
     def splitroot(self, part, sep=sep):
