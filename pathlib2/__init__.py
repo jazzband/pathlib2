@@ -10,7 +10,7 @@ import ntpath
 import os
 import posixpath
 import re
-from typing import TypeVar, Type, Union, Text, Tuple, List, Any
+from typing import TypeVar, Type, Union, Text, Tuple, List, Any, Callable
 
 import six
 import sys
@@ -23,11 +23,12 @@ from stat import (
 
 from six.moves.collections_abc import Sequence
 
-try:
-    from urllib import quote as urlquote_from_bytes  # type: ignore
-except ImportError:
-    from urllib.parse \
-        import quote_from_bytes as urlquote_from_bytes  # type: ignore
+if six.PY2:
+    import urllib
+    urlquote_from_bytes = urllib.quote  # type: Callable[[bytes], str]
+else:
+    import urllib.parse
+    urlquote_from_bytes = urllib.parse.quote_from_bytes
 
 
 try:
@@ -630,7 +631,7 @@ class _NormalAccessor(_Accessor):
     chmod = _wrap_strfunc(os.chmod)
 
     if hasattr(os, "lchmod"):
-        lchmod = _wrap_strfunc(os.lchmod)
+        lchmod = _wrap_strfunc(os.lchmod)  # type: ignore
     else:
         def lchmod(self, pathobj, mode):
             raise NotImplementedError("lchmod() not available on this system")
