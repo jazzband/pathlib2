@@ -200,7 +200,7 @@ def _win32_get_unique_path_id(path):
         flags = 0
     hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ,
                        None, OPEN_EXISTING, flags, None)
-    if hfile == 0xffffffff:
+    if hfile in [0xffffffff, 0xffffffffffffffff]:
         if sys.version_info >= (3, 3):
             raise FileNotFoundError(path)  # noqa: F821
         else:

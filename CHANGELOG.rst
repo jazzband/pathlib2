@@ -4,6 +4,8 @@ History
 Version 2.3.7
 ^^^^^^^^^^^^^
 
+- Fix bug in samefile on Windows when file does not exist.
+
 Version 2.3.6
 ^^^^^^^^^^^^^
 
