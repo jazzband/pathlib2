@@ -1,7 +1,7 @@
 pathlib2
 ========
 
-|github| |appveyor| |codecov|
+|github| |codecov|
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
@@ -57,10 +57,6 @@ See `issue #56 <https://github.com/mcmtroffaes/pathlib2/issues/56>`_ for more de
 .. |github| image:: https://github.com/mcmtroffaes/pathlib2/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/mcmtroffaes/pathlib2/actions/workflows/python-package.yml
    :alt: github
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/baddx3rpet2wyi2c?svg=true
-    :target: https://ci.appveyor.com/project/mcmtroffaes/pathlib2
-    :alt: appveyor
 
 .. |codecov| image:: https://codecov.io/gh/mcmtroffaes/pathlib2/branch/develop/graph/badge.svg
     :target: https://codecov.io/gh/mcmtroffaes/pathlib2
