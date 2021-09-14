@@ -1,7 +1,7 @@
 pathlib2
 ========
 
-|github| |codecov|
+|jazzband| |github| |codecov|
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
@@ -60,3 +60,6 @@ See `issue #56 <https://github.com/jazzband/pathlib2/issues/56>`_ for more detai
     :target: https://codecov.io/gh/jazzband/pathlib2
     :alt: codecov
 
+.. |jazzband| image:: https://jazzband.co/static/img/badge.svg
+   :alt: Jazzband
+   :target: https://jazzband.co/
