@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2017 Matthias C. M. Troffaes
+# Copyright (c) 2014-2021 Matthias C. M. Troffaes
 # Copyright (c) 2012-2014 Antoine Pitrou and contributors
 # Distributed under the terms of the MIT License.
 
@@ -40,7 +40,7 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: System :: Filesystems',
         ],
-    url='https://github.com/mcmtroffaes/pathlib2',
+    url='https://github.com/jazzband/pathlib2',
     install_requires=['six'],
     extras_require={
         ':python_version<"3.5"': ['scandir', 'typing'],
