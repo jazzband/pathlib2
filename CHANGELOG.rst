@@ -6,6 +6,10 @@ Version 2.3.7
 
 - Fix bug in samefile on Windows when file does not exist.
 
+- Add newline parameter for write_text (see issue #64).
+
+- Project migrated to jazzband.
+
 Version 2.3.6
 ^^^^^^^^^^^^^
 
