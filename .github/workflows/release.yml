@@ -49,4 +49,4 @@ jobs:
         with:
           user: jazzband
           password: ${{ secrets.JAZZBAND_RELEASE_KEY }}
-          repository_url: https://jazzband.co/projects/contextlib2/upload
+          repository_url: https://jazzband.co/projects/pathlib2/upload
