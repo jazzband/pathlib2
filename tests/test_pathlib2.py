@@ -737,7 +737,7 @@ class _BasePurePathTest(object):
     def test_pickling_common(self):
         P = self.cls
         p = P('/a/b')
-        for proto in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
             dumped = pickle.dumps(p, proto)
             pp = pickle.loads(dumped)
             self.assertIs(pp.__class__, p.__class__)
@@ -1433,10 +1433,7 @@ class _BasePathTest(object):
 
     def _test_cwd(self, p):
         q = self.cls(os.getcwd())
-        self.assertEqual(p, q)
-        self.assertEqual(str(p), str(q))
-        self.assertIs(type(p), type(q))
-        self.assertTrue(p.is_absolute())
+        self._extracted_from__test_home_3(p, q)
 
     def test_cwd(self):
         p = self.cls.cwd()
@@ -1444,6 +1441,9 @@ class _BasePathTest(object):
 
     def _test_home(self, p):
         q = self.cls(os.path.expanduser('~'))
+        self._extracted_from__test_home_3(p, q)
+
+    def _extracted_from__test_home_3(self, p, q):
         self.assertEqual(p, q)
         self.assertEqual(str(p), str(q))
         self.assertIs(type(p), type(q))
@@ -1548,7 +1548,7 @@ class _BasePathTest(object):
         expected = ['dirA', 'dirB', 'dirC', 'dirE', 'fileA']
         if support_can_symlink():
             expected += ['linkA', 'linkB', 'brokenLink']
-        self.assertEqual(paths, set(P(BASE, q) for q in expected))
+        self.assertEqual(paths, {P(BASE, q) for q in expected})
 
     @support_skip_unless_symlink
     def test_iterdir_symlink(self):
@@ -1556,7 +1556,7 @@ class _BasePathTest(object):
         P = self.cls
         p = P(BASE, 'linkB')
         paths = set(p.iterdir())
-        expected = set(P(BASE, 'linkB', q) for q in ['fileB', 'linkD'])
+        expected = {P(BASE, 'linkB', q) for q in ['fileB', 'linkD']}
         self.assertEqual(paths, expected)
 
     def test_iterdir_nodir(self):
@@ -1575,7 +1575,7 @@ class _BasePathTest(object):
 
     def test_glob_common(self):
         def _check(glob, expected):
-            self.assertEqual(set(glob), set(P(BASE, q) for q in expected))
+            self.assertEqual(set(glob), {P(BASE, q) for q in expected})
         P = self.cls
         p = P(BASE)
         it = p.glob("fileA")
@@ -1599,7 +1599,7 @@ class _BasePathTest(object):
 
     def test_rglob_common(self):
         def _check(glob, expected):
-            self.assertEqual(set(glob), set(P(BASE, q) for q in expected))
+            self.assertEqual(set(glob), {P(BASE, q) for q in expected})
         P = self.cls
         p = P(BASE)
         it = p.rglob("fileA")
@@ -1634,7 +1634,7 @@ class _BasePathTest(object):
                   'linkA',
                   'linkB',
                   ])
-        self.assertEqual(given, set([p / x for x in expect]))
+        self.assertEqual(given, {p / x for x in expect})
 
     def test_glob_dotdot(self):
         # ".." is not special in globs
@@ -2124,7 +2124,7 @@ class _BasePathTest(object):
 
     def test_pickling_common(self):
         p = self.cls(BASE, 'fileA')
-        for proto in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
             dumped = pickle.dumps(p, proto)
             pp = pickle.loads(dumped)
             self.assertEqual(pp.stat(), p.stat())
