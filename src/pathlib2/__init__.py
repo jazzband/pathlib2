@@ -296,9 +296,12 @@ class _Accessor:
     accessing paths on the filesystem."""
 
 
-def realpath_compat(path: AnyStr, *, strict=False) -> AnyStr:
-    # ignore strict argument
-    return os.path.realpath(path)
+if sys.version_info >= (3, 10):
+    from os.path import realpath as os_path_realpath
+elif os.name == "posix":
+    from pathlib2.posixpath import realpath as os_path_realpath
+else:
+    from pathlib2.ntpath import realpath as os_path_realpath
 
 
 class _NormalAccessor(_Accessor):
@@ -377,10 +380,7 @@ class _NormalAccessor(_Accessor):
 
     expanduser = staticmethod(os.path.expanduser)
 
-    if sys.version_info >= (3, 10):
-        realpath = staticmethod(os.path.realpath)
-    else:
-        realpath = staticmethod(realpath_compat)
+    realpath = staticmethod(os_path_realpath)
 
 
 _normal_accessor = _NormalAccessor()
