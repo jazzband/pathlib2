@@ -49,6 +49,13 @@ def _is_wildcard_pattern(pat):
     return "*" in pat or "?" in pat or "[" in pat
 
 
+if sys.version_info >= (3, 10):
+    io_text_encoding = io.text_encoding
+else:
+    def io_text_encoding(encoding, stacklevel=2):
+        return encoding
+
+
 class _Flavour(object):
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
@@ -1124,7 +1131,7 @@ class Path(PurePath):
         the built-in open() function does.
         """
         if "b" not in mode:
-            encoding = io.text_encoding(encoding)
+            encoding = io_text_encoding(encoding)
         return self._accessor.open(self, mode, buffering, encoding, errors,
                                    newline)
 
@@ -1139,7 +1146,7 @@ class Path(PurePath):
         """
         Open the file in text mode, read it, and close the file.
         """
-        encoding = io.text_encoding(encoding)
+        encoding = io_text_encoding(encoding)
         with self.open(mode='r', encoding=encoding, errors=errors) as f:
             return f.read()
 
@@ -1159,7 +1166,7 @@ class Path(PurePath):
         if not isinstance(data, str):
             raise TypeError('data must be str, not %s' %
                             data.__class__.__name__)
-        encoding = io.text_encoding(encoding)
+        encoding = io_text_encoding(encoding)
         with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
             return f.write(data)
 
