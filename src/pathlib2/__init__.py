@@ -302,9 +302,9 @@ class _Accessor:
 if sys.version_info >= (3, 10):
     from os.path import realpath as os_path_realpath
 elif os.name == "posix":
-    from pathlib2.posixpath import realpath as os_path_realpath
+    from pathlib2._posixpath import realpath as os_path_realpath
 else:
-    from pathlib2.ntpath import realpath as os_path_realpath
+    from pathlib2._ntpath import realpath as os_path_realpath
 
 
 class _NormalAccessor(_Accessor):
