@@ -15,9 +15,10 @@ import tests.os_helper as os_helper
 from tests.os_helper import TESTFN, FakePath
 
 try:
-    import grp, pwd
+    import grp
+    import pwd
 except ImportError:
-    grp = pwd = None
+    grp = pwd = None  # type: ignore
 
 
 class _BaseFlavourTest(object):
