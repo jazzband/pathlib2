@@ -1,6 +1,6 @@
 import os
 import stat
-from os.path import abspath, split, join
+from os.path import abspath, split, join, isabs
 
 
 def realpath(filename, *, strict=False):
