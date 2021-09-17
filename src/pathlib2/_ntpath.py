@@ -5,7 +5,8 @@ try:
     from nt import _getfinalpathname, readlink as _nt_readlink
 except ImportError:
     # realpath is a no-op on systems without _getfinalpathname support.
-    realpath = abspath
+    def realpath(path, *, strict=False):
+        return abspath(path)
 else:
     def _readlink_deep(path):
         # These error codes indicate that we should stop reading links and
