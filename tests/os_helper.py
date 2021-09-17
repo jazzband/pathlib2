@@ -11,6 +11,8 @@ import warnings
 
 
 # Filename used for testing
+from typing import Optional
+
 if os.name == 'java':
     # Jython disallows @ in module names
     TESTFN_ASCII = '$test'
@@ -145,7 +147,7 @@ for name in (
         break
 
 if FS_NONASCII:
-    TESTFN_NONASCII = TESTFN_ASCII + FS_NONASCII
+    TESTFN_NONASCII: Optional[str] = TESTFN_ASCII + FS_NONASCII
 else:
     TESTFN_NONASCII = None
 TESTFN = TESTFN_NONASCII or TESTFN_ASCII

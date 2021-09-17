@@ -67,6 +67,9 @@ class _Flavour(object):
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
 
+    sep: str
+    altsep: str
+
     def __init__(self):
         self.join = self.sep.join
 

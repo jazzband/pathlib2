@@ -22,6 +22,8 @@ except ImportError:
 
 class _BaseFlavourTest(object):
 
+    flavour: pathlib._Flavour
+
     def _check_parse_parts(self, arg, expected):
         f = self.flavour.parse_parts
         sep = self.flavour.sep
