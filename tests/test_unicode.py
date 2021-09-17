@@ -8,16 +8,9 @@ import tempfile
 
 import pathlib2 as pathlib
 
-from test_pathlib2 import support_skip_unless_symlink
+from tests.os_helper import skip_unless_symlink
 
-if sys.version_info < (2, 7):
-    try:
-        import unittest2 as unittest
-    except ImportError:
-        # pylint: disable=raise-missing-from
-        raise ImportError("unittest2 is required for tests on pre-2.7")
-else:
-    import unittest
+import unittest
 
 
 class TestUnicode(unittest.TestCase):
@@ -178,7 +171,7 @@ class TestUnicode(unittest.TestCase):
             all(isinstance(suffix, str) for suffix in child.suffixes)
         )
 
-    @support_skip_unless_symlink
+    @skip_unless_symlink
     def test_symlink_to(self):
         # type: (TestUnicode) -> None
         """Test that pathlib.Path.symlink_to() accepts a Unicode path."""

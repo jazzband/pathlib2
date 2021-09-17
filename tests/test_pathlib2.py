@@ -11,9 +11,8 @@ import tempfile
 import unittest
 from unittest import mock
 
-from test.support import import_helper
-from test.support import os_helper
-from test.support.os_helper import TESTFN, FakePath
+import tests.os_helper as os_helper
+from tests.os_helper import TESTFN, FakePath
 
 try:
     import grp, pwd
@@ -2543,7 +2542,6 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
                      "no home directory on VxWorks")
     def test_expanduser(self):
         P = self.cls
-        import_helper.import_module('pwd')
         import pwd
         pwdent = pwd.getpwuid(os.getuid())
         username = pwdent.pw_name
