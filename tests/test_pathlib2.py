@@ -2432,6 +2432,8 @@ class _BasePathTest(object):
 class PathTest(_BasePathTest, unittest.TestCase):
     cls = pathlib.Path
 
+    @unittest.skipIf(sys.version_info < (3, 7),
+                     'types not subscriptable in Python 3.6 and older')
     def test_class_getitem(self):
         self.assertIs(self.cls[str], self.cls)
 
