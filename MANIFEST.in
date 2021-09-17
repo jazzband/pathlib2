@@ -5,4 +5,5 @@ include *.rst
 include VERSION
 include mypy.ini
 include pytest.ini
+include .coveragerc
 exclude codecov.yml
