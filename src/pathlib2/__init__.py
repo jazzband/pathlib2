@@ -14,6 +14,9 @@ from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
 from urllib.parse import quote_from_bytes as urlquote_from_bytes
 
 
+from typing import AnyStr
+
+
 __all__ = [
     "PurePath", "PurePosixPath", "PureWindowsPath",
     "Path", "PosixPath", "WindowsPath",
@@ -279,6 +282,11 @@ class _Accessor:
     accessing paths on the filesystem."""
 
 
+def realpath_compat(path: AnyStr, *, strict=False) -> AnyStr:
+    # ignore strict argument
+    return os.path.realpath(path)
+
+
 class _NormalAccessor(_Accessor):
 
     stat = os.stat
@@ -355,7 +363,10 @@ class _NormalAccessor(_Accessor):
 
     expanduser = staticmethod(os.path.expanduser)
 
-    realpath = staticmethod(os.path.realpath)
+    if sys.version_info >= (3, 10):
+        realpath = staticmethod(os.path.realpath)
+    else:
+        realpath = staticmethod(realpath_compat)
 
 
 _normal_accessor = _NormalAccessor()
