@@ -1495,6 +1495,8 @@ class _BasePathTest(object):
         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
         self.assertRaises(FileNotFoundError, r.samefile, r)
         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
+        # note: added for coverage
+        self.assertSame(p, fileA_path)
 
     def test_empty_path(self):
         # The empty path points to '.'
