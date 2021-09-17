@@ -39,12 +39,12 @@ jobs:
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source
         flake8 . --count --exit-zero --max-complexity=10
-    - name: Test with pytest (Ubuntu)
+    - name: Test with pytest (Ubuntu/MacOS)
       run: |
         LC_ALL=${{ matrix.lc-all}} python -c "import sys; print(sys.getfilesystemencoding())"
         LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
         codecov
-      if: success() && matrix.platform == 'ubuntu-latest'
+      if: success() && matrix.platform != 'windows-latest'
     - name: Test with pytest (Windows)
       run: |
         python -c "import sys; print(sys.getfilesystemencoding())"
