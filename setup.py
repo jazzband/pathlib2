@@ -17,7 +17,8 @@ version = readfile("VERSION")[0].strip()
 setup(
     name='pathlib2',
     version=version,
-    packages=find_packages(),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     license='MIT',
     description='Object-oriented filesystem paths',
     long_description="\n".join(readme[2:]),
@@ -29,10 +30,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -41,8 +39,5 @@ setup(
         'Topic :: System :: Filesystems',
         ],
     url='https://github.com/jazzband/pathlib2',
-    install_requires=['six'],
-    extras_require={
-        ':python_version<"3.5"': ['scandir', 'typing'],
-        },
+    python_requires='>=3.6',
 )
