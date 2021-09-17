@@ -56,6 +56,13 @@ else:
         return encoding
 
 
+if sys.version_info >= (3, 8):
+    sys_audit = sys.audit
+else:
+    def sys_audit(*args):
+        return
+
+
 class _Flavour(object):
     """A flavour implements a particular (platform-specific) set of path
     semantics."""
@@ -1040,7 +1047,7 @@ class Path(PurePath):
         """Iterate over this subtree and yield all existing files (of any
         kind, including directories) matching the given relative pattern.
         """
-        sys.audit("pathlib.Path.glob", self, pattern)
+        sys_audit("pathlib.Path.glob", self, pattern)
         if not pattern:
             raise ValueError("Unacceptable pattern: {!r}".format(pattern))
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
@@ -1055,7 +1062,7 @@ class Path(PurePath):
         directories) matching the given relative pattern, anywhere in
         this subtree.
         """
-        sys.audit("pathlib.Path.rglob", self, pattern)
+        sys_audit("pathlib.Path.rglob", self, pattern)
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
