@@ -307,6 +307,14 @@ else:
     from pathlib2._ntpath import realpath as os_path_realpath
 
 
+if hasattr(os, "link"):
+    os_link = os.link
+else:
+    def os_link(src, dst, *, src_dir_fd=None, dst_dir_fd=None,
+                follow_symlinks=True):
+        raise NotImplementedError("os.link() not available on this system")
+
+
 class _NormalAccessor(_Accessor):
 
     stat = os.stat
@@ -323,11 +331,7 @@ class _NormalAccessor(_Accessor):
 
     unlink = os.unlink
 
-    if hasattr(os, "link"):
-        link = os.link
-    else:
-        def link(self, src, dst):
-            raise NotImplementedError("os.link() not available on this system")
+    link = os_link
 
     rmdir = os.rmdir
 
