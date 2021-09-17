@@ -2721,7 +2721,3 @@ class CompatiblePathTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             # Verify improper operations still raise a TypeError
             10 / pathlib.PurePath("test")
-
-
-if __name__ == "__main__":
-    unittest.main()

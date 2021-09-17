@@ -197,13 +197,3 @@ class TestUnicode(unittest.TestCase):
         child = self.get_child()
         child = child.with_suffix(b".txt".decode("us-ascii"))
         self.examine_path(child, "passwd.txt")
-
-
-def main():
-    # type: () -> None
-    """Run the tests."""
-    unittest.main(__name__)
-
-
-if __name__ == "__main__":
-    main()
