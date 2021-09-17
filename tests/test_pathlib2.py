@@ -3,7 +3,7 @@ import io
 import os
 import sys
 import errno
-import pathlib
+import pathlib2 as pathlib
 import pickle
 import socket
 import stat
