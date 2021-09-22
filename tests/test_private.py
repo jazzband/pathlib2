@@ -20,6 +20,8 @@ def test_realpath_nt_unc():
 def test_realpath_nt_badpath():
     with pytest.raises(FileNotFoundError):
         os_path_realpath('\\\\invalid\\server')
+    with pytest.raises(FileNotFoundError):
+        os_path_realpath('does/not/exist', strict=True)
 
 
 def test_realpath_bytes():
