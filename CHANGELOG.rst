@@ -10,6 +10,8 @@ Version 2.3.7
 
 - Project migrated to jazzband.
 
+- This version will be the last release to support Python 2.7.
+
 Version 2.3.6
 ^^^^^^^^^^^^^
 
