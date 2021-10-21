@@ -43,11 +43,13 @@ jobs:
       run: |
         LC_ALL=${{ matrix.lc-all}} python -c "import sys; print(sys.getfilesystemencoding())"
         LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
-        codecov
       if: success() && matrix.platform == 'ubuntu-latest'
     - name: Test with pytest (Windows)
       run: |
         python -c "import sys; print(sys.getfilesystemencoding())"
         coverage run -m pytest
-        codecov
       if: success() && matrix.platform == 'windows-latest'
+    - name: Uploade coverage to codecov
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true
