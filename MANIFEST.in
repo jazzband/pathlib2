@@ -1,6 +1,7 @@
 include *.py
 recursive-include pathlib2 *.py
 recursive-include tests *.py
+recursive-include docs *
 include *.rst
 include VERSION
 include requirements.txt
