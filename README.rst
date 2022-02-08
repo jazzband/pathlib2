@@ -5,8 +5,8 @@ pathlib2
 
 Fork of pathlib aiming to support the full stdlib Python API.
 
-The `old pathlib <https://bitbucket.org/pitrou/pathlib>`_
-module on bitbucket is in bugfix-only mode.
+The `old pathlib <https://web.archive.org/web/20181106215056/https://bitbucket.org/pitrou/pathlib/>`_
+module on bitbucket is no longer maintained.
 The goal of pathlib2 is to provide a backport of
 `standard pathlib <http://docs.python.org/dev/library/pathlib.html>`_
 module which tracks the standard library module,

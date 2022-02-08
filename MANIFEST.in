@@ -1,7 +1,9 @@
 include *.py
 recursive-include src *.py
 recursive-include tests *.py
+recursive-include docs *
 include *.rst
+include *.md
 include VERSION
 include mypy.ini
 include pytest.ini

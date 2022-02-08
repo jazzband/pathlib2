@@ -1,16 +1,23 @@
 History
 -------
 
+Version 2.3.8
+^^^^^^^^^^^^^
+
 Version 2.3.7
 ^^^^^^^^^^^^^
+
+- **This version will be the last release to support Python 2.7.**
 
 - Fix bug in samefile on Windows when file does not exist.
 
 - Add newline parameter for write_text (see issue #64).
 
-- Project migrated to jazzband.
+- Add many more type annotations.
 
-- This version will be the last release to support Python 2.7.
+- Continuous integration migrated to github actions.
+
+- Project migrated to jazzband.
 
 Version 2.3.6
 ^^^^^^^^^^^^^
