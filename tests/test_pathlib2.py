@@ -1,7 +1,7 @@
 try:
     from contextlib import nullcontext as contextlib_nullcontext
 except ImportError:
-    from compat_contextlib import nullcontext as contextlib_nullcontext
+    from tests.compat_contextlib import nullcontext as contextlib_nullcontext
 
 import collections.abc
 import io
