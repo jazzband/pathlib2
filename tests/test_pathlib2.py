@@ -1,8 +1,8 @@
 import sys
 if sys.version_info >= (3, 7):
-    from contextlib import nullcontext as contextlib_nullcontext
+    import contextlib
 else:
-    from tests.compat_contextlib import nullcontext as contextlib_nullcontext
+    import contextlib2 as contextlib
 
 import collections.abc
 import io
@@ -1752,7 +1752,7 @@ class _BasePathTest(object):
             with real_scandir(path) as scandir_it:
                 entries = list(scandir_it)
             entries.sort(key=lambda entry: entry.name)
-            return contextlib_nullcontext(entries)
+            return contextlib.nullcontext(entries)
 
         with mock.patch("os.scandir", my_scandir):
             self.assertEqual(len(set(base.glob("*"))), 3)
