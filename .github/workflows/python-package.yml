@@ -39,15 +39,24 @@ jobs:
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source
         flake8 . --count --exit-zero --max-complexity=10
+    - name: Documentation
+      run: |
+        python -m pip install sphinx
+        pushd docs && make html && popd
+      if: success() && matrix.platform == 'ubuntu-latest' && matrix.lc-all == 'en_US.utf-8' && matrix.python-version == '3.9'
     - name: Test with pytest (Ubuntu)
       run: |
         LC_ALL=${{ matrix.lc-all}} python -c "import sys; print(sys.getfilesystemencoding())"
         LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
-        codecov
+        coverage xml
       if: success() && matrix.platform == 'ubuntu-latest'
     - name: Test with pytest (Windows)
       run: |
         python -c "import sys; print(sys.getfilesystemencoding())"
         coverage run -m pytest
-        codecov
+        coverage xml
       if: success() && matrix.platform == 'windows-latest'
+    - name: Uploade coverage to codecov
+      uses: codecov/codecov-action@v2
+      with:
+        fail_ci_if_error: true

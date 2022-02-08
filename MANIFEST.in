@@ -1,12 +1,12 @@
 include *.py
 recursive-include pathlib2 *.py
 recursive-include tests *.py
+recursive-include docs *
 include *.rst
 include VERSION
 include requirements.txt
 include mypy.ini
 include pytest.ini
-exclude .travis.yml
-exclude appveyor.yml
 exclude codecov.yml
+exclude .pre-commit-config.yaml
 prune appveyor
