@@ -1,1 +1,6 @@
 comment: off
+# ignore some helper code that was copied from cpython
+ignore:
+  - "src/pathlib2/_ntpath.py"
+  - "src/pathlib2/_posixpath.py"
+  - "tests/os_helper.py"

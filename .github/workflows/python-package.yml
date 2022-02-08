@@ -13,12 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ['ubuntu-latest', 'windows-latest']
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
-        lc-all: ['en_US.utf-8', 'en_US.ascii']
-        exclude:
-          - platform: windows-latest
-            lc-all: en_US.ascii
+        platform: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11-dev']
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -30,9 +26,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 check-manifest pytest codecov coverage
         python -m pip install .
-    - name: Install dependencies (Python 2.7)
-      run: python -m pip install mock
-      if: matrix.python-version == '2.7'
     - name: Check manifest
       run: check-manifest
     - name: Lint with flake8
@@ -46,16 +39,8 @@ jobs:
       if: success() && matrix.platform == 'ubuntu-latest' && matrix.lc-all == 'en_US.utf-8' && matrix.python-version == '3.9'
     - name: Test with pytest (Ubuntu)
       run: |
-        LC_ALL=${{ matrix.lc-all}} python -c "import sys; print(sys.getfilesystemencoding())"
-        LC_ALL=${{ matrix.lc-all}} coverage run -m pytest
-        coverage xml
-      if: success() && matrix.platform == 'ubuntu-latest'
-    - name: Test with pytest (Windows)
-      run: |
-        python -c "import sys; print(sys.getfilesystemencoding())"
         coverage run -m pytest
         coverage xml
-      if: success() && matrix.platform == 'windows-latest'
     - name: Uploade coverage to codecov
       uses: codecov/codecov-action@v2
       with:
