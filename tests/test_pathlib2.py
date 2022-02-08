@@ -1,5 +1,5 @@
 import sys
-if sys.version_info < (3, 7):
+if sys.version_info >= (3, 7):
     from contextlib import nullcontext as contextlib_nullcontext
 else:
     from tests.compat_contextlib import nullcontext as contextlib_nullcontext
