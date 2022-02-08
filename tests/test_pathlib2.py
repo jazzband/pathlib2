@@ -1,12 +1,12 @@
-try:
+import sys
+if sys.version_info < (3, 7):
     from contextlib import nullcontext as contextlib_nullcontext
-except ImportError:
+else:
     from tests.compat_contextlib import nullcontext as contextlib_nullcontext
 
 import collections.abc
 import io
 import os
-import sys
 import errno
 import pathlib2 as pathlib
 import pickle
