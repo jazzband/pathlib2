@@ -10,3 +10,4 @@ include pytest.ini
 include .coveragerc
 exclude codecov.yml
 exclude .pre-commit-config.yaml
+include tests/requirements.txt
