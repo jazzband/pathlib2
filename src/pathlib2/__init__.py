@@ -1,8 +1,9 @@
+# Copyright (c) 2001-2022 Python Software Foundation; All Rights Reserved
 # Copyright (c) 2014-2022 Matthias C. M. Troffaes and contributors
 # Copyright (c) 2012-2014 Antoine Pitrou and contributors
+#
 # Distributed under the terms of the MIT License.
 
-import ctypes
 import fnmatch
 import functools
 import io

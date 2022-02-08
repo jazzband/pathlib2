@@ -1,4 +1,8 @@
-import contextlib
+try:
+    from contextlib import nullcontext as contextlib_nullcontext
+except ImportError:
+    from compat_contextlib import nullcontext as contextlib_nullcontext
+
 import collections.abc
 import io
 import os
@@ -1748,7 +1752,7 @@ class _BasePathTest(object):
             with real_scandir(path) as scandir_it:
                 entries = list(scandir_it)
             entries.sort(key=lambda entry: entry.name)
-            return contextlib.nullcontext(entries)
+            return contextlib_nullcontext(entries)
 
         with mock.patch("os.scandir", my_scandir):
             self.assertEqual(len(set(base.glob("*"))), 3)
