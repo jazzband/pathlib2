@@ -1,6 +1,11 @@
 History
 -------
 
+Version 2.3.7-post0
+^^^^^^^^^^^^^^^^^^^
+
+- Set minimum required six version (see issue #80).
+
 Version 2.3.7
 ^^^^^^^^^^^^^
 
