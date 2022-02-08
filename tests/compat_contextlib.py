@@ -1,7 +1,7 @@
-from contextlib import AbstractContextManager, AbstractAsyncContextManager
+from contextlib import AbstractContextManager
 
 
-class nullcontext(AbstractContextManager, AbstractAsyncContextManager):
+class nullcontext(AbstractContextManager):
     """Context manager that does no additional processing.
     Used as a stand-in for a normal context manager, when a particular
     block of code is only sometimes used with a normal context manager:
