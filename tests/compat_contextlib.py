@@ -18,9 +18,3 @@ class nullcontext(AbstractContextManager):
 
     def __exit__(self, *excinfo):
         pass
-
-    async def __aenter__(self):
-        return self.enter_result
-
-    async def __aexit__(self, *excinfo):
-        pass
