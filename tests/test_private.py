@@ -2,7 +2,7 @@
 
 import pytest
 import os
-from pathlib2 import os_path_realpath
+from pathlib2 import os_path_realpath, _make_selector
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows only test")
@@ -26,3 +26,8 @@ def test_realpath_nt_badpath():
 
 def test_realpath_bytes():
     assert os_path_realpath(b'abc.xyz').endswith(b'abc.xyz')
+
+
+def test_make_selector():
+    with pytest.raises(ValueError, match="Invalid pattern"):
+        _make_selector(("x**x",), None)
