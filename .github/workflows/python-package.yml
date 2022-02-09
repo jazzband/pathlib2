@@ -2,9 +2,9 @@ name: build
 
 on:
   push:
-    branches: [ develop, python2 ]
+    branches: [ develop, develop-py2 ]
   pull_request:
-    branches: [ develop, python2 ]
+    branches: [ develop, develop-py2 ]
 
 jobs:
   build:
