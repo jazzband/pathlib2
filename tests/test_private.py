@@ -1,4 +1,5 @@
 # some extra tests for coverage
+import sys
 
 import pytest
 import os
@@ -36,3 +37,18 @@ def test_make_selector():
 def test_parents_repr():
     p = Path("/some/path/here")
     assert repr(p.parents).endswith(".parents>")
+
+
+def test_bad_glob():
+    p = Path("some/path")
+    files = p.glob("/test/**")
+    with pytest.raises(NotImplementedError,
+                       match="Non-relative patterns are unsupported"):
+        next(files)
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="only for windows")
+def test_is_mount_windows():
+    p = Path("some/path")
+    with pytest.raises(NotImplementedError):
+        p.is_mount()
