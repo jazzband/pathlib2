@@ -1,5 +1,4 @@
 # some extra tests for coverage
-import sys
 
 import pytest
 import os
@@ -47,7 +46,7 @@ def test_bad_glob():
         next(files)
 
 
-@pytest.mark.skipif(sys.platform != "win32", reason="only for windows")
+@pytest.mark.skipif(os.name != "nt", reason="only for windows")
 def test_is_mount_windows():
     p = Path("some/path")
     with pytest.raises(NotImplementedError):
