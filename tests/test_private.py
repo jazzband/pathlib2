@@ -2,7 +2,7 @@
 
 import pytest
 import os
-from pathlib2 import os_path_realpath, _make_selector
+from pathlib2 import os_path_realpath, _make_selector, Path
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows only test")
@@ -31,3 +31,8 @@ def test_realpath_bytes():
 def test_make_selector():
     with pytest.raises(ValueError, match="Invalid pattern"):
         _make_selector(("x**x",), None)
+
+
+def test_parents_repr():
+    p = Path("/some/path/here")
+    assert repr(p.parents).endswith(".parents>")
