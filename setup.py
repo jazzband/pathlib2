@@ -41,7 +41,7 @@ setup(
         'Topic :: System :: Filesystems',
         ],
     url='https://github.com/jazzband/pathlib2',
-    install_requires=['six>=1.13.0'],
+    install_requires=['six'],
     extras_require={
         ':python_version<"3.5"': ['scandir', 'typing'],
         },

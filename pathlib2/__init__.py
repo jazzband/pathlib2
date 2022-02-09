@@ -23,7 +23,10 @@ from operator import attrgetter
 from stat import (
     S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO)
 
-from six.moves.collections_abc import Sequence
+if six.PY2:
+    from collections import Sequence
+else:
+    from collections.abc import Sequence
 
 if six.PY2:
     import urllib
