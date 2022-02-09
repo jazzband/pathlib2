@@ -1,4 +1,4 @@
 [run]
 branch = True
-source = tests,src/pathlib2
+source = tests,pathlib2
 omit = tests/os_helper.py
