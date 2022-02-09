@@ -1,10 +1,10 @@
-#!/usr/bin/python3
 """Test pathlib's handling of Unicode strings."""
 
 import errno
 import shutil
-import sys
 import tempfile
+
+import pytest
 
 import pathlib2 as pathlib
 
@@ -114,22 +114,17 @@ class TestUnicode(unittest.TestCase):
         # type: (TestUnicode) -> None
         """Test that pathlib.Path.rename() accepts a Unicode path."""
         first_child = next(self.base.glob(b"*".decode("us-ascii")))
-        try:
+        with pytest.raises(OSError) as err_info:
             first_child.rename(b"/nonexistent/nah".decode("us-ascii"))
-        except OSError as err:
-            if err.errno not in (errno.ENOENT, errno.ENOTDIR):
-                raise
+        assert err_info.value.errno in {errno.ENOENT, errno.ENOTDIR}
 
     def test_replace(self):
         # type: (TestUnicode) -> None
         """Test that pathlib.Path.replace() accepts a Unicode path."""
         first_child = next(self.base.glob(b"*".decode("us-ascii")))
-        if sys.version_info >= (3, 3):
-            try:
-                first_child.replace(b"/nonexistent/nah".decode("us-ascii"))
-            except OSError as err:
-                if err.errno not in (errno.ENOENT, errno.ENOTDIR):
-                    raise
+        with pytest.raises(OSError) as err_info:
+            first_child.replace(b"/nonexistent/nah".decode("us-ascii"))
+        assert err_info.value.errno in {errno.ENOENT, errno.ENOTDIR}
 
     def test_rglob(self):
         # type: (TestUnicode) -> None
