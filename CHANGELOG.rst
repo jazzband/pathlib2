@@ -4,6 +4,13 @@ History
 Version 2.3.8
 ^^^^^^^^^^^^^
 
+Version 2.3.7-post1
+^^^^^^^^^^^^^^^^^^^
+
+- Drop minimum required six version (see issue #81) for the love of good old
+  pip under Python 2, and updated code to be compatible with older six
+  versions. Previous 2.3.7 releases were yanked to avoid potential issues.
+
 Version 2.3.7-post0
 ^^^^^^^^^^^^^^^^^^^
 
