@@ -1,8 +1,13 @@
 History
 -------
 
-Version 2.3.8
+Version 3.0.0
 ^^^^^^^^^^^^^
+
+- Support for Python 2 has been dropped.
+
+- Sync with latest pathlib from
+  cpython b5527688aae11d0b5af58176267a9943576e71e5 (3.11.0a5).
 
 Version 2.3.7-post1
 ^^^^^^^^^^^^^^^^^^^
