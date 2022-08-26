@@ -312,6 +312,8 @@ else:
 def _make_selector(pattern_parts, flavour):
     pat = pattern_parts[0]
     child_parts = pattern_parts[1:]
+    if not pat:
+        return _TerminatingSelector()
     if pat == '**':
         cls = _RecursiveWildcardSelector
     elif '**' in pat:
@@ -472,6 +474,8 @@ class _PathParents(Sequence):
 
         if idx >= len(self) or idx < -len(self):
             raise IndexError(idx)
+        if idx < 0:
+            idx += len(self)
         return self._pathcls._from_parsed_parts(self._drv, self._root,
                                                 self._parts[:-idx - 1])
 
@@ -908,17 +912,20 @@ class Path(PurePath):
         return self._from_parsed_parts(self._drv, self._root, parts)
 
     def __enter__(self):
+        # In previous versions of pathlib, __exit__() marked this path as
+        # closed; subsequent attempts to perform I/O would raise an IOError.
+        # This functionality was never documented, and had the effect of
+        # making Path objects mutable, contrary to PEP 428.
+        # In Python 3.9 __exit__() was made a no-op.
+        # In Python 3.11 __enter__() began emitting DeprecationWarning.
+        # In Python 3.13 __enter__() and __exit__() should be removed.
+        warnings.warn("pathlib.Path.__enter__() is deprecated and scheduled "
+                      "for removal in Python 3.13; Path objects as a context "
+                      "manager is a no-op",
+                      DeprecationWarning, stacklevel=2)
         return self
 
     def __exit__(self, t, v, tb):
-        # https://bugs.python.org/issue39682
-        # In previous versions of pathlib, this method marked this path as
-        # closed; subsequent attempts to perform I/O would raise an IOError.
-        # This functionality was never documented, and had the effect of
-        # making Path objects mutable, contrary to PEP 428. In Python 3.9 the
-        # _closed attribute was removed, and this method made a no-op.
-        # This method and __enter__()/__exit__() should be deprecated and
-        # removed in the future.
         pass
 
     # Public API
@@ -971,6 +978,8 @@ class Path(PurePath):
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
+        if pattern[-1] in (self._flavour.sep, self._flavour.altsep):
+            pattern_parts.append('')
         selector = _make_selector(tuple(pattern_parts), self._flavour)
         for p in selector.select_from(self):
             yield p
@@ -984,6 +993,8 @@ class Path(PurePath):
         drv, root, pattern_parts = self._flavour.parse_parts((pattern,))
         if drv or root:
             raise NotImplementedError("Non-relative patterns are unsupported")
+        if pattern and pattern[-1] in (self._flavour.sep, self._flavour.altsep):
+            pattern_parts.append('')
         selector = _make_selector(("**",) + tuple(pattern_parts), self._flavour)
         for p in selector.select_from(self):
             yield p
