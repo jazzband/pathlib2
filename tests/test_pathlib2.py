@@ -1,10 +1,14 @@
-import contextlib
+import sys
+if sys.version_info >= (3, 7):
+    import contextlib
+else:
+    import contextlib2 as contextlib
+
 import collections.abc
 import io
 import os
-import sys
 import errno
-import pathlib
+import pathlib2 as pathlib
 import pickle
 import socket
 import stat
@@ -12,10 +16,8 @@ import tempfile
 import unittest
 from unittest import mock
 
-from test.support import import_helper
-from test.support import is_emscripten, is_wasi
-from test.support import os_helper
-from test.support.os_helper import TESTFN, FakePath
+import tests.os_helper as os_helper
+from tests.os_helper import TESTFN, FakePath
 
 try:
     import grp, pwd
@@ -1529,6 +1531,8 @@ class _BasePathTest(object):
         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
         self.assertRaises(FileNotFoundError, r.samefile, r)
         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
+        # note: added for coverage
+        self.assertSame(p, fileA_path)
 
     def test_empty_path(self):
         # The empty path points to '.'
@@ -2630,7 +2634,6 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
                      "no home directory on VxWorks")
     def test_expanduser(self):
         P = self.cls
-        import_helper.import_module('pwd')
         import pwd
         pwdent = pwd.getpwuid(os.getuid())
         username = pwdent.pw_name
@@ -2843,7 +2846,3 @@ class CompatiblePathTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             # Verify improper operations still raise a TypeError
             10 / pathlib.PurePath("test")
-
-
-if __name__ == "__main__":
-    unittest.main()
