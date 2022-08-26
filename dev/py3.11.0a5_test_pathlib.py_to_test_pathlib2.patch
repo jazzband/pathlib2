@@ -1,0 +1,71 @@
+--- a/../../python/cpython/Lib/test/test_pathlib.py
++++ b/tests/test_pathlib2.py
+@@ -1,10 +1,14 @@
+-import contextlib
++import sys
++if sys.version_info >= (3, 7):
++    import contextlib
++else:
++    import contextlib2 as contextlib
++
+ import collections.abc
+ import io
+ import os
+-import sys
+ import errno
+-import pathlib
++import pathlib2 as pathlib
+ import pickle
+ import socket
+ import stat
+@@ -12,18 +16,20 @@
+ import unittest
+ from unittest import mock
+ 
+-from test.support import import_helper
+-from test.support import os_helper
+-from test.support.os_helper import TESTFN, FakePath
++import tests.os_helper as os_helper
++from tests.os_helper import TESTFN, FakePath
+ 
+ try:
+-    import grp, pwd
++    import grp
++    import pwd
+ except ImportError:
+-    grp = pwd = None
++    grp = pwd = None  # type: ignore
+ 
+ 
+ class _BaseFlavourTest(object):
+ 
++    flavour: pathlib._Flavour
++
+     def _check_parse_parts(self, arg, expected):
+         f = self.flavour.parse_parts
+         sep = self.flavour.sep
+@@ -1517,6 +1523,8 @@ def test_samefile(self):
+         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
+         self.assertRaises(FileNotFoundError, r.samefile, r)
+         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
++        # note: added for coverage
++        self.assertSame(p, fileA_path)
+ 
+     def test_empty_path(self):
+         # The empty path points to '.'
+@@ -2572,7 +2580,6 @@ def test_rglob(self):
+                      "no home directory on VxWorks")
+     def test_expanduser(self):
+         P = self.cls
+-        import_helper.import_module('pwd')
+         import pwd
+         pwdent = pwd.getpwuid(os.getuid())
+         username = pwdent.pw_name
+@@ -2783,7 +2790,3 @@ def test_rtruediv(self):
+         with self.assertRaises(TypeError):
+             # Verify improper operations still raise a TypeError
+             10 / pathlib.PurePath("test")
+-
+-
+-if __name__ == "__main__":
+-    unittest.main()
