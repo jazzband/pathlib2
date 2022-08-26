@@ -1,14 +1,10 @@
-import sys
-if sys.version_info >= (3, 7):
-    import contextlib
-else:
-    import contextlib2 as contextlib
-
+import contextlib
 import collections.abc
 import io
 import os
+import sys
 import errno
-import pathlib2 as pathlib
+import pathlib
 import pickle
 import socket
 import stat
@@ -16,19 +12,18 @@ import tempfile
 import unittest
 from unittest import mock
 
-import tests.os_helper as os_helper
-from tests.os_helper import TESTFN, FakePath
+from test.support import import_helper
+from test.support import is_emscripten, is_wasi
+from test.support import os_helper
+from test.support.os_helper import TESTFN, FakePath
 
 try:
-    import grp
-    import pwd
+    import grp, pwd
 except ImportError:
-    grp = pwd = None  # type: ignore
+    grp = pwd = None
 
 
 class _BaseFlavourTest(object):
-
-    flavour: pathlib._Flavour
 
     def _check_parse_parts(self, arg, expected):
         f = self.flavour.parse_parts
@@ -470,6 +465,9 @@ class _BasePurePathTest(object):
         self.assertEqual(par[0], P('/a/b'))
         self.assertEqual(par[1], P('/a'))
         self.assertEqual(par[2], P('/'))
+        self.assertEqual(par[-1], P('/'))
+        self.assertEqual(par[-2], P('/a'))
+        self.assertEqual(par[-3], P('/a/b'))
         self.assertEqual(par[0:1], (P('/a/b'),))
         self.assertEqual(par[:2], (P('/a/b'), P('/a')))
         self.assertEqual(par[:-1], (P('/a/b'), P('/a')))
@@ -477,6 +475,8 @@ class _BasePurePathTest(object):
         self.assertEqual(par[::2], (P('/a/b'), P('/')))
         self.assertEqual(par[::-1], (P('/'), P('/a'), P('/a/b')))
         self.assertEqual(list(par), [P('/a/b'), P('/a'), P('/')])
+        with self.assertRaises(IndexError):
+            par[-4]
         with self.assertRaises(IndexError):
             par[3]
 
@@ -1393,6 +1393,7 @@ class _BasePathTest(object):
     #  |   |-- dirD
     #  |   |   `-- fileD
     #  |   `-- fileC
+    #  |   `-- novel.txt
     #  |-- dirE  # No permissions
     #  |-- fileA
     #  |-- linkA -> fileA
@@ -1417,6 +1418,8 @@ class _BasePathTest(object):
             f.write(b"this is file B\n")
         with open(join('dirC', 'fileC'), 'wb') as f:
             f.write(b"this is file C\n")
+        with open(join('dirC', 'novel.txt'), 'wb') as f:
+            f.write(b"this is a novel\n")
         with open(join('dirC', 'dirD', 'fileD'), 'wb') as f:
             f.write(b"this is file D\n")
         os.chmod(join('dirE'), 0)
@@ -1492,6 +1495,9 @@ class _BasePathTest(object):
         self.assertIs(type(p), type(q))
         self.assertTrue(p.is_absolute())
 
+    @unittest.skipIf(
+        pwd is None, reason="Test requires pwd module to get homedir."
+    )
     def test_home(self):
         with os_helper.EnvironmentVarGuard() as env:
             self._test_home(self.cls.home())
@@ -1523,14 +1529,13 @@ class _BasePathTest(object):
         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
         self.assertRaises(FileNotFoundError, r.samefile, r)
         self.assertRaises(FileNotFoundError, r.samefile, non_existent)
-        # note: added for coverage
-        self.assertSame(p, fileA_path)
 
     def test_empty_path(self):
         # The empty path points to '.'
         p = self.cls('')
         self.assertEqual(p.stat(), os.stat('.'))
 
+    @unittest.skipIf(is_wasi, "WASI has no user accounts.")
     def test_expanduser_common(self):
         P = self.cls
         p = P('~')
@@ -1663,6 +1668,11 @@ class _BasePathTest(object):
         else:
             _check(p.glob("*/fileB"), ['dirB/fileB', 'linkB/fileB'])
 
+        if not os_helper.can_symlink():
+            _check(p.glob("*/"), ["dirA", "dirB", "dirC", "dirE"])
+        else:
+            _check(p.glob("*/"), ["dirA", "dirB", "dirC", "dirE", "linkB"])
+
     def test_rglob_common(self):
         def _check(glob, expected):
             self.assertEqual(set(glob), { P(BASE, q) for q in expected })
@@ -1680,9 +1690,27 @@ class _BasePathTest(object):
                                         "linkB/fileB", "dirA/linkC/fileB"])
         _check(p.rglob("file*"), ["fileA", "dirB/fileB",
                                   "dirC/fileC", "dirC/dirD/fileD"])
+        if not os_helper.can_symlink():
+            _check(p.rglob("*/"), [
+                "dirA", "dirB", "dirC", "dirC/dirD", "dirE",
+            ])
+        else:
+            _check(p.rglob("*/"), [
+                "dirA", "dirA/linkC", "dirB", "dirB/linkD", "dirC",
+                "dirC/dirD", "dirE", "linkB",
+            ])
+        _check(p.rglob(""), ["", "dirA", "dirB", "dirC", "dirE", "dirC/dirD"])
+
         p = P(BASE, "dirC")
+        _check(p.rglob("*"), ["dirC/fileC", "dirC/novel.txt",
+                              "dirC/dirD", "dirC/dirD/fileD"])
         _check(p.rglob("file*"), ["dirC/fileC", "dirC/dirD/fileD"])
         _check(p.rglob("*/*"), ["dirC/dirD/fileD"])
+        _check(p.rglob("*/"), ["dirC/dirD"])
+        _check(p.rglob(""), ["dirC", "dirC/dirD"])
+        # gh-91616, a re module regression
+        _check(p.rglob("*.txt"), ["dirC/novel.txt"])
+        _check(p.rglob("*.*"), ["dirC/novel.txt"])
 
     @os_helper.skip_unless_symlink
     def test_rglob_symlink_loop(self):
@@ -1693,7 +1721,8 @@ class _BasePathTest(object):
         expect = {'brokenLink',
                   'dirA', 'dirA/linkC',
                   'dirB', 'dirB/fileB', 'dirB/linkD',
-                  'dirC', 'dirC/dirD', 'dirC/dirD/fileD', 'dirC/fileC',
+                  'dirC', 'dirC/dirD', 'dirC/dirD/fileD',
+                  'dirC/fileC', 'dirC/novel.txt',
                   'dirE',
                   'fileA',
                   'linkA',
@@ -1858,8 +1887,10 @@ class _BasePathTest(object):
         it = p.iterdir()
         it2 = p.iterdir()
         next(it2)
-        with p:
-            pass
+        # bpo-46556: path context managers are deprecated in Python 3.11.
+        with self.assertWarns(DeprecationWarning):
+            with p:
+                pass
         # Using a path as a context manager is a no-op, thus the following
         # operations should still succeed after the context manage exits.
         next(it)
@@ -1867,9 +1898,11 @@ class _BasePathTest(object):
         p.exists()
         p.resolve()
         p.absolute()
-        with p:
-            pass
+        with self.assertWarns(DeprecationWarning):
+            with p:
+                pass
 
+    @os_helper.skip_unless_working_chmod
     def test_chmod(self):
         p = self.cls(BASE) / 'fileA'
         mode = p.stat().st_mode
@@ -1884,6 +1917,7 @@ class _BasePathTest(object):
 
     # On Windows, os.chmod does not follow symlinks (issue #15411)
     @only_posix
+    @os_helper.skip_unless_working_chmod
     def test_chmod_follow_symlinks_true(self):
         p = self.cls(BASE) / 'linkA'
         q = p.resolve()
@@ -1899,6 +1933,7 @@ class _BasePathTest(object):
 
     # XXX also need a test for lchmod.
 
+    @os_helper.skip_unless_working_chmod
     def test_stat(self):
         p = self.cls(BASE) / 'fileA'
         st = p.stat()
@@ -2160,6 +2195,7 @@ class _BasePathTest(object):
         self.assertTrue(p.exists())
         self.assertEqual(p.stat().st_ctime, st_ctime_first)
 
+    @unittest.skipIf(is_emscripten, "FS root cannot be modified on Emscripten.")
     def test_mkdir_exist_ok_root(self):
         # Issue #25803: A drive root could raise PermissionError on Windows.
         self.cls('/').resolve().mkdir(exist_ok=True)
@@ -2344,6 +2380,12 @@ class _BasePathTest(object):
         self.assertIs((P / 'fileA\x00').is_socket(), False)
 
     @unittest.skipUnless(hasattr(socket, "AF_UNIX"), "Unix sockets required")
+    @unittest.skipIf(
+        is_emscripten, "Unix sockets are not implemented on Emscripten."
+    )
+    @unittest.skipIf(
+        is_wasi, "Cannot create socket on WASI."
+    )
     def test_is_socket_true(self):
         P = self.cls(BASE, 'mysock')
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -2499,6 +2541,10 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         with self.assertRaises(RuntimeError):
             print(path.resolve(strict))
 
+    @unittest.skipIf(
+        is_emscripten or is_wasi,
+        "umask is not implemented on Emscripten/WASI."
+    )
     def test_open_mode(self):
         old_mask = os.umask(0)
         self.addCleanup(os.umask, old_mask)
@@ -2522,6 +2568,10 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         finally:
             os.chdir(current_directory)
 
+    @unittest.skipIf(
+        is_emscripten or is_wasi,
+        "umask is not implemented on Emscripten/WASI."
+    )
     def test_touch_mode(self):
         old_mask = os.umask(0)
         self.addCleanup(os.umask, old_mask)
@@ -2580,6 +2630,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
                      "no home directory on VxWorks")
     def test_expanduser(self):
         P = self.cls
+        import_helper.import_module('pwd')
         import pwd
         pwdent = pwd.getpwuid(os.getuid())
         username = pwdent.pw_name
@@ -2687,6 +2738,7 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
         P = self.cls
         p = P(BASE)
         self.assertEqual(set(p.glob("FILEa")), { P(BASE, "fileA") })
+        self.assertEqual(set(p.glob("*a\\")), { P(BASE, "dirA") })
         self.assertEqual(set(p.glob("F*a")), { P(BASE, "fileA") })
         self.assertEqual(set(map(str, p.glob("FILEa"))), {f"{p}\\FILEa"})
         self.assertEqual(set(map(str, p.glob("F*a"))), {f"{p}\\fileA"})
@@ -2695,6 +2747,7 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
         P = self.cls
         p = P(BASE, "dirC")
         self.assertEqual(set(p.rglob("FILEd")), { P(BASE, "dirC/dirD/fileD") })
+        self.assertEqual(set(p.rglob("*\\")), { P(BASE, "dirC/dirD") })
         self.assertEqual(set(map(str, p.rglob("FILEd"))), {f"{p}\\dirD\\FILEd"})
 
     def test_expanduser(self):
@@ -2790,3 +2843,7 @@ class CompatiblePathTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             # Verify improper operations still raise a TypeError
             10 / pathlib.PurePath("test")
+
+
+if __name__ == "__main__":
+    unittest.main()
