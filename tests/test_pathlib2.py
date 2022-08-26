@@ -16,9 +16,9 @@ import tempfile
 import unittest
 from unittest import mock
 
-from tests.support import is_emscripten, is_wasi
-from tests.support import os_helper
-from tests.support.os_helper import TESTFN, FakePath
+from .support import is_emscripten, is_wasi
+from .support import os_helper
+from .support.os_helper import TESTFN, FakePath
 
 try:
     import grp, pwd
