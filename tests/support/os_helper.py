@@ -11,8 +11,6 @@ import warnings
 
 
 # Filename used for testing
-from typing import Optional
-
 if os.name == 'java':
     # Jython disallows @ in module names
     TESTFN_ASCII = '$test'
@@ -51,8 +49,8 @@ if os.name == 'nt':
                   'encoding (%s). Unicode filename tests may not be effective'
                   % (TESTFN_UNENCODABLE, sys.getfilesystemencoding()))
             TESTFN_UNENCODABLE = None
-# Mac OS X denies unencodable filenames (invalid utf-8)
-elif sys.platform != 'darwin':
+# macOS and Emscripten deny unencodable filenames (invalid utf-8)
+elif sys.platform not in {'darwin', 'emscripten', 'wasi'}:
     try:
         # ascii and utf-8 cannot encode the byte 0xff
         b'\xff'.decode(sys.getfilesystemencoding())
@@ -147,7 +145,7 @@ for name in (
         break
 
 if FS_NONASCII:
-    TESTFN_NONASCII: Optional[str] = TESTFN_ASCII + FS_NONASCII
+    TESTFN_NONASCII = TESTFN_ASCII + FS_NONASCII
 else:
     TESTFN_NONASCII = None
 TESTFN = TESTFN_NONASCII or TESTFN_ASCII
@@ -173,9 +171,13 @@ def can_symlink():
     global _can_symlink
     if _can_symlink is not None:
         return _can_symlink
-    symlink_path = TESTFN + "can_symlink"
+    # WASI / wasmtime prevents symlinks with absolute paths, see man
+    # openat2(2) RESOLVE_BENEATH. Almost all symlink tests use absolute
+    # paths. Skip symlink tests on WASI for now.
+    src = os.path.abspath(TESTFN)
+    symlink_path = src + "can_symlink"
     try:
-        os.symlink(TESTFN, symlink_path)
+        os.symlink(src, symlink_path)
         can = True
     except (OSError, NotImplementedError, AttributeError):
         can = False
@@ -232,6 +234,84 @@ def skip_unless_xattr(test):
     """Skip decorator for tests that require functional extended attributes"""
     ok = can_xattr()
     msg = "no non-broken extended attribute support"
+    return test if ok else unittest.skip(msg)(test)
+
+
+_can_chmod = None
+
+def can_chmod():
+    global _can_chmod
+    if _can_chmod is not None:
+        return _can_chmod
+    if not hasattr(os, "chown"):
+        _can_chmod = False
+        return _can_chmod
+    try:
+        with open(TESTFN, "wb") as f:
+            try:
+                os.chmod(TESTFN, 0o777)
+                mode1 = os.stat(TESTFN).st_mode
+                os.chmod(TESTFN, 0o666)
+                mode2 = os.stat(TESTFN).st_mode
+            except OSError as e:
+                can = False
+            else:
+                can = stat.S_IMODE(mode1) != stat.S_IMODE(mode2)
+    finally:
+        unlink(TESTFN)
+    _can_chmod = can
+    return can
+
+
+def skip_unless_working_chmod(test):
+    """Skip tests that require working os.chmod()
+
+    WASI SDK 15.0 cannot change file mode bits.
+    """
+    ok = can_chmod()
+    msg = "requires working os.chmod()"
+    return test if ok else unittest.skip(msg)(test)
+
+
+# Check whether the current effective user has the capability to override
+# DAC (discretionary access control). Typically user root is able to
+# bypass file read, write, and execute permission checks. The capability
+# is independent of the effective user. See capabilities(7).
+_can_dac_override = None
+
+def can_dac_override():
+    global _can_dac_override
+
+    if not can_chmod():
+        _can_dac_override = False
+    if _can_dac_override is not None:
+        return _can_dac_override
+
+    try:
+        with open(TESTFN, "wb") as f:
+            os.chmod(TESTFN, 0o400)
+            try:
+                with open(TESTFN, "wb"):
+                    pass
+            except OSError:
+                _can_dac_override = False
+            else:
+                _can_dac_override = True
+    finally:
+        unlink(TESTFN)
+
+    return _can_dac_override
+
+
+def skip_if_dac_override(test):
+    ok = not can_dac_override()
+    msg = "incompatible with CAP_DAC_OVERRIDE"
+    return test if ok else unittest.skip(msg)(test)
+
+
+def skip_unless_dac_override(test):
+    ok = can_dac_override()
+    msg = "requires CAP_DAC_OVERRIDE"
     return test if ok else unittest.skip(msg)(test)
 
 
@@ -365,12 +445,16 @@ def rmtree(path):
 @contextlib.contextmanager
 def temp_dir(path=None, quiet=False):
     """Return a context manager that creates a temporary directory.
+
     Arguments:
+
       path: the directory to create temporarily.  If omitted or None,
         defaults to creating a temporary directory using tempfile.mkdtemp.
+
       quiet: if False (the default), the context manager raises an exception
         on error.  Otherwise, if the path is specified and cannot be
         created, only a warning is issued.
+
     """
     import tempfile
     dir_created = False
@@ -402,11 +486,15 @@ def temp_dir(path=None, quiet=False):
 @contextlib.contextmanager
 def change_cwd(path, quiet=False):
     """Return a context manager that changes the current working directory.
+
     Arguments:
+
       path: the directory to use as the temporary current working directory.
+
       quiet: if False (the default), the context manager raises an exception
         on error.  Otherwise, it issues only a warning and keeps the current
         working directory the same.
+
     """
     saved_dir = os.getcwd()
     try:
@@ -427,13 +515,16 @@ def change_cwd(path, quiet=False):
 def temp_cwd(name='tempcwd', quiet=False):
     """
     Context manager that temporarily creates and changes the CWD.
+
     The function temporarily changes the current working directory
     after creating a temporary directory in the current directory with
     name *name*.  If *name* is None, the temporary directory is
     created using tempfile.mkdtemp.
+
     If *quiet* is False (default) and it is not possible to
     create or change the CWD, an error is raised.  If *quiet* is True,
     only a warning is raised and the original CWD is used.
+
     """
     with temp_dir(path=name, quiet=quiet) as temp_path:
         with change_cwd(temp_path, quiet=quiet) as cwd_dir:
@@ -444,6 +535,20 @@ def create_empty_file(filename):
     """Create an empty file. If the file already exists, truncate it."""
     fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
     os.close(fd)
+
+
+@contextlib.contextmanager
+def open_dir_fd(path):
+    """Open a file descriptor to a directory."""
+    assert os.path.isdir(path)
+    flags = os.O_RDONLY
+    if hasattr(os, "O_DIRECTORY"):
+        flags |= os.O_DIRECTORY
+    dir_fd = os.open(path, flags)
+    try:
+        yield dir_fd
+    finally:
+        os.close(dir_fd)
 
 
 def fs_is_case_insensitive(directory):
@@ -482,7 +587,7 @@ class FakePath:
 def fd_count():
     """Count the number of open file descriptors.
     """
-    if sys.platform.startswith(('linux', 'freebsd')):
+    if sys.platform.startswith(('linux', 'freebsd', 'emscripten')):
         try:
             names = os.listdir("/proc/self/fd")
             # Subtract one because listdir() internally opens a file
@@ -548,6 +653,11 @@ if hasattr(os, "umask"):
             yield
         finally:
             os.umask(oldmask)
+else:
+    @contextlib.contextmanager
+    def temp_umask(umask):
+        """no-op on platforms without umask()"""
+        yield
 
 
 class EnvironmentVarGuard(collections.abc.MutableMapping):
