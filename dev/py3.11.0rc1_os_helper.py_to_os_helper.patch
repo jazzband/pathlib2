@@ -1,0 +1,19 @@
+--- a/../../python/cpython/Lib/test/support/os_helper.py
++++ b/test/support/os_helper.py
+@@ -1,10 +1,15 @@
++import sys
++if sys.version_info >= (3, 7):
++    import contextlib
++else:
++    import contextlib2 as contextlib
++
+ import collections.abc
+ import contextlib
+ import errno
+ import os
+ import re
+ import stat
+-import sys
+ import time
+ import unittest
+ import warnings
