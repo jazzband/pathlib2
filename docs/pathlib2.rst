@@ -1,17 +1,5 @@
-
-:mod:`pathlib` --- Object-oriented filesystem paths
-===================================================
-
-.. module:: pathlib
-   :synopsis: Object-oriented filesystem paths
-
-.. versionadded:: 3.4
-
-**Source code:** :source:`Lib/pathlib.py`
-
-.. index:: single: path; operations
-
---------------
+API Reference
+-------------
 
 This module offers classes representing filesystem paths with semantics
 appropriate for different operating systems.  Path classes are divided
@@ -152,8 +140,6 @@ we also call *flavours*:
    Pure path objects implement the :class:`os.PathLike` interface, allowing them
    to be used anywhere the interface is accepted.
 
-   .. versionchanged:: 3.6
-      Added support for the :class:`os.PathLike` interface.
 
 .. class:: PurePosixPath(*pathsegments)
 
@@ -362,8 +348,9 @@ Pure paths provide the following methods and properties:
       >>> p.parents[2]
       PureWindowsPath('c:/')
 
-   .. versionchanged:: 3.10
-      The parents sequence now supports :term:`slices <slice>` and negative index values.
+   .. versionchanged:: 3.0.0
+      Updated to Python 3.10 version where the parents sequence
+      now supports :term:`slices <slice>` and negative index values.
 
 .. data:: PurePath.parent
 
@@ -500,7 +487,8 @@ Pure paths provide the following methods and properties:
       >>> p.is_relative_to('/usr')
       False
 
-   .. versionadded:: 3.9
+   .. versionadded:: 3.0.0
+      Part of the standard library in Python 3.9 and later
 
 
 .. method:: PurePath.is_reserved()
@@ -622,7 +610,8 @@ Pure paths provide the following methods and properties:
           raise ValueError("%r has an empty name" % (self,))
       ValueError: PureWindowsPath('c:/') has an empty name
 
-   .. versionadded:: 3.9
+   .. versionadded:: 3.0.0
+      Part of the standard library in Python 3.9 and later
 
 
 .. method:: PurePath.with_suffix(suffix)
@@ -709,15 +698,6 @@ Concrete paths provide the following methods in addition to pure paths
 methods.  Many of these methods can raise an :exc:`OSError` if a system
 call fails (for example because the path doesn't exist).
 
-.. versionchanged:: 3.8
-
-   :meth:`~Path.exists()`, :meth:`~Path.is_dir()`, :meth:`~Path.is_file()`,
-   :meth:`~Path.is_mount()`, :meth:`~Path.is_symlink()`,
-   :meth:`~Path.is_block_device()`, :meth:`~Path.is_char_device()`,
-   :meth:`~Path.is_fifo()`, :meth:`~Path.is_socket()` now return ``False``
-   instead of raising an exception for paths that contain characters
-   unrepresentable at the OS level.
-
 
 .. classmethod:: Path.cwd()
 
@@ -739,7 +719,8 @@ call fails (for example because the path doesn't exist).
       >>> Path.home()
       PosixPath('/home/antoine')
 
-   .. versionadded:: 3.5
+   Part of the standard library in Python 3.5 and later
+
 
 
 .. method:: Path.stat(*, follow_symlinks=True)
@@ -758,8 +739,8 @@ call fails (for example because the path doesn't exist).
       >>> p.stat().st_mtime
       1327883547.852554
 
-   .. versionchanged:: 3.10
-      The *follow_symlinks* parameter was added.
+   .. versionchanged:: 3.0.0
+      Updated to Python 3.10 version where *follow_symlinks* parameter was added.
 
 .. method:: Path.chmod(mode, *, follow_symlinks=True)
 
@@ -778,8 +759,8 @@ call fails (for example because the path doesn't exist).
       >>> p.stat().st_mode
       33060
 
-   .. versionchanged:: 3.10
-      The *follow_symlinks* parameter was added.
+   .. versionchanged:: 3.0.0
+      Updated to Python 3.10 version where *follow_symlinks* parameter was added.
 
 .. method:: Path.exists()
 
@@ -811,7 +792,7 @@ call fails (for example because the path doesn't exist).
       >>> p.expanduser()
       PosixPath('/home/eric/films/Monty Python')
 
-   .. versionadded:: 3.5
+   Part of the standard library in Python 3.5 and later
 
 
 .. method:: Path.glob(pattern)
@@ -841,9 +822,10 @@ call fails (for example because the path doesn't exist).
 
    .. audit-event:: pathlib.Path.glob self,pattern pathlib.Path.glob
 
-   .. versionchanged:: 3.11
-      Return only directories if *pattern* ends with a pathname components
-      separator (:data:`~os.sep` or :data:`~os.altsep`).
+   .. versionchanged:: 3.0.0
+      Updated to Python 3.11 version which only returns directories
+      if *pattern* ends with a pathname components separator
+      (:data:`~os.sep` or :data:`~os.altsep`).
 
 .. method:: Path.group()
 
@@ -878,7 +860,7 @@ call fails (for example because the path doesn't exist).
    i-node on the same device --- this should detect mount points for all Unix
    and POSIX variants.  Not implemented on Windows.
 
-   .. versionadded:: 3.7
+   Part of the standard library in Python 3.7 and later
 
 
 .. method:: Path.is_symlink()
@@ -979,9 +961,6 @@ call fails (for example because the path doesn't exist).
    ignored (same behavior as the POSIX ``mkdir -p`` command), but only if the
    last path component is not an existing non-directory file.
 
-   .. versionchanged:: 3.5
-      The *exist_ok* parameter was added.
-
 
 .. method:: Path.open(mode='r', buffering=-1, encoding=None, errors=None, newline=None)
 
@@ -1011,7 +990,7 @@ call fails (for example because the path doesn't exist).
       >>> p.read_bytes()
       b'Binary file contents'
 
-   .. versionadded:: 3.5
+   Part of the standard library in Python 3.5 and later
 
 
 .. method:: Path.read_text(encoding=None, errors=None)
@@ -1027,7 +1006,7 @@ call fails (for example because the path doesn't exist).
    The file is opened and then closed. The optional parameters have the same
    meaning as in :func:`open`.
 
-   .. versionadded:: 3.5
+   Part of the standard library in Python 3.5 and later
 
 
 .. method:: Path.readlink()
@@ -1040,7 +1019,8 @@ call fails (for example because the path doesn't exist).
       >>> p.readlink()
       PosixPath('setup.py')
 
-   .. versionadded:: 3.9
+   .. versionadded:: 3.0.0
+      Part of the standard library in Python 3.9 and later
 
 
 .. method:: Path.rename(target)
@@ -1064,9 +1044,6 @@ call fails (for example because the path doesn't exist).
    relative to the current working directory, *not* the directory of the Path
    object.
 
-   .. versionchanged:: 3.8
-      Added return value, return the new Path instance.
-
 
 .. method:: Path.replace(target)
 
@@ -1077,9 +1054,6 @@ call fails (for example because the path doesn't exist).
    The target path may be absolute or relative. Relative paths are interpreted
    relative to the current working directory, *not* the directory of the Path
    object.
-
-   .. versionchanged:: 3.8
-      Added return value, return the new Path instance.
 
 
 .. method:: Path.absolute()
@@ -1117,8 +1091,6 @@ call fails (for example because the path doesn't exist).
    infinite loop is encountered along the resolution path, :exc:`RuntimeError`
    is raised.
 
-   .. versionadded:: 3.6
-      The *strict* argument (pre-3.6 behavior is strict).
 
 .. method:: Path.rglob(pattern)
 
@@ -1134,9 +1106,10 @@ call fails (for example because the path doesn't exist).
 
    .. audit-event:: pathlib.Path.rglob self,pattern pathlib.Path.rglob
 
-   .. versionchanged:: 3.11
-      Return only directories if *pattern* ends with a pathname components
-      separator (:data:`~os.sep` or :data:`~os.altsep`).
+   .. versionchanged:: 3.0.0
+      Updated to Python 3.11 version which only returns directories
+      if *pattern* ends with a pathname components separator
+      (:data:`~os.sep` or :data:`~os.altsep`).
 
 .. method:: Path.rmdir()
 
@@ -1161,7 +1134,7 @@ call fails (for example because the path doesn't exist).
       >>> p.samefile('spam')
       True
 
-   .. versionadded:: 3.5
+   Part of the standard library in Python 3.5 and later
 
 
 .. method:: Path.symlink_to(target, target_is_directory=False)
@@ -1193,7 +1166,8 @@ call fails (for example because the path doesn't exist).
       The order of arguments (link, target) is the reverse
       of :func:`os.link`'s.
 
-   .. versionadded:: 3.10
+   .. versionadded:: 3.0.0
+      Part of the standard library in Python 3.10 and later
 
 .. method:: Path.link_to(target)
 
@@ -1206,7 +1180,7 @@ call fails (for example because the path doesn't exist).
       (target, link) is the reverse of :func:`Path.symlink_to` and
       :func:`Path.hardlink_to`, but matches that of :func:`os.link`.
 
-   .. versionadded:: 3.8
+   Part of the standard library in Python 3.8 and later
 
    .. deprecated:: 3.10
 
@@ -1235,9 +1209,6 @@ call fails (for example because the path doesn't exist).
    If *missing_ok* is true, :exc:`FileNotFoundError` exceptions will be
    ignored (same behavior as the POSIX ``rm -f`` command).
 
-   .. versionchanged:: 3.8
-      The *missing_ok* parameter was added.
-
 
 .. method:: Path.write_bytes(data)
 
@@ -1252,7 +1223,7 @@ call fails (for example because the path doesn't exist).
 
    An existing file of the same name is overwritten.
 
-   .. versionadded:: 3.5
+   Part of the standard library in Python 3.5 and later
 
 
 .. method:: Path.write_text(data, encoding=None, errors=None, newline=None)
@@ -1269,10 +1240,7 @@ call fails (for example because the path doesn't exist).
    An existing file of the same name is overwritten. The optional parameters
    have the same meaning as in :func:`open`.
 
-   .. versionadded:: 3.5
-
-   .. versionchanged:: 3.10
-      The *newline* parameter was added.
+   Part of the standard library in Python 3.5 and later
 
 Correspondence to tools in the :mod:`os` module
 -----------------------------------------------
