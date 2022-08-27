@@ -111,9 +111,6 @@ for character in (
         FS_NONASCII = character
         break
 
-# Save the initial cwd
-SAVEDCWD = os.getcwd()
-
 # TESTFN_UNDECODABLE is a filename (bytes type) that should *not* be able to be
 # decoded from the filesystem encoding (in strict mode). It can be None if we
 # cannot generate such filename (ex: the latin1 encoding can decode any byte
@@ -149,19 +146,6 @@ if FS_NONASCII:
 else:
     TESTFN_NONASCII = None
 TESTFN = TESTFN_NONASCII or TESTFN_ASCII
-
-
-def make_bad_fd():
-    """
-    Create an invalid file descriptor by opening and closing a file and return
-    its fd.
-    """
-    file = open(TESTFN, "wb")
-    try:
-        return file.fileno()
-    finally:
-        file.close()
-        unlink(TESTFN)
 
 
 _can_symlink = None
@@ -228,13 +212,6 @@ def can_xattr():
             rmdir(tmp_dir)
     _can_xattr = can
     return can
-
-
-def skip_unless_xattr(test):
-    """Skip decorator for tests that require functional extended attributes"""
-    ok = can_xattr()
-    msg = "no non-broken extended attribute support"
-    return test if ok else unittest.skip(msg)(test)
 
 
 _can_chmod = None
@@ -442,115 +419,6 @@ def rmtree(path):
         pass
 
 
-@contextlib.contextmanager
-def temp_dir(path=None, quiet=False):
-    """Return a context manager that creates a temporary directory.
-
-    Arguments:
-
-      path: the directory to create temporarily.  If omitted or None,
-        defaults to creating a temporary directory using tempfile.mkdtemp.
-
-      quiet: if False (the default), the context manager raises an exception
-        on error.  Otherwise, if the path is specified and cannot be
-        created, only a warning is issued.
-
-    """
-    import tempfile
-    dir_created = False
-    if path is None:
-        path = tempfile.mkdtemp()
-        dir_created = True
-        path = os.path.realpath(path)
-    else:
-        try:
-            os.mkdir(path)
-            dir_created = True
-        except OSError as exc:
-            if not quiet:
-                raise
-            warnings.warn(f'tests may fail, unable to create '
-                          f'temporary directory {path!r}: {exc}',
-                          RuntimeWarning, stacklevel=3)
-    if dir_created:
-        pid = os.getpid()
-    try:
-        yield path
-    finally:
-        # In case the process forks, let only the parent remove the
-        # directory. The child has a different process id. (bpo-30028)
-        if dir_created and pid == os.getpid():
-            rmtree(path)
-
-
-@contextlib.contextmanager
-def change_cwd(path, quiet=False):
-    """Return a context manager that changes the current working directory.
-
-    Arguments:
-
-      path: the directory to use as the temporary current working directory.
-
-      quiet: if False (the default), the context manager raises an exception
-        on error.  Otherwise, it issues only a warning and keeps the current
-        working directory the same.
-
-    """
-    saved_dir = os.getcwd()
-    try:
-        os.chdir(os.path.realpath(path))
-    except OSError as exc:
-        if not quiet:
-            raise
-        warnings.warn(f'tests may fail, unable to change the current working '
-                      f'directory to {path!r}: {exc}',
-                      RuntimeWarning, stacklevel=3)
-    try:
-        yield os.getcwd()
-    finally:
-        os.chdir(saved_dir)
-
-
-@contextlib.contextmanager
-def temp_cwd(name='tempcwd', quiet=False):
-    """
-    Context manager that temporarily creates and changes the CWD.
-
-    The function temporarily changes the current working directory
-    after creating a temporary directory in the current directory with
-    name *name*.  If *name* is None, the temporary directory is
-    created using tempfile.mkdtemp.
-
-    If *quiet* is False (default) and it is not possible to
-    create or change the CWD, an error is raised.  If *quiet* is True,
-    only a warning is raised and the original CWD is used.
-
-    """
-    with temp_dir(path=name, quiet=quiet) as temp_path:
-        with change_cwd(temp_path, quiet=quiet) as cwd_dir:
-            yield cwd_dir
-
-
-def create_empty_file(filename):
-    """Create an empty file. If the file already exists, truncate it."""
-    fd = os.open(filename, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
-    os.close(fd)
-
-
-@contextlib.contextmanager
-def open_dir_fd(path):
-    """Open a file descriptor to a directory."""
-    assert os.path.isdir(path)
-    flags = os.O_RDONLY
-    if hasattr(os, "O_DIRECTORY"):
-        flags |= os.O_DIRECTORY
-    dir_fd = os.open(path, flags)
-    try:
-        yield dir_fd
-    finally:
-        os.close(dir_fd)
-
-
 def fs_is_case_insensitive(directory):
     """Detects if the file system for the specified directory
     is case-insensitive."""
@@ -582,82 +450,6 @@ class FakePath:
             raise self.path
         else:
             return self.path
-
-
-def fd_count():
-    """Count the number of open file descriptors.
-    """
-    if sys.platform.startswith(('linux', 'freebsd', 'emscripten')):
-        try:
-            names = os.listdir("/proc/self/fd")
-            # Subtract one because listdir() internally opens a file
-            # descriptor to list the content of the /proc/self/fd/ directory.
-            return len(names) - 1
-        except FileNotFoundError:
-            pass
-
-    MAXFD = 256
-    if hasattr(os, 'sysconf'):
-        try:
-            MAXFD = os.sysconf("SC_OPEN_MAX")
-        except OSError:
-            pass
-
-    old_modes = None
-    if sys.platform == 'win32':
-        # bpo-25306, bpo-31009: Call CrtSetReportMode() to not kill the process
-        # on invalid file descriptor if Python is compiled in debug mode
-        try:
-            import msvcrt
-            msvcrt.CrtSetReportMode
-        except (AttributeError, ImportError):
-            # no msvcrt or a release build
-            pass
-        else:
-            old_modes = {}
-            for report_type in (msvcrt.CRT_WARN,
-                                msvcrt.CRT_ERROR,
-                                msvcrt.CRT_ASSERT):
-                old_modes[report_type] = msvcrt.CrtSetReportMode(report_type,
-                                                                 0)
-
-    try:
-        count = 0
-        for fd in range(MAXFD):
-            try:
-                # Prefer dup() over fstat(). fstat() can require input/output
-                # whereas dup() doesn't.
-                fd2 = os.dup(fd)
-            except OSError as e:
-                if e.errno != errno.EBADF:
-                    raise
-            else:
-                os.close(fd2)
-                count += 1
-    finally:
-        if old_modes is not None:
-            for report_type in (msvcrt.CRT_WARN,
-                                msvcrt.CRT_ERROR,
-                                msvcrt.CRT_ASSERT):
-                msvcrt.CrtSetReportMode(report_type, old_modes[report_type])
-
-    return count
-
-
-if hasattr(os, "umask"):
-    @contextlib.contextmanager
-    def temp_umask(umask):
-        """Context manager that temporarily sets the process umask."""
-        oldmask = os.umask(umask)
-        try:
-            yield
-        finally:
-            os.umask(oldmask)
-else:
-    @contextlib.contextmanager
-    def temp_umask(umask):
-        """no-op on platforms without umask()"""
-        yield
 
 
 class EnvironmentVarGuard(collections.abc.MutableMapping):

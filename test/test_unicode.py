@@ -8,7 +8,7 @@ import pytest
 
 import pathlib2 as pathlib
 
-from .support.os_helper import skip_unless_symlink
+from test.support.os_helper import skip_unless_symlink
 
 import unittest
 
