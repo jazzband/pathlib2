@@ -31,26 +31,28 @@ Issues that occur in this backport, but that do not occur not in the
 standard Python pathlib module can be submitted on
 the `pathlib2 bug tracker <https://github.com/jazzband/pathlib2/issues>`_.
 
+Syncing with the Python standard library
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As of `Python 3.11.0rc1`, the following files need to be copied from the CPython reference implementation to `pathlib2`:
+
+* `Doc/library/pathlib.rst` -> `docs/pathlib2.rst`
+* `Lib/pathlib.py` -> `pathlib2/__init__.py`
+* `Lib/test/test_pathlib.py` -> `test/test_pathlib2.py`
+* `Lib/test/support/os_helper.py` -> `test/support/os_helper.py`
+
+To facilitate the backporting process, we store a set of patch files in the `dev` directory:
+
+* changes made to `pathlib2/__init__.py` to make it work on older versions of Python
+* changes made to `test/test_pathlib2.py` to adjust the tests to run on older versions of Python and use backported support functions.
+* changes made to `test/support/os_helper.py` to conditionally import `contextlib2`.
+
 Documentation
 -------------
 
 Refer to the
 `standard pathlib <http://docs.python.org/dev/library/pathlib.html>`_
 documentation.
-
-Known Issues
-------------
-
-For historic reasons, pathlib2 still uses bytes to represent file paths internally.
-Unfortunately, on Windows with Python 2.7, the file system encoder (``mcbs``)
-has only poor support for non-ascii characters,
-and can silently replace non-ascii characters without warning.
-For example, ``u'тест'.encode(sys.getfilesystemencoding())`` results in ``????``
-which is obviously completely useless.
-
-Therefore, on Windows with Python 2.7, until this problem is fixed upstream,
-unfortunately you cannot rely on pathlib2 to support the full unicode range for filenames.
-See `issue #56 <https://github.com/jazzband/pathlib2/issues/56>`_ for more details.
 
 .. |github| image:: https://github.com/jazzband/pathlib2/actions/workflows/python-package.yml/badge.svg
    :target: https://github.com/jazzband/pathlib2/actions/workflows/python-package.yml
