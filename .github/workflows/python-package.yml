@@ -14,11 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         platform: ['ubuntu-latest', 'windows-latest', 'macos-latest']
-        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11-dev']
+        python-version: ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -43,6 +43,6 @@ jobs:
         coverage run -m pytest
         coverage xml
     - name: Uploade coverage to codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         fail_ci_if_error: true
