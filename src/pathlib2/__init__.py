@@ -59,11 +59,7 @@ else:
         return encoding
 
 
-if sys.version_info >= (3, 8):
-    sys_audit = sys.audit
-else:
-    def sys_audit(*args):
-        return
+sys_audit = sys.audit
 
 
 class _Flavour(object):

@@ -1,21 +1,17 @@
-import sys
-if sys.version_info >= (3, 7):
-    import contextlib
-else:
-    import contextlib2 as contextlib
-
 import collections.abc
+import contextlib
+import errno
 import io
 import os
-import errno
-import pathlib2 as pathlib
 import pickle
 import socket
 import stat
+import sys
 import tempfile
 import unittest
 from unittest import mock
 
+import pathlib2 as pathlib
 import tests.os_helper as os_helper
 from tests.os_helper import TESTFN, FakePath
 
