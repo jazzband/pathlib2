@@ -5,7 +5,7 @@ copyright = '2012-2014 Antoine Pitrou and contributors; 2014-2021, Matthias C. M
 author = 'Matthias C. M. Troffaes'
 
 # The full version, including alpha/beta/rc tags
-with open("../VERSION", "r") as version_file:
+with open("../VERSION") as version_file:
     release = version_file.read().strip()
 
 # -- General configuration ---------------------------------------------------

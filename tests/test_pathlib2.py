@@ -1,21 +1,17 @@
-import sys
-if sys.version_info >= (3, 7):
-    import contextlib
-else:
-    import contextlib2 as contextlib
-
 import collections.abc
+import contextlib
+import errno
 import io
 import os
-import errno
-import pathlib2 as pathlib
 import pickle
 import socket
 import stat
+import sys
 import tempfile
 import unittest
 from unittest import mock
 
+import pathlib2 as pathlib
 import tests.os_helper as os_helper
 from tests.os_helper import TESTFN, FakePath
 
@@ -26,7 +22,7 @@ except ImportError:
     grp = pwd = None  # type: ignore
 
 
-class _BaseFlavourTest(object):
+class _BaseFlavourTest:
 
     flavour: pathlib._Flavour
 
@@ -171,7 +167,7 @@ class NTFlavourTest(_BaseFlavourTest, unittest.TestCase):
 # Tests for the pure classes.
 #
 
-class _BasePurePathTest(object):
+class _BasePurePathTest:
 
     # Keys are canonical paths, values are list of tuples of arguments
     # supposed to produce equal paths.
@@ -418,7 +414,7 @@ class _BasePurePathTest(object):
             pcanon = self.cls(canon)
             for t in tuples:
                 p = self.cls(*t)
-                self.assertEqual(p, pcanon, "failed with args {}".format(t))
+                self.assertEqual(p, pcanon, f"failed with args {t}")
                 self.assertEqual(hash(p), hash(pcanon))
                 self.assertEqual(str(p), canon)
                 self.assertEqual(p.as_posix(), posix)
@@ -1378,7 +1374,7 @@ class WindowsPathAsPureTest(PureWindowsPathTest):
             P('c:/').group()
 
 
-class _BasePathTest(object):
+class _BasePathTest:
     """Tests for the FS-accessing functionalities of the Path classes."""
 
     # (BASE)
