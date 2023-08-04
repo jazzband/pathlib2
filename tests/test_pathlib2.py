@@ -2408,6 +2408,11 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             env.set('USERPROFILE', 'C:\\Users\\alice')
             check()
 
+    def test_issue_84(self):
+        P = self.cls
+        p = P(BASE, "fileA")
+        assert p.resolve(strict=True) == p
+
 
 # extra test to ensure coverage of issue #54
 def test_resolve_extra():
