@@ -2409,9 +2409,8 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             check()
 
     def test_issue_84(self):
-        P = self.cls
-        p = P(BASE, "fileA")
-        assert p.resolve(strict=True) == p
+        P = self.cls(BASE)
+        assert (P / "filea").resolve(strict=True) == (P / "fileA")
 
 
 # extra test to ensure coverage of issue #54
