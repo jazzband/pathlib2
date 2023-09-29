@@ -25,7 +25,7 @@ Development
 The main development takes place in the Python standard library: see
 the `Python developer's guide <http://docs.python.org/devguide/>`_.
 In particular, new features should be submitted to the
-`Python bug tracker <http://bugs.python.org/>`_.
+`Python bug tracker <https://github.com/python/cpython/issues>`_.
 
 Issues that occur in this backport, but that do not occur not in the
 standard Python pathlib module can be submitted on
